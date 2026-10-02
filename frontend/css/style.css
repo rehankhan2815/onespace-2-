@@ -1,0 +1,5549 @@
+/* DESIGN TOKENS
+ *
+ * One warm, muted layer for the whole product. Every rule below refers to
+ * these rather than to raw hex, so the palette can be re-tuned in one place
+ * and nothing drifts into a second, colder system. The direction is a desk
+ * lamp rather than a screen: warm off-white ground, cream surfaces, deep warm
+ * charcoal ink, soft warm gray rules, and a single earthy teal-green accent.
+ *
+ * Accent discipline: green is a scarce resource. It marks where you are and
+ * what is actionable, and nothing else. Clay, sand and slate exist only to
+ * separate neighbouring kinds of content, never to add colour to the page.
+ */
+
+:root {
+
+    /* GROUND AND SURFACES
+     * Four steps. The gap between --bg and --surface is deliberately small:
+     * a page should read as one continuous sheet of paper, with surfaces
+     * lifted from it rather than dropped on top of it. */
+    --bg: #faf7f2;
+    --surface: #fffdfa;
+    --surface-2: #f5f0e7;
+    --surface-3: #ece4d6;
+    --rail: #f2ece1;
+    /* Reserved for code and the terminal. The only cool surface in the
+       product, because it is the only place with a different job. */
+    --surface-code: #1f1c19;
+    --surface-code-2: #292521;
+
+    /* INK — warm charcoal, never pure black */
+    --text-strong: #1c1713;
+    --text: #2a2520;
+    --text-2: #544c44;
+    /* The two quietest text steps are muted by tone rather than by fading
+       into the background: both stay above 4.5:1 on every surface they sit
+       on, and the hierarchy between them is carried by size as well. */
+    --text-3: #6b6158;
+    --text-4: #736960;
+
+    /* RULES — soft warm gray. Two are enough; a third is noise. */
+    --line: #e8e0d3;
+    --line-2: #d8ccb8;
+    --line-3: #c6b8a3;
+
+    /* ACCENT — muted eucalyptus. Reserved for position and action. */
+    --accent: #4a7c6f;
+    --accent-2: #3a655a;
+    --accent-3: #2d4f46;
+    --accent-soft: #e8efeb;
+    --accent-soft-2: #dbe7e1;
+    --accent-line: #bcd4ca;
+
+    /* DESTRUCTIVE — restrained clay red, never fire-engine */
+    --danger: #a2443a;
+    --danger-2: #8a3a31;
+    --danger-soft: #f8ece9;
+    --danger-line: #e2c6c0;
+
+    /* SUPPORTING ACCENTS
+     * Content categories only. Never navigation, never buttons. Each is
+     * paired with a soft ground so it can tint an icon or a dot without
+     * shouting. */
+    --clay: #a2674a;
+    --clay-soft: #f6ece4;
+    --sand: #93762c;
+    --sand-soft: #f6f0dd;
+    --slate: #5b7385;
+    --slate-soft: #eaeff3;
+
+    /* SEMANTIC — terminal and status text only */
+    --ok: #4a7a52;
+    --warn: #9a6b1f;
+    --err: #a2443a;
+    --info: #4a6d86;
+
+    /* TYPE
+     * Two families, no downloads. The sans carries the interface; the serif
+     * appears only where a name is being introduced, which is what gives the
+     * product its editorial edge without turning it into a document. */
+    --font: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+            "Times New Roman", serif;
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+
+    /* A shallow scale with real jumps. Display is the only size that shouts,
+     * and it is used once per screen. */
+    --t-display: 30px;
+    --t-title: 20px;
+    --t-section: 16px;
+    --t-body: 14.5px;
+    --t-meta: 13px;
+    --t-micro: 11.5px;
+
+    /* SPACING — one rhythm, used everywhere. A 4px base keeps optical
+       alignment honest across cards, gutters and section gaps. */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 20px;
+    --s-6: 24px;
+    --s-8: 32px;
+    --s-10: 40px;
+    --s-12: 48px;
+
+    /* MOTION — short and few, so nothing announces itself.
+       120-220ms covers every state change in the product. */
+    --t-fast: 130ms;
+    --t-base: 190ms;
+    --ease: cubic-bezier(.2, .6, .3, 1);
+    --ease-out: cubic-bezier(.16, .84, .44, 1);
+
+    /* RADIUS — modest, never pill-shaped by default */
+    --r-sm: 6px;
+    --r-md: 9px;
+    --r-lg: 13px;
+    --r-xl: 18px;
+
+    /* SHADOWS — two layers each, a contact shadow plus a lift. Flat
+       elevation rather than a single soft blob. */
+    --sh-1: 0 1px 2px rgba(62, 49, 34, .05);
+    --sh-2: 0 1px 2px rgba(62, 49, 34, .05),
+            0 3px 8px rgba(62, 49, 34, .05);
+    --sh-3: 0 1px 2px rgba(62, 49, 34, .06),
+            0 8px 20px rgba(62, 49, 34, .09);
+    --sh-4: 0 2px 4px rgba(62, 49, 34, .07),
+            0 16px 40px rgba(62, 49, 34, .14);
+
+    /* LAYOUT */
+    --sidebar-w: 244px;
+    --sidebar-rail: 64px;
+    --tabbar-h: 44px;
+}
+
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-ui);
+    font-size: var(--t-body);
+    line-height: 1.55;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+
+/* PHASE 3: SHARED INTERACTION STATES */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+
+/* ICONS
+ *
+ * Icons inherit colour and size from their context, so one SVG set covers
+ * navigation, controls, empty states and file types without per-use rules.
+ * When no explicit size is given they follow the line they sit on. */
+
+.icon {
+    display: block;
+    flex: 0 0 auto;
+    width: 1em;
+    height: 1em;
+}
+
+
+/* FILE BADGES
+ *
+ * File type is a category, not a status, so it draws from the supporting
+ * accents rather than from the action accent. A neutral file stays gray. */
+
+.file-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px 0 6px;
+    border-radius: var(--r-sm);
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+}
+
+.file-badge-ext {
+    color: inherit;
+    opacity: .85;
+}
+
+.file-badge-html {
+    color: var(--clay);
+    background: var(--clay-soft);
+    border-color: transparent;
+}
+
+.file-badge-css {
+    color: var(--slate);
+    background: var(--slate-soft);
+    border-color: transparent;
+}
+
+.file-badge-js {
+    color: var(--sand);
+    background: var(--sand-soft);
+    border-color: transparent;
+}
+
+
+
+/* AUTH */
+
+.auth-page,
+.welcome-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-card,
+.welcome-card {
+    width: min(420px, 100%);
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 35px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+}
+
+.auth-brand {
+    margin-bottom: 30px;
+}
+
+.auth-brand h1,
+.welcome-logo {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.auth-brand p,
+.welcome-card p {
+    color: var(--text-3);
+    line-height: 1.5;
+}
+
+.auth-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.auth-card form h2 {
+    margin-bottom: 10px;
+}
+
+.auth-card label {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-top: 5px;
+}
+
+.auth-card input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    outline: none;
+}
+
+.auth-card input:focus {
+    border-color: var(--text-3);
+}
+
+.primary-button {
+    border: 0;
+    background: var(--text);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.primary-button:hover {
+    background: var(--text-strong);
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 22px;
+    color: var(--text-3);
+    font-size: 14px;
+}
+
+.auth-switch a {
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+
+/* WELCOME */
+
+.welcome-card {
+    text-align: center;
+}
+
+.welcome-logo {
+    margin-bottom: 35px;
+}
+
+.welcome-card h1 {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.welcome-card p {
+    margin-bottom: 25px;
+}
+
+.welcome-card .primary-button {
+    width: 100%;
+}
+
+
+/* HOME
+ *
+ * A launcher, not a dashboard. There is one hero, one featured workspace to
+ * return to, and a quiet list of the rest. Nothing here reports a number
+ * that is not derived from something the user actually did. */
+
+.home-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+}
+
+.home-topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--s-5);
+    padding: var(--s-5) clamp(20px, 5vw, 56px);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.home-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-family: var(--font);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: var(--text-strong);
+    flex: 0 0 auto;
+}
+
+.home-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    color: var(--accent);
+}
+
+.home-brand-mark svg {
+    width: 20px;
+    height: 20px;
+}
+
+
+/* SEARCH
+ *
+ * Sits in the top bar rather than floating over the cards, so the page
+ * composition is the same at the top and as you scroll. */
+
+.home-search {
+    position: relative;
+    flex: 1 1 auto;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+}
+
+.home-search[hidden] {
+    display: none;
+}
+
+.home-search-icon {
+    position: absolute;
+    left: 11px;
+    display: grid;
+    place-items: center;
+    color: var(--text-3);
+    pointer-events: none;
+}
+
+.home-search input {
+    width: 100%;
+    height: 36px;
+    padding: 0 var(--s-3) 0 34px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+    color: var(--text-strong);
+    font-size: var(--t-meta);
+    transition: background-color var(--t-fast) var(--ease),
+                border-color var(--t-fast) var(--ease),
+                box-shadow var(--t-fast) var(--ease);
+}
+
+.home-search input::placeholder {
+    color: var(--text-3);
+}
+
+.home-search input:hover {
+    border-color: var(--line-2);
+}
+
+.home-search input:focus {
+    outline: none;
+    background: var(--surface);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.home-search input::-webkit-search-cancel-button {
+    appearance: none;
+}
+
+.home-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    margin-left: auto;
+    flex: 0 0 auto;
+}
+
+.home-user {
+    font-size: var(--t-meta);
+    color: var(--text-2);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.quiet-button-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.quiet-button-icon-slot {
+    display: grid;
+    place-items: center;
+    color: var(--text-3);
+}
+
+.quiet-button:hover .quiet-button-icon-slot {
+    color: var(--text-2);
+}
+
+
+/* HERO */
+
+.home-main {
+    flex: 1 1 auto;
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    padding: clamp(36px, 6vw, 72px) clamp(20px, 5vw, 56px) 140px;
+}
+
+.home-intro {
+    margin-bottom: clamp(32px, 5vw, 56px);
+    max-width: 60ch;
+}
+
+.home-kicker {
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: var(--s-3);
+}
+
+.home-intro h1 {
+    font-family: var(--font);
+    font-size: clamp(30px, 4.6vw, 42px);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    color: var(--text-strong);
+    margin-bottom: var(--s-3);
+    text-wrap: balance;
+}
+
+.home-sub {
+    font-size: var(--t-section);
+    color: var(--text-3);
+    text-wrap: pretty;
+}
+
+
+/* WORKSPACE CARDS
+ *
+ * A list of places to go. The featured card is the same object as the
+ * others, given room to answer "what was I doing?" — not a different kind of
+ * card, so nothing on the page competes with it by being a different shape. */
+
+.workspace-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(min(272px, 100%), 1fr)
+    );
+    gap: var(--s-4);
+}
+
+.workspace-grid[hidden] {
+    display: none;
+}
+
+.workspace-card {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    box-shadow: var(--sh-1);
+    transition: box-shadow var(--t-base) var(--ease),
+                border-color var(--t-base) var(--ease),
+                transform var(--t-base) var(--ease);
+}
+
+.workspace-card:hover {
+    border-color: var(--line-2);
+    box-shadow: var(--sh-3);
+    transform: translateY(-2px);
+}
+
+.workspace-card-featured {
+    grid-column: 1 / -1;
+    background: linear-gradient(
+        180deg,
+        var(--surface) 0%,
+        var(--surface-2) 100%
+    );
+    border-color: var(--line-2);
+}
+
+.workspace-card-open {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--s-4);
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: var(--s-5);
+    border-radius: inherit;
+}
+
+.workspace-card-featured .workspace-card-open {
+    align-items: center;
+    padding: var(--s-6);
+    gap: var(--s-5);
+}
+
+.workspace-card-open:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -3px;
+}
+
+.workspace-card-avatar {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: var(--r-sm);
+    background: var(--accent-soft);
+    color: var(--accent-2);
+    border: 1px solid var(--accent-line);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    transition: background-color var(--t-base) var(--ease),
+                color var(--t-base) var(--ease);
+}
+
+.workspace-card-featured .workspace-card-avatar {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    font-size: 17px;
+    border-radius: var(--r-md);
+}
+
+.workspace-card:hover .workspace-card-avatar {
+    background: var(--accent-soft-2);
+}
+
+.workspace-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.workspace-card-kicker {
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2px;
+}
+
+.workspace-card-name {
+    font-family: var(--font);
+    font-size: var(--t-title);
+    font-weight: 600;
+    letter-spacing: -.01em;
+    line-height: 1.25;
+    color: var(--text-strong);
+    overflow-wrap: anywhere;
+}
+
+.workspace-card-description {
+    font-size: var(--t-meta);
+    color: var(--text-2);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.workspace-card-meta {
+    margin-top: var(--s-2);
+    font-size: var(--t-micro);
+    color: var(--text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The one concrete thing to pick up, taken from the workspace's own
+   contents. Only rendered when the workspace has something to point at. */
+.workspace-card-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    margin-top: var(--s-3);
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-size: var(--t-micro);
+    font-weight: 600;
+    color: var(--text-2);
+}
+
+.workspace-card-step-icon {
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+}
+
+.workspace-card-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: var(--s-4);
+    font-size: var(--t-meta);
+    font-weight: 600;
+    color: var(--accent-2);
+}
+
+.workspace-card-go .icon {
+    transition: transform var(--t-base) var(--ease-out);
+}
+
+.workspace-card:hover .workspace-card-go .icon {
+    transform: translateX(3px);
+}
+
+
+/* DELETE
+ *
+ * Out of the way until the card is under the pointer, and always reachable
+ * by keyboard: hiding a destructive control behind :hover alone would take
+ * it away from anyone not using a mouse. */
+
+.workspace-card-delete {
+    position: absolute;
+    top: var(--s-3);
+    right: var(--s-3);
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid transparent;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--text-3);
+    opacity: 0;
+    transition: opacity var(--t-fast) var(--ease),
+                background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease),
+                border-color var(--t-fast) var(--ease);
+}
+
+.workspace-card:hover .workspace-card-delete,
+.workspace-card-delete:focus-visible {
+    opacity: 1;
+}
+
+.workspace-card-delete:hover {
+    background: var(--danger-soft);
+    border-color: var(--danger-line);
+    color: var(--danger);
+}
+
+.workspace-card-delete:focus-visible {
+    outline: 2px solid var(--danger);
+    outline-offset: 2px;
+}
+
+@media (hover: none) {
+    .workspace-card-delete {
+        opacity: 1;
+    }
+}
+
+
+/* EMPTY STATES
+ *
+ * One composition, used both for "you have no workspaces yet" and for "your
+ * search found nothing", so the page has a single way of being empty. */
+
+.home-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--s-3);
+    padding: clamp(40px, 8vw, 80px) var(--s-6);
+    border: 1px dashed var(--line-2);
+    border-radius: var(--r-xl);
+    background: var(--surface);
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.home-empty[hidden] {
+    display: none;
+}
+
+.home-empty-compact {
+    padding: var(--s-8) var(--s-6);
+    border-style: solid;
+}
+
+.home-empty-mark {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: var(--s-1);
+    border-radius: var(--r-lg);
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.home-empty h2 {
+    font-family: var(--font);
+    font-size: var(--t-title);
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: var(--text-strong);
+}
+
+.home-empty p {
+    color: var(--text-2);
+    max-width: 46ch;
+    text-wrap: pretty;
+}
+
+.home-empty-hint {
+    font-size: var(--t-micro);
+    color: var(--text-3);
+}
+
+
+/* HOME CREATE */
+
+.home-create {
+    position: fixed;
+    right: clamp(20px, 4vw, 44px);
+    bottom: clamp(20px, 4vh, 40px);
+    z-index: 40;
+    width: 50px;
+    height: 50px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid var(--accent-2);
+    background: var(--accent);
+    color: #fff;
+    box-shadow: var(--sh-3);
+    transition: background-color var(--t-fast) var(--ease),
+                transform var(--t-fast) var(--ease),
+                box-shadow var(--t-fast) var(--ease);
+}
+
+.home-create[hidden] {
+    display: none;
+}
+
+.home-create:hover {
+    background: var(--accent-2);
+    box-shadow: var(--sh-4);
+    transform: translateY(-1px);
+}
+
+.home-create:focus-visible {
+    outline: 2px solid var(--accent-3);
+    outline-offset: 3px;
+}
+
+.home-create-glyph {
+    display: grid;
+    place-items: center;
+}
+
+@media (max-width: 560px) {
+    .home-topbar {
+        flex-wrap: wrap;
+        row-gap: var(--s-3);
+    }
+
+    .home-search {
+        order: 3;
+        flex-basis: 100%;
+        max-width: none;
+    }
+
+    .home-intro h1 {
+        font-size: clamp(26px, 8vw, 34px);
+    }
+
+    .workspace-card-featured .workspace-card-open {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--s-4);
+        padding: var(--s-5);
+    }
+}
+
+/* WORKSPACE */
+
+.workspace-app {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+        "sidebar tabbar"
+        "sidebar main";
+    min-height: 100vh;
+}
+
+.workspace-sidebar {
+    grid-area: sidebar;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    width: var(--sidebar-w);
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--rail);
+    border-right: 1px solid var(--line);
+    padding: var(--s-5) var(--s-3) var(--s-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-5);
+    transition: width var(--t-base) var(--ease);
+}
+
+
+/* COMPACT NAVIGATION
+ *
+ * The drawer toggle, the scrim and the drawer close control only matter
+ * below the navigation breakpoint, so they cost the desktop layout nothing. */
+
+.sidebar-toggle {
+    display: none;
+}
+
+.sidebar-backdrop {
+    display: none;
+}
+
+.sidebar-close {
+    display: none;
+}
+
+
+/* BRAND
+ *
+ * A small drawn mark plus the word, in the serif used for names elsewhere,
+ * so the product signs itself the same way twice without needing a logo
+ * asset or a second typeface. */
+
+.workspace-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 0 var(--s-2);
+    min-height: 26px;
+}
+
+.workspace-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    color: var(--accent);
+}
+
+.workspace-brand-mark svg {
+    width: 18px;
+    height: 18px;
+}
+
+.workspace-brand-word {
+    font-family: var(--font);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: var(--text-strong);
+    white-space: nowrap;
+}
+
+
+/* IDENTITY
+ *
+ * The workspace introduces itself here and nowhere else. The mark is the
+ * workspace's initials on a soft accent ground, and it is the only place
+ * the accent appears before the reader acts on something. */
+
+.current-workspace {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-2);
+    border-radius: var(--r-md);
+    min-width: 0;
+}
+
+.current-workspace-mark {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border-radius: var(--r-sm);
+    background: var(--accent-soft);
+    color: var(--accent-2);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    border: 1px solid var(--accent-line);
+}
+
+.current-workspace-text {
+    display: block;
+    min-width: 0;
+}
+
+.current-workspace-label {
+    display: block;
+    font-size: var(--t-micro);
+    color: var(--text-3);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-bottom: 1px;
+}
+
+.current-workspace strong {
+    display: block;
+    font-size: var(--t-meta);
+    font-weight: 600;
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* SECTION NAVIGATION
+ *
+ * Each item is an icon and a word that travel together. The active item is
+ * the only one allowed the accent, and it is marked three ways — ground, a
+ * hairline bar, and weight — so position survives a monochrome display. */
+
+.workspace-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: calc(var(--s-2) * -1);
+}
+
+.sidebar-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: 9px var(--s-3);
+    border-radius: var(--r-sm);
+    color: var(--text-2);
+    font-size: var(--t-body);
+    transition: background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+.sidebar-item-mark {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    color: var(--text-3);
+    transition: color var(--t-fast) var(--ease);
+}
+
+.sidebar-item-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-item:hover {
+    background: var(--surface-3);
+    color: var(--text-strong);
+}
+
+.sidebar-item:hover .sidebar-item-mark {
+    color: var(--text-2);
+}
+
+.sidebar-item.active {
+    background: var(--surface);
+    color: var(--text-strong);
+    font-weight: 600;
+    box-shadow: var(--sh-1);
+}
+
+.sidebar-item.active .sidebar-item-mark {
+    color: var(--accent);
+}
+
+/* The indicator is drawn rather than tinted in, so the active row reads the
+   same way when the ground is already carrying colour. */
+.sidebar-item.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 16px;
+    border-radius: 0 2px 2px 0;
+    background: var(--accent);
+}
+
+.sidebar-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+
+/* SIDEBAR FOOTER */
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: var(--s-3);
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.sidebar-rail-toggle,
+.logout-button {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: 8px var(--s-3);
+    border-radius: var(--r-sm);
+    color: var(--text-3);
+    font-size: var(--t-meta);
+    transition: background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+.sidebar-rail-icon,
+.logout-button-icon {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+}
+
+.sidebar-rail-word,
+.logout-button-word {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-rail-toggle:hover,
+.logout-button:hover {
+    background: var(--surface-3);
+    color: var(--text-strong);
+}
+
+.sidebar-rail-toggle:focus-visible,
+.logout-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+
+/* RAIL MODE
+ *
+ * The whole column narrows to its icons. Nothing is removed from the DOM,
+ * so labels stay in the accessibility tree and on the title attribute. */
+
+.workspace-sidebar.rail {
+    width: var(--sidebar-rail);
+    padding-left: var(--s-2);
+    padding-right: var(--s-2);
+    gap: var(--s-4);
+}
+
+.workspace-sidebar.rail .workspace-brand {
+    justify-content: center;
+    padding: 0;
+}
+
+.workspace-sidebar.rail .workspace-brand-word,
+.workspace-sidebar.rail .current-workspace-text,
+.workspace-sidebar.rail .sidebar-item-label,
+.workspace-sidebar.rail .sidebar-rail-word,
+.workspace-sidebar.rail .logout-button-word {
+    display: none;
+}
+
+.workspace-sidebar.rail .current-workspace {
+    justify-content: center;
+    padding: 0;
+}
+
+.workspace-sidebar.rail .sidebar-item,
+.workspace-sidebar.rail .sidebar-rail-toggle,
+.workspace-sidebar.rail .logout-button {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.workspace-sidebar.rail .sidebar-item.active::before {
+    display: none;
+}
+
+.workspace-sidebar.rail .sidebar-item.active {
+    box-shadow: none;
+}
+
+.workspace-sidebar.rail .sidebar-rail-icon {
+    transform: rotate(180deg);
+}
+
+
+.workspace-main {
+    grid-area: main;
+    min-width: 0;
+    /* Extra room at the bottom so the last row of content is never sitting
+       underneath the floating create action. */
+    padding: var(--s-8) var(--s-10) 112px;
+}
+
+
+/* SECTION HEADER
+ *
+ * The workspace name lives in the sidebar, so this header spends its space
+ * on where you are instead: the section name, one line of purpose, and
+ * whatever real counts that section can honestly report. */
+
+.workspace-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--s-6);
+    margin-bottom: var(--s-8);
+    padding-bottom: var(--s-5);
+    border-bottom: 1px solid var(--line);
+}
+
+.workspace-heading {
+    min-width: 0;
+}
+
+.workspace-header h1 {
+    font-family: var(--font);
+    font-size: var(--t-display);
+    font-weight: 600;
+    letter-spacing: -.015em;
+    line-height: 1.15;
+    color: var(--text-strong);
+    margin-bottom: 6px;
+}
+
+.workspace-header p {
+    color: var(--text-3);
+    max-width: 62ch;
+    text-wrap: pretty;
+}
+
+.workspace-header-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    flex: 0 0 auto;
+    padding-bottom: 3px;
+}
+
+.workspace-header-meta-item {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+    white-space: nowrap;
+}
+
+.workspace-header p {
+    color: var(--text-3);
+}
+
+/* WORKSPACE TAB BAR
+ *
+ * The strip behaves like a browser tab bar: workspaces open on demand, each
+ * tab carries its own close control, and "+" opens the picker. It stays
+ * mounted even when nothing is open so that "+" never disappears, which is
+ * what makes the start state recoverable. */
+
+.workspace-tabbar {
+    grid-area: tabbar;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 8px 14px 0;
+    background: var(--rail);
+    border-bottom: 1px solid var(--line-2);
+    min-width: 0;
+}
+
+.workspace-tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.workspace-tab {
+    display: flex;
+    align-items: center;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 200px;
+    height: 34px;
+    padding-left: 12px;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-radius: 9px 9px 0 0;
+    color: var(--text-2);
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.workspace-tab:hover {
+    background: rgba(255, 255, 255, .62);
+    color: var(--text);
+}
+
+.workspace-tab.active {
+    background: var(--bg);
+    border-color: var(--line-2);
+    color: var(--text);
+}
+
+.workspace-tab-select {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.workspace-tab.active .workspace-tab-select {
+    font-weight: 600;
+}
+
+.workspace-tab-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workspace-tab-close {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    margin-right: 5px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.workspace-tab-close:hover {
+    background: var(--line-2);
+    color: var(--text);
+}
+
+.workspace-tab-select:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+    border-radius: 4px;
+}
+
+.workspace-tab-close:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+/* Deliberately quiet and permanently last. It opens a picker rather than
+   creating anything, so it must not read as a primary create action. */
+
+.workspace-tab-open {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 3px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.workspace-tab-open:hover {
+    background: rgba(255, 255, 255, .7);
+    color: var(--text);
+}
+
+.workspace-tab-open:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+.workspace-section {
+    display: none;
+}
+
+.workspace-section.active {
+    display: block;
+}
+
+/* A section rule such as the one above outranks the user-agent [hidden]
+   rule, so the attribute alone would not remove a section from flow. */
+
+.workspace-section[hidden],
+.workspace-header[hidden] {
+    display: none;
+}
+
+
+/* OPEN WORKSPACE PICKER
+ *
+ * A plain list rather than a grid of cards. Workspaces are short names, and a
+ * vertical list keeps the reading order identical to the order of the data. */
+
+.workspace-picker-search {
+    width: 100%;
+    margin-top: 14px;
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: white;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.workspace-picker-search:focus-visible {
+    border-color: var(--text-4);
+}
+
+.workspace-picker-list {
+    margin-top: 8px;
+    max-height: 46vh;
+    overflow-y: auto;
+}
+
+.workspace-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 11px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.workspace-picker-item:hover {
+    background: var(--surface-2);
+}
+
+.workspace-picker-item.active {
+    background: var(--surface-3);
+    color: var(--text);
+    font-weight: 600;
+}
+
+.workspace-picker-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workspace-picker-badge {
+    flex: 0 0 auto;
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.workspace-picker-empty {
+    padding: 20px 4px;
+    color: var(--text-3);
+    font-size: 13.5px;
+    text-align: center;
+}
+
+
+/* START STATE
+ *
+ * Reached by closing the last tab. It has to be recoverable, so it points at
+ * both routes without inventing a second create form. */
+
+
+
+
+
+.workspace-empty {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-3);
+}
+
+.workspace-empty h2 {
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+
+/* QUICK CREATE
+ *
+ * One affordance for the whole workspace. It is a menu rather than a fan of
+ * buttons because the six things you can add are not equal in weight, and a
+ * fan would give a task the same prominence as a file. */
+
+.quick-create {
+    position: fixed;
+    right: clamp(20px, 4vw, 44px);
+    bottom: clamp(20px, 4vh, 40px);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--s-3);
+}
+
+.quick-create-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid var(--accent-2);
+    background: var(--accent);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    box-shadow: var(--sh-3);
+    transition: background-color var(--t-fast) var(--ease),
+                transform var(--t-fast) var(--ease),
+                box-shadow var(--t-fast) var(--ease);
+}
+
+.quick-create-button:hover {
+    background: var(--accent-2);
+    box-shadow: var(--sh-4);
+    transform: translateY(-1px);
+}
+
+.quick-create-button:active {
+    transform: translateY(0);
+}
+
+.quick-create-button:focus-visible {
+    outline: 2px solid var(--accent-3);
+    outline-offset: 3px;
+}
+
+.quick-create-glyph {
+    display: block;
+    font-size: 22px;
+    line-height: 1;
+    font-weight: 300;
+    transform: translateY(-1px);
+    transition: transform var(--t-base) var(--ease-out);
+}
+
+.quick-create-button[aria-expanded="true"] .quick-create-glyph {
+    transform: rotate(135deg);
+}
+
+.quick-create-menu {
+    width: 244px;
+    padding: var(--s-2);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--sh-4);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    transform-origin: bottom right;
+    opacity: 0;
+    transform: translateY(8px) scale(.97);
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity var(--t-fast) var(--ease),
+                transform var(--t-base) var(--ease-out),
+                visibility 0s linear var(--t-fast);
+}
+
+.quick-create-menu.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.quick-create-label {
+    padding: var(--s-2) var(--s-3) var(--s-3);
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-3);
+}
+
+.quick-create-menu button {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    width: 100%;
+    padding: 9px var(--s-3);
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    text-align: left;
+    font-size: var(--t-body);
+    color: var(--text-2);
+    transition: background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+.quick-create-menu button:hover {
+    background: var(--surface-2);
+    color: var(--text-strong);
+}
+
+.quick-create-menu button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.quick-create-icon {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    color: var(--text-3);
+}
+
+.quick-create-menu button:hover .quick-create-icon {
+    color: var(--accent);
+}
+
+.quick-create-word {
+    flex: 1 1 auto;
+}
+
+/* Where a new file will land. Answering this in the menu is what stops the
+   reader wondering whether the file went where they meant. */
+.quick-create-where {
+    flex: 0 0 auto;
+    max-width: 96px;
+    font-size: var(--t-micro);
+    color: var(--text-3);
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* SECTIONS */
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.section-header h2 {
+    font-size: 19px;
+    margin-bottom: 5px;
+}
+
+.section-header p {
+    color: var(--text-3);
+    font-size: 14px;
+}
+
+.section-button {
+    border: 0;
+    background: var(--text);
+    color: white;
+    padding: 9px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.section-button:hover {
+    background: var(--text-strong);
+}
+
+.section-button:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+.section-note {
+    color: var(--text-3);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    max-width: 62ch;
+}
+
+/* Empty states stay quiet: no dashed frame, no card, no shadow. A hairline
+   and breathing room is enough to separate them from the content above, and
+   the text points at the section's own button instead of repeating it. */
+
+.section-empty {
+    border-top: 1px solid var(--surface-3);
+    padding: 26px 24px;
+    text-align: center;
+}
+
+.section-empty-wide {
+    grid-column: 1 / -1;
+}
+
+/* The same drawn shape Home uses for its empty state, at a third of the
+   weight. Inside a workspace the section header has already named what is
+   missing, so the mark only has to make the state recognisable at a glance
+   and must not compete with it. */
+
+.section-empty-mark {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    margin: 0 auto var(--s-4);
+    border-radius: var(--r-md);
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.section-empty h3 {
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.section-empty p {
+    color: var(--text-3);
+    font-size: 14px;
+    max-width: 46ch;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* The hint is set apart from the sentence above it on purpose. It reads as an
+   instruction about where to go next rather than as a second thing the
+   workspace is telling you, so it is smaller, quieter and held off by a
+   little more space than a related line would get. */
+
+.section-empty-hint {
+    max-width: 46ch;
+    margin-top: var(--s-4);
+    font-size: var(--t-micro);
+    color: var(--text-4);
+}
+
+.section-empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.quiet-button {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text-2);
+    padding: 8px 13px;
+    border-radius: 8px;
+    font-size: 13.5px;
+}
+
+.quiet-button:hover {
+    background: var(--surface-2);
+    border-color: var(--line-2);
+}
+
+.quiet-button:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+
+/* TASKS */
+
+.task-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px;
+}
+
+.task-columns[hidden] {
+    display: none;
+}
+
+.task-column {
+    min-width: 0;
+}
+
+.task-column-header {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    padding-bottom: 9px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+}
+
+.task-column-header h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--text-2);
+}
+
+.task-column-count {
+    font-size: 12px;
+    color: var(--text-4);
+    font-variant-numeric: tabular-nums;
+}
+
+.task-list {
+    min-height: 90px;
+}
+
+.task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 2px;
+    border-bottom: 1px solid var(--rail);
+}
+
+.task-item:last-child {
+    border-bottom: 0;
+}
+
+.task-item-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.task-item-title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.task-item-description {
+    font-size: 13.5px;
+    color: var(--text-3);
+    line-height: 1.5;
+    margin-top: 3px;
+    overflow-wrap: anywhere;
+}
+
+.task-check {
+    width: 21px;
+    height: 21px;
+    margin-top: 1px;
+    border: 1.5px solid var(--text-4);
+    background: white;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    line-height: 1;
+    padding: 0;
+}
+
+.task-check:hover {
+    border-color: var(--text-2);
+}
+
+.task-check:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+}
+
+.task-item.is-complete .task-check {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+/* The tick is a drawing inside a flex box, so it can be centred the same
+   way the character used to be and cannot shift the row height. */
+.task-check-tick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+
+.task-item-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: var(--text-4);
+}
+
+.task-item-time-icon {
+    display: flex;
+    line-height: 0;
+    opacity: 0.75;
+}
+
+.task-item.is-complete .task-item-title {
+    color: var(--text-3);
+    text-decoration: line-through;
+}
+
+.task-item.is-complete .task-item-description {
+    color: var(--text-4);
+}
+
+.task-list-empty {
+    padding: 22px 2px;
+    color: var(--text-4);
+    font-size: 13.5px;
+}
+
+
+/* NOTES */
+
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(min(210px, 100%), 1fr)
+    );
+    gap: 16px;
+}
+
+.note-card {
+    position: relative;
+    min-height: 160px;
+    padding: 18px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.note-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 9px;
+    padding-right: 22px;
+    overflow-wrap: anywhere;
+}
+
+.note-card p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    flex: 1;
+    max-height: 210px;
+    overflow: hidden;
+}
+
+.note-card-meta {
+    display: block;
+    font-size: 11.5px;
+    color: var(--text-2);
+    opacity: .75;
+    margin-top: 14px;
+}
+
+.note-delete {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: rgba(0, 0, 0, .05);
+    color: var(--text-2);
+    border-radius: 6px;
+    font-size: 15px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .12s ease;
+}
+
+.note-card:hover .note-delete,
+.note-delete:focus-visible {
+    opacity: 1;
+}
+
+.note-delete:hover {
+    background: rgba(0, 0, 0, .12);
+}
+
+.note-delete:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+.note-card.is-dark {
+    color: var(--bg);
+}
+
+.note-card.is-dark .note-card-meta {
+    color: rgba(255, 255, 255, .75);
+    opacity: 1;
+}
+
+.note-card.is-dark .note-delete {
+    background: rgba(255, 255, 255, .14);
+    color: var(--surface);
+}
+
+.note-card.is-dark .note-delete:hover {
+    background: rgba(255, 255, 255, .26);
+}
+
+
+/* NOTES: PALETTE
+ *
+ * A row of paper colours instead of a colour well. The well let you pick
+ * anything, including things you cannot read. These are all warm, all light
+ * enough to leave text on, and the swatch itself is the preview. */
+
+.note-palette {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.note-palette legend {
+    padding: 0;
+    margin-bottom: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+    letter-spacing: .02em;
+}
+
+.note-palette-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.note-swatch {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(43, 40, 37, .14);
+    cursor: pointer;
+    position: relative;
+    transition: transform .13s ease,
+                border-color .13s ease,
+                box-shadow .13s ease;
+}
+
+.note-swatch:hover {
+    transform: translateY(-1px);
+    border-color: rgba(43, 40, 37, .3);
+}
+
+/* The selected swatch is marked by a ring outside the paper colour, so it
+   still reads on the lightest swatch where an inner dot would vanish. */
+.note-swatch.is-selected {
+    border-color: var(--text);
+    box-shadow: 0 0 0 2px var(--surface),
+                0 0 0 3.5px var(--text);
+}
+
+.note-swatch:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+}
+
+
+/* FILES
+ *
+ * A browser, not a gallery. At the top level you choose a folder; inside a
+ * folder you see its files. Both are rows rather than cards, because a file
+ * tree is a list of names and the name is the thing you are reading. */
+
+.files-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--s-1);
+    margin-bottom: var(--s-5);
+    padding-bottom: var(--s-4);
+    border-bottom: 1px solid var(--line);
+}
+
+.files-breadcrumb[hidden] {
+    display: none;
+}
+
+.files-crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: var(--t-meta);
+    color: var(--text-3);
+}
+
+button.files-crumb {
+    border: 0;
+    background: transparent;
+    padding: 4px var(--s-2);
+    margin-left: calc(var(--s-2) * -1);
+    border-radius: var(--r-sm);
+    transition: background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+button.files-crumb:hover {
+    background: var(--surface-2);
+    color: var(--text-strong);
+}
+
+.files-crumb-root {
+    color: var(--text-2);
+    font-weight: 500;
+}
+
+.files-crumb-current {
+    color: var(--text-strong);
+    font-weight: 600;
+}
+
+.files-crumb-current .icon {
+    color: var(--accent);
+}
+
+.files-crumb-sep {
+    display: inline-flex;
+    color: var(--line-3);
+}
+
+
+/* FOLDER ROWS AT THE TOP LEVEL */
+
+.folder-list {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    overflow: hidden;
+    box-shadow: var(--sh-1);
+}
+
+.folder-card {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    width: 100%;
+    padding: var(--s-4) var(--s-5);
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    text-align: left;
+    transition: background-color var(--t-fast) var(--ease);
+}
+
+.folder-list .folder-card:last-child {
+    border-bottom: 0;
+}
+
+.folder-card:hover {
+    background: var(--surface-2);
+}
+
+.folder-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.folder-card-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+    color: var(--text-3);
+    transition: background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+.folder-card:hover .folder-card-icon {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.folder-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.folder-card-name {
+    font-size: var(--t-body);
+    font-weight: 600;
+    color: var(--text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.folder-card-count {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+}
+
+.folder-card-go {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    color: var(--line-3);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity var(--t-fast) var(--ease),
+                transform var(--t-fast) var(--ease);
+}
+
+.folder-card:hover .folder-card-go,
+.folder-card:focus-visible .folder-card-go {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--text-3);
+}
+
+
+/* INSIDE A FOLDER */
+
+.folder-contents-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    margin-bottom: var(--s-4);
+}
+
+.folder-contents-title {
+    font-family: var(--font);
+    font-size: var(--t-title);
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: var(--text-strong);
+    overflow-wrap: anywhere;
+}
+
+.quiet-button-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-2);
+    font-weight: 600;
+}
+
+.quiet-button-accent:hover {
+    background: var(--accent-soft-2);
+    border-color: var(--accent);
+    color: var(--accent-3);
+}
+
+.file-list {
+    list-style: none;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    overflow: hidden;
+    box-shadow: var(--sh-1);
+}
+
+.file-row {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    padding: var(--s-3) var(--s-5);
+    border-bottom: 1px solid var(--line);
+    transition: background-color var(--t-fast) var(--ease);
+}
+
+.file-list .file-row:last-child {
+    border-bottom: 0;
+}
+
+.file-row:hover {
+    background: var(--surface-2);
+}
+
+.file-row-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: 0;
+    font-size: var(--t-body);
+    color: var(--text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: 2px;
+}
+
+.file-row-name:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--line-2);
+}
+
+.file-row-name:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.file-row-meta {
+    flex: 0 0 auto;
+    font-size: var(--t-micro);
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.file-row-go {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    color: var(--line-3);
+}
+
+.file-row:hover .file-row-go {
+    color: var(--text-3);
+}
+
+/* RESOURCES */
+
+.resources-list {
+    display: grid;
+    gap: 2px;
+    max-width: 820px;
+}
+
+.resource-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 15px 2px;
+    border-bottom: 1px solid var(--line);
+}
+
+/* The site mark is derived from the link's own name, so it needs no network
+   request and works the same on a list that was restored from storage. */
+.resource-mark {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    margin-top: 1px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    color: var(--text-2);
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+}
+
+.resource-row:last-child {
+    border-bottom: 0;
+}
+
+.resource-row-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.resource-row-title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+/* An outward arrow says "leaves the app", which the link's own underline
+   does not. It stays quiet until the row is pointed at. */
+.resource-row-go {
+    display: inline-grid;
+    place-items: center;
+    vertical-align: -1px;
+    margin-left: 4px;
+    color: var(--line-3);
+    transition: color .13s ease,
+                transform .13s ease;
+}
+
+.resource-row:hover .resource-row-go,
+.resource-row-title:focus-visible .resource-row-go {
+    color: var(--accent);
+    transform: translateX(2px);
+}
+
+.resource-row-title:hover {
+    text-decoration: underline;
+}
+
+.resource-row-url {
+    display: block;
+    font-size: 12.5px;
+    color: var(--text-3);
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+}
+
+.resource-row-description {
+    font-size: 13.5px;
+    color: var(--text-2);
+    line-height: 1.5;
+    margin-top: 7px;
+    overflow-wrap: anywhere;
+}
+
+.resource-row-meta {
+    display: block;
+    font-size: 11.5px;
+    color: var(--text-4);
+    margin-top: 7px;
+}
+
+.resource-remove {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-3);
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 12.5px;
+}
+
+.resource-remove:hover {
+    background: var(--surface-2);
+    color: var(--text-2);
+}
+
+.resource-remove:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+
+/* CHAT */
+
+.chat-layout {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.chat-contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.chat-contact {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-2);
+    min-width: 0;
+    transition: background-color .15s ease;
+}
+
+.chat-contact:hover {
+    background: var(--surface-3);
+}
+
+.chat-contact:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+}
+
+.chat-contact.is-selected {
+    background: var(--surface-3);
+    color: var(--text);
+    font-weight: 600;
+    /* The selected row used to share its colour with :hover, so it was
+       impossible to tell "selected" from "pointed at". The inset bar and
+       the avatar inversion are the persistent cues. */
+    box-shadow: inset 2px 0 0 var(--text);
+}
+
+.chat-contact-avatar {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--line);
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.chat-contact.is-selected .chat-contact-avatar {
+    background: var(--text);
+    color: white;
+}
+
+/* The name and the last thing said, so the list of people answers "who do I
+   need to reply to" without opening each thread. */
+.chat-contact-label {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.chat-contact-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+.chat-contact-text {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-weight: 400;
+}
+
+.chat-contact-preview {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--text-3);
+}
+
+.chat-contact-time {
+    flex: 0 0 auto;
+    font-size: 10.5px;
+    color: var(--text-4);
+    white-space: nowrap;
+}
+
+.chat-contacts-empty {
+    padding: 14px 2px;
+    color: var(--text-3);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.chat-contacts-empty h3 {
+    font-size: 15px;
+    color: var(--text-2);
+    margin: 0 0 6px;
+}
+
+.chat-contacts-empty p {
+    margin-bottom: 12px;
+}
+
+.chat-pane {
+    min-width: 0;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-empty {
+    margin: auto;
+    padding: 40px 30px;
+    text-align: center;
+}
+
+.chat-empty[hidden] {
+    display: none;
+}
+
+.chat-empty h3 {
+    font-size: 15px;
+    margin-bottom: 7px;
+}
+
+.chat-empty p {
+    color: var(--text-3);
+    font-size: 13.5px;
+    max-width: 34ch;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+.chat-conversation {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.chat-conversation[hidden] {
+    display: none;
+}
+
+.chat-conversation-header {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--surface-3);
+    flex-shrink: 0;
+}
+
+.chat-back-button {
+    display: none;
+    border: 0;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 17px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.chat-back-button:hover {
+    background: var(--surface-2);
+}
+
+.chat-conversation-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--text);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.chat-conversation-person {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.chat-conversation-person strong {
+    font-size: 14.5px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-conversation-person span {
+    font-size: 12px;
+    color: var(--text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-messages {
+    flex: 1;
+    min-height: 260px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--surface);
+}
+
+.chat-messages-empty {
+    margin: auto;
+    color: var(--text-3);
+    font-size: 13.5px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.chat-message {
+    max-width: 78%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.chat-message.is-mine {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.chat-message.is-theirs {
+    align-self: flex-start;
+}
+
+.chat-message-author {
+    font-size: 11.5px;
+    color: var(--text-3);
+    padding: 0 2px;
+}
+
+.chat-message-body {
+    background: white;
+    border: 1px solid var(--surface-3);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.chat-message.is-mine .chat-message-body {
+    background: var(--text);
+    border-color: var(--text);
+    color: white;
+}
+
+.chat-message-time {
+    font-size: 11px;
+    color: var(--text-4);
+    padding: 0 2px;
+}
+
+.chat-composer {
+    display: flex;
+    gap: 9px;
+    padding: 12px;
+    border-top: 1px solid var(--surface-3);
+    flex-shrink: 0;
+}
+
+.chat-composer input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.chat-composer input:focus {
+    border-color: var(--text-3);
+}
+
+.chat-composer input:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+    border-color: var(--text);
+}
+
+.chat-send-button {
+    border: 0;
+    background: var(--text);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.chat-send-button:hover {
+    background: var(--text-strong);
+}
+
+
+/* OVERVIEW */
+
+/* The first thing on the page: one record, named, and a way into it. It is
+   a lead paragraph with a border, not a card, because it is prose that
+   happens to be clickable rather than a thing in a grid. */
+.overview-continue {
+    border-left: 2px solid var(--accent);
+    padding: 2px 0 2px 18px;
+    margin-bottom: 28px;
+    max-width: 64ch;
+}
+
+.overview-continue-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    margin-bottom: 7px;
+}
+
+.overview-continue-kicker .icon {
+    color: var(--accent);
+    line-height: 0;
+}
+
+.overview-continue-main {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+
+.overview-continue-line {
+    flex: 1 1 280px;
+    min-width: 0;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--text-2);
+}
+
+.overview-continue-verb {
+    color: var(--text-3);
+}
+
+.overview-continue-label {
+    font-weight: 600;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.overview-continue-when {
+    color: var(--text-4);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.overview-continue-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex: 0 0 auto;
+    padding: 7px 13px;
+    border-radius: 8px;
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background .14s ease,
+                border-color .14s ease,
+                color .14s ease;
+}
+
+.overview-continue-go:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-strong);
+}
+
+.overview-continue-go:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.overview-continue-go .icon {
+    line-height: 0;
+    transition: transform .14s ease;
+}
+
+.overview-continue-go:hover .icon {
+    transform: rotate(180deg) translateX(2px) !important;
+}
+
+
+.overview-lead {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-2);
+    max-width: 64ch;
+    margin-bottom: 26px;
+}
+
+
+
+.overview-block {
+    margin-bottom: 30px;
+}
+
+.overview-block-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+}
+
+.overview-block-header h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--text-2);
+}
+
+.overview-text-link {
+    border: 0;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 12.5px;
+    padding: 2px 0;
+    text-decoration: underline;
+}
+
+.overview-text-link:hover {
+    color: var(--text);
+}
+
+
+
+
+
+
+
+
+.overview-none {
+    padding: 18px 2px;
+    color: var(--text-4);
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.overview-empty {
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    padding: 44px 28px;
+    text-align: center;
+    max-width: 520px;
+}
+
+.overview-empty h3 {
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+
+.overview-empty p {
+    color: var(--text-3);
+    font-size: 14px;
+    line-height: 1.55;
+    max-width: 40ch;
+    margin: 0 auto;
+}
+
+
+
+/* MEMBERS */
+
+.members-list {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(min(250px, 100%), 1fr)
+    );
+    gap: 12px;
+}
+
+.member-card {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 15px;
+    min-width: 0;
+}
+
+.member-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--surface-3);
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.member-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.member-name-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.member-card h3 {
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 1.3;
+    /* A person's name is worth wrapping rather than truncating: the tail of
+       a surname is usually the part that distinguishes two people. */
+    overflow-wrap: anywhere;
+}
+
+.member-you {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-3);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 5px;
+    flex-shrink: 0;
+}
+
+.member-card p {
+    color: var(--text-3);
+    font-size: 12.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Member actions sit together on the right of the card. Two different
+   weights of intent, so they are told apart by shape rather than only by
+   colour: one is a labelled button, the other a bare cross. */
+.member-actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.member-talk {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    border-radius: 7px;
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background .13s ease,
+                border-color .13s ease,
+                color .13s ease;
+}
+
+.member-talk:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-strong);
+}
+
+.member-talk:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.member-remove {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-4);
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    transition: background .13s ease,
+                color .13s ease;
+}
+
+.member-remove:hover {
+    background: var(--surface-2);
+    color: var(--text-2);
+}
+
+.member-remove:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+
+/* MODALS */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+}
+
+.modal-card {
+    width: min(450px, calc(100% - 30px));
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    background: white;
+    border-radius: 14px;
+    padding: 28px;
+    position: relative;
+}
+
+.modal-card-compact {
+    width: min(400px, calc(100% - 30px));
+}
+
+.modal-card h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.modal-close {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    background: transparent;
+    color: var(--text-3);
+    line-height: 0;
+    padding: 0;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    transition: background .13s ease,
+                color .13s ease;
+}
+
+.modal-close:hover {
+    background: var(--surface-2);
+    color: var(--text-2);
+}
+
+.modal-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.modal-card label {
+    font-size: 12.5px;
+    color: var(--text-2);
+    margin-top: 7px;
+}
+
+.modal-card label:first-of-type {
+    margin-top: 0;
+}
+
+.modal-card input[type="text"],
+.modal-card input:not([type]),
+.modal-card textarea,
+.modal-card select {
+    width: 100%;
+    border: 1px solid var(--line-2);
+    border-radius: 8px;
+    padding: 11px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color .13s ease,
+                box-shadow .13s ease;
+}
+
+.modal-card input[type="text"]::placeholder,
+.modal-card input:not([type])::placeholder,
+.modal-card textarea::placeholder {
+    color: var(--text-4);
+}
+
+.modal-card input[type="text"]:hover,
+.modal-card input:not([type]):hover,
+.modal-card textarea:hover,
+.modal-card select:hover {
+    border-color: var(--line-3);
+}
+
+.modal-card input[type="text"]:focus,
+.modal-card input:not([type]):focus,
+.modal-card textarea:focus,
+.modal-card select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.modal-card input[type="text"]:focus-visible,
+.modal-card input:not([type]):focus-visible,
+.modal-card textarea:focus-visible,
+.modal-card select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+}
+
+/* The colour well is gone, replaced by the note palette. The rule is kept
+   only for a native file input, which still needs a visible control. */
+.modal-card input[type="file"] {
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.modal-card input[type="file"]::file-selector-button {
+    font: inherit;
+    font-size: 12.5px;
+    margin-right: 10px;
+    padding: 7px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+}
+
+.modal-card textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.modal-card input.is-invalid,
+.modal-card textarea.is-invalid {
+    border-color: var(--danger);
+}
+
+.field-error {
+    font-size: 12.5px;
+    color: var(--err);
+    line-height: 1.45;
+    min-height: 0;
+}
+
+.field-error:empty {
+    display: none;
+}
+
+.modal-submit {
+    border: 0;
+    background: var(--text);
+    color: white;
+    padding: 11px;
+    border-radius: 8px;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.modal-submit:hover {
+    background: var(--text-strong);
+}
+
+.confirm-message {
+    color: var(--text-2);
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 22px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
+.confirm-actions button {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.confirm-cancel {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text-2);
+}
+
+.confirm-cancel:hover {
+    background: var(--surface-2);
+}
+
+.confirm-accept {
+    border: 0;
+    background: var(--err);
+    color: white;
+}
+
+.confirm-accept:hover {
+    background: var(--danger-2);
+}
+
+.confirm-accept.is-safe {
+    background: var(--text);
+}
+
+.confirm-accept.is-safe:hover {
+    background: var(--text-strong);
+}
+
+
+/* PHASE 3: DIALOG ACTIONS, FEEDBACK AND STATES */
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.modal-cancel {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text-2);
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.modal-cancel:hover {
+    background: var(--surface-2);
+}
+
+.modal-submit {
+    margin-top: 0;
+    padding: 11px 18px;
+}
+
+/* Pressed state. Kept to a single hairline-level nudge so nothing feels
+   animated or bouncy. */
+.modal-submit:active,
+.modal-cancel:active,
+.confirm-cancel:active,
+.confirm-accept:active,
+.chat-send-button:active,
+.chat-back-button:active,
+.quiet-button:active,
+.section-button:active,
+.quick-create-button:active,
+.header-action-button:active,
+.sidebar-item:active {
+    transform: translateY(1px);
+}
+
+.modal-close:active {
+    transform: translateY(1px);
+}
+
+/* Disabled: only used where the reason is self-evident from context. */
+.chat-send-button:disabled {
+    background: var(--line-3);
+    color: var(--surface-2);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Quiet transient confirmation. Fixed bottom-right, no shadow bloom,
+   no gradient, no motion beyond a short fade. */
+.app-status {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 120;
+    max-width: 300px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-left: 2px solid #3f6b4f;
+    border-radius: 8px;
+    background: white;
+    color: var(--text);
+    font-size: 13.5px;
+    line-height: 1.4;
+    box-shadow: 0 6px 18px rgba(31, 41, 51, 0.09);
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 140ms ease, transform 140ms ease, visibility 140ms;
+}
+
+.app-status.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+/* Persistence failure. Sits directly under the header, stays put, and
+   states the real cause instead of inventing a server error. */
+.storage-error {
+    margin-bottom: 22px;
+    padding: 11px 14px;
+    border: 1px solid var(--danger-line);
+    border-left: 2px solid var(--err);
+    border-radius: 8px;
+    background: var(--danger-soft);
+    color: #7c3218;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.storage-error[hidden] {
+    display: none;
+}
+
+/* Newly created or newly sent item. An inset bar rather than a
+   background change, because note cards and chat bubbles already own
+   their own background colour. */
+.task-item.is-new,
+.note-card.is-new,
+.folder-card.is-new,
+.resource-row.is-new,
+.member-card.is-new,
+.chat-message.is-new {
+    box-shadow: inset 3px 0 0 #3f6b4f;
+    transition: box-shadow 500ms ease;
+}
+
+/* Interactive elements that had no hover affordance in Phase 2. */
+.logout-button:hover,
+.header-action-button:hover {
+    background: var(--surface-3);
+}
+
+
+.chat-back-button:hover {
+    background: var(--surface-3);
+}
+
+.overview-text-link:hover {
+    color: var(--text-strong);
+}
+
+
+/* CODE
+ *
+ * Three surfaces in one grid: the project tree, the editor, and the rendered
+ * preview. Below 1100px the preview becomes a switchable panel instead of a
+ * third column, because three columns on a laptop are three unusable ones.
+ * Surfaces are flat and bordered rather than shadowed, to stay with the rest
+ * of the workspace. */
+
+.code-header-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.code-panel-switcher {
+    display: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.code-panel-switcher button {
+    border: 0;
+    background: white;
+    color: var(--text-2);
+    padding: 8px 12px;
+    font-size: 13px;
+    border-right: 1px solid var(--line);
+}
+
+.code-panel-switcher button:last-child {
+    border-right: 0;
+}
+
+.code-panel-switcher button:hover {
+    background: var(--surface-2);
+}
+
+.code-panel-switcher button.active {
+    background: var(--text);
+    color: white;
+}
+
+.section-button-primary {
+    background: var(--text);
+}
+
+.code-shell {
+    display: grid;
+    grid-template-columns:
+        210px
+        minmax(0, 1fr)
+        minmax(300px, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 520px;
+}
+
+.code-explorer,
+.code-editor-pane,
+.code-preview-pane {
+    background: white;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    /* The placeholder is laid over the frame. */
+    position: relative;
+}
+
+.code-explorer {
+    background: var(--surface);
+}
+
+.code-explorer-bar,
+.code-preview-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+    flex-shrink: 0;
+}
+
+.code-explorer-bar h3,
+.code-preview-bar h3 {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--text-2);
+    font-weight: 600;
+}
+
+.code-explorer-tree {
+    overflow-y: auto;
+    padding: 8px 6px 14px;
+    flex: 1;
+    min-height: 0;
+}
+
+.code-explorer-group {
+    margin-bottom: 10px;
+}
+
+.code-explorer-folder {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    overflow-wrap: anywhere;
+}
+
+.code-explorer-folder::before {
+    content: "";
+    width: 11px;
+    height: 9px;
+    flex-shrink: 0;
+    border: 1px solid var(--text-4);
+    border-top-width: 3px;
+    border-radius: 2px;
+    background: var(--rail);
+}
+
+/* Folder name on the left, add-file on the right. The add control is quiet
+   until the folder is hovered or the button itself is focused. */
+.code-explorer-heading {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.code-explorer-heading .code-explorer-folder {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.code-explorer-add {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 21px;
+    height: 21px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--text-4);
+    font-size: 15px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity var(--t-fast) var(--ease),
+                background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+.code-explorer-group:hover .code-explorer-add,
+.code-explorer-add:focus-visible {
+    opacity: 1;
+}
+
+.code-explorer-add:hover {
+    background: var(--surface-2);
+    color: var(--text-strong);
+}
+
+.code-explorer-add:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.code-explorer-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: 7px 8px 7px 26px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.code-explorer-file:hover {
+    background: var(--surface-2);
+}
+
+.code-explorer-file.active {
+    background: var(--surface-3);
+    color: var(--text);
+}
+
+.code-explorer-file.is-dirty .code-explorer-file-name::after {
+    content: " \25CF";
+    color: #a2650c;
+}
+
+.code-explorer-file-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.code-explorer-file-lang {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-4);
+    flex-shrink: 0;
+}
+
+.code-explorer-file-empty {
+    display: block;
+    padding: 4px 8px 4px 26px;
+    color: var(--text-4);
+    font-size: 12.5px;
+    white-space: normal;
+}
+
+.code-explorer-empty {
+    padding: 16px 10px;
+}
+
+.code-explorer-empty p {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-3);
+}
+
+.code-explorer-empty p:first-child {
+    color: var(--text-2);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+
+/* EDITOR TABS
+ *
+ * A separate level from the OneSpace workspace tabs above the page, so they
+ * are visually quieter and sit inside the editor surface. */
+
+.code-editor-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    flex-shrink: 0;
+}
+
+.code-editor-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 190px;
+    padding: 9px 8px 9px 13px;
+    border-right: 1px solid var(--line);
+    background: var(--surface-2);
+    cursor: pointer;
+}
+
+.code-editor-tab:hover {
+    background: var(--surface-3);
+}
+
+.code-editor-tab.active {
+    background: white;
+    box-shadow: inset 0 -2px 0 var(--text);
+}
+
+.code-editor-tab-label {
+    font-size: 12.5px;
+    color: var(--text-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.code-editor-tab.active .code-editor-tab-label {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.code-editor-tab-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #a2650c;
+    flex-shrink: 0;
+}
+
+.code-editor-tab-close {
+    border: 0;
+    background: transparent;
+    color: var(--text-3);
+    font-size: 15px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.code-editor-tab-close:hover {
+    background: var(--line);
+    color: var(--text);
+}
+
+
+/* EDITOR SURFACE
+ *
+ * The textarea and the highlighted layer sit on top of each other with
+ * identical font metrics, so the caret lands where the painted glyphs are.
+ * Only the textarea is painted; the layer behind shows the colours. */
+
+.code-editor-surface {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+.code-gutter {
+    flex-shrink: 0;
+    width: 46px;
+    padding: 12px 8px 12px 0;
+    text-align: right;
+    background: var(--surface);
+    border-right: 1px solid var(--surface-3);
+    color: var(--text-4);
+    font-family: Consolas, "SF Mono", Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* Numbers scroll with the code rather than staying pinned to the top. */
+.code-gutter-lines {
+    display: block;
+    white-space: pre;
+    font: inherit;
+}
+
+.code-editor-scroll {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    /* Clips the highlight layer, which is translated to follow the textarea
+       and is allowed to be as wide as the longest line. */
+    overflow: hidden;
+}
+
+.code-highlight,
+.code-editor-input {
+    margin: 0;
+    border: 0;
+    padding: 12px 14px;
+    font-family: Consolas, "SF Mono", Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    tab-size: 2;
+    font-variant-ligatures: none;
+}
+
+.code-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    white-space: pre;
+    pointer-events: none;
+    color: var(--text);
+}
+
+.code-editor-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    background: transparent;
+    color: transparent;
+    caret-color: var(--text);
+    white-space: pre;
+    overflow: auto;
+    outline: none;
+}
+
+.code-editor-input:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+}
+
+.code-editor-input::selection {
+    background: var(--line-2);
+}
+
+/* Token colours. Muted on purpose: this is a reading surface, not a
+   highlighter demo. */
+.code-tok-comment {
+    color: var(--text-3);
+    font-style: italic;
+}
+
+.code-tok-keyword {
+    color: #7a3ba8;
+}
+
+.code-tok-string {
+    color: #1d6b4f;
+}
+
+.code-tok-number {
+    color: #9a5b12;
+}
+
+.code-tok-tag {
+    color: #1f5f8b;
+}
+
+.code-tok-attr {
+    color: #8a5a1f;
+}
+
+.code-tok-selector {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.code-tok-property {
+    color: #1f5f8b;
+}
+
+.code-tok-fn {
+    color: #6b3fa0;
+}
+
+.code-tok-type {
+    color: #a2521b;
+}
+
+.code-tok-punct {
+    color: var(--text-2);
+}
+
+.code-tok-operator {
+    color: #8a5a1f;
+}
+
+.code-editor-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 24px;
+    text-align: center;
+    background: white;
+}
+
+.code-editor-empty h3 {
+    font-size: 14.5px;
+    color: var(--text);
+}
+
+.code-editor-empty p {
+    font-size: 13px;
+    color: var(--text-3);
+    max-width: 34ch;
+    line-height: 1.5;
+}
+
+.code-empty-action {
+    margin-top: 8px;
+}
+
+
+/* PREVIEW */
+
+.code-preview-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.code-preview-entry {
+    font-size: 11.5px;
+    color: var(--text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 190px;
+}
+
+.code-preview-bar button {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text-2);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.code-preview-bar button:hover {
+    background: var(--surface-2);
+}
+
+.code-preview-frame {
+    flex: 1;
+    width: 100%;
+    border: 0;
+    background: white;
+    min-height: 0;
+}
+
+.code-preview-placeholder {
+    position: absolute;
+    inset: 46px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 24px;
+    text-align: center;
+    background: var(--surface);
+}
+
+.code-preview-placeholder h3 {
+    font-size: 14px;
+    color: var(--text-2);
+}
+
+.code-preview-placeholder p {
+    font-size: 12.5px;
+    color: var(--text-3);
+    max-width: 32ch;
+    line-height: 1.5;
+}
+
+
+/* TERMINAL */
+
+.code-terminal {
+    margin-top: 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: white;
+    overflow: hidden;
+}
+
+.code-terminal-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 12px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+}
+
+.code-terminal-toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border: 0;
+    background: transparent;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    font-weight: 600;
+    color: var(--text-2);
+    padding: 4px 2px;
+}
+
+.code-terminal-caret {
+    font-size: 10px;
+}
+
+.code-terminal-clear {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text-2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.code-terminal-clear:hover {
+    background: var(--surface-2);
+}
+
+.code-terminal-body {
+    max-height: 190px;
+    overflow-y: auto;
+    padding: 10px 12px;
+    font-family: Consolas, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.code-terminal:not(.is-open) .code-terminal-body {
+    display: none;
+}
+
+.code-log-line {
+    overflow-wrap: anywhere;
+    color: var(--text-2);
+}
+
+.code-log-line::before {
+    content: "$ ";
+    color: var(--text-4);
+}
+
+.code-log-error {
+    color: var(--err);
+}
+
+.code-log-error::before {
+    content: "! ";
+    color: var(--err);
+}
+
+.code-log-warn {
+    color: #8a5a1f;
+}
+
+.code-log-warn::before {
+    content: "! ";
+    color: #8a5a1f;
+}
+
+
+/* FILES <-> CODE
+ *
+ * The file rows inside a folder card are the bridge between the two views. */
+
+.folder-file-list {
+    list-style: none;
+    width: 100%;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rail);
+}
+
+.folder-file-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 0;
+    min-width: 0;
+}
+
+.folder-file-name {
+    font-size: 13px;
+    color: var(--text-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.folder-file-open {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text-2);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.folder-file-open:hover {
+    background: var(--surface-2);
+    border-color: var(--line-2);
+}
+
+.field-help {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-3);
+    margin-top: -6px;
+    margin-bottom: 12px;
+}
+
+
+/* RESPONSIVE
+ *
+ * Desktop is the primary experience and is left alone. The ladder below only
+ * takes effect as space runs out, and each step is about layout rather than
+ * shrinking type, so the product keeps its proportions and its character. */
+
+@media (max-width: 1100px) {
+
+    .workspace-main {
+        padding: 30px 30px 104px;
+    }
+
+    /* Three panels stop being usable well before the viewport does, so the
+       preview becomes a switched panel and keeps the full half of the width
+       instead of a sliver. */
+    .code-panel-switcher {
+        display: flex;
+    }
+
+    .code-shell {
+        grid-template-columns: 190px minmax(0, 1fr);
+    }
+
+    .code-preview-pane {
+        display: none;
+    }
+
+    .code-shell[data-panel="preview"] .code-editor-pane {
+        display: none;
+    }
+
+    .code-shell[data-panel="preview"] .code-preview-pane {
+        display: flex;
+    }
+}
+
+@media (max-width: 800px) {
+
+    .workspace-main {
+        padding: 25px 25px 100px;
+    }
+
+    .workspace-tabs {
+        padding: 8px 14px 0;
+    }
+
+    .task-columns {
+        grid-template-columns: 1fr;
+        gap: 26px;
+    }
+
+    .chat-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .chat-pane {
+        min-height: 340px;
+    }
+
+    /* Structural idea borrowed from the reference: on narrow screens the
+       contact list and the conversation never compete for the same space. */
+    .chat-layout.has-selection .chat-contacts {
+        display: none;
+    }
+
+    .chat-layout.has-selection .chat-back-button {
+        display: block;
+    }
+
+    .workspace-header {
+        flex-direction: column;
+    }
+
+    /* Same idea as the chat panes: on a narrow screen the tree, the editor
+       and the preview each take the width in turn instead of competing for
+       thirds of it. */
+    .code-shell {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .code-explorer {
+        display: none;
+    }
+
+    .code-shell[data-panel="explorer"] .code-explorer {
+        display: flex;
+    }
+}
+
+
+/* COMPACT NAVIGATION
+ *
+ * Below this the sidebar stops being a column and becomes a drawer. A fixed
+ * rail shared with the tab strip gives it a permanent, obvious way back in
+ * without a floating icon sitting over the content. */
+
+@media (max-width: 760px) {
+
+    .workspace-app {
+        /* Two explicit tracks. With a single column declared, the tabs track
+           was implicit and sized to its content, so the strip grew past its
+           cell and spilled back over the rail. */
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+            "rail tabbar"
+            "main main";
+    }
+
+    .sidebar-toggle {
+        grid-area: rail;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        height: 44px;
+        padding: 0 12px;
+        position: sticky;
+        top: 0;
+        z-index: 21;
+        background: var(--rail);
+        border: 0;
+        border-right: 1px solid var(--line-2);
+        border-bottom: 1px solid var(--line-2);
+        color: var(--text);
+        cursor: pointer;
+    }
+
+    .sidebar-toggle:focus-visible {
+        outline: 2px solid var(--text);
+        outline-offset: -3px;
+    }
+
+    .sidebar-toggle-rails {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        width: 15px;
+        flex-shrink: 0;
+    }
+
+    .sidebar-toggle-rails span {
+        display: block;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--text);
+    }
+
+    .sidebar-toggle-rails span:nth-child(2) {
+        width: 10px;
+    }
+
+    .sidebar-toggle-word {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: .01em;
+        white-space: nowrap;
+    }
+
+    .workspace-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 130;
+        width: 268px;
+        max-width: 86vw;
+        height: auto;
+        transform: translateX(-100%);
+        visibility: hidden;
+        box-shadow: 0 0 40px rgba(0, 0, 0, .18);
+        /* visibility is stepped, not eased: it must be visible on the very
+           first frame of opening so focus can move into the drawer, and only
+           drop out after the slide-in has finished. */
+        transition: transform .2s ease, visibility 0s linear .2s;
+    }
+
+    .workspace-sidebar.open {
+        transform: translateX(0);
+        visibility: visible;
+        transition: transform .2s ease, visibility 0s linear 0s;
+    }
+
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 120;
+        background: rgba(31, 41, 51, .38);
+        opacity: 0;
+        transition: opacity .18s ease;
+    }
+
+    .sidebar-backdrop[hidden] {
+        display: none;
+    }
+
+    .sidebar-backdrop.open {
+        opacity: 1;
+    }
+
+    .sidebar-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 14px;
+        right: 10px;
+        width: 38px;
+        height: 38px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-2);
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .sidebar-close:hover {
+        background: var(--surface-3);
+        color: var(--text);
+    }
+
+    .sidebar-close:focus-visible {
+        outline: 2px solid var(--text);
+        outline-offset: 2px;
+    }
+
+    /* Touch-sized targets for the controls that stay reachable on a phone. */
+    .sidebar-item {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+
+    .logout-button {
+        min-height: 44px;
+    }
+
+    .section-button,
+    .header-action-button,
+    .modal-cancel,
+    .modal-submit {
+        min-height: 44px;
+    }
+
+    .note-delete,
+    .member-remove,
+    .resource-remove,
+    .chat-back-button {
+        min-height: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+
+
+
+    .workspace-main {
+        padding: 20px 15px 96px;
+    }
+
+    .workspace-tab {
+        max-width: 150px;
+    }
+
+    /* The fixed kind column no longer fits the longest label ("Resource") at
+       this width, so let it size to its content instead of clipping it. */
+
+    /* Below this the title and its action cannot share a line, and the
+       action cannot shrink, so the row pushed the page sideways. */
+    .section-header {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .code-header-actions {
+        width: 100%;
+    }
+
+    .code-panel-switcher {
+        width: 100%;
+    }
+
+    .code-panel-switcher button {
+        flex: 1;
+    }
+
+    .code-header-actions .section-button {
+        flex: 1 1 auto;
+    }
+
+    /* The header actions wrap onto their own line, so the panels start
+       lower and can afford less height without feeling cramped. */
+    .code-shell {
+        min-height: 400px;
+    }
+
+    .code-terminal-body {
+        max-height: 150px;
+    }
+}
+
+
+/* WORKSPACE TABS AT SMALL WIDTHS
+ *
+ * Tabs keep a readable width and the strip scrolls instead. Letting them
+ * shrink was what made them unreadable; letting them overflow the page was
+ * what made them break the layout. */
+
+.workspace-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.workspace-tab {
+    flex: 0 0 auto;
+    min-width: 112px;
+}
+
+@media (max-width: 760px) {
+
+    .workspace-tabbar {
+        padding: 8px 10px 0;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .workspace-tab {
+        min-width: 96px;
+    }
+
+    .sidebar-toggle-word {
+        font-size: 13px;
+    }
+}
+
+
+/* SMALL SCREENS: sections, forms and dialogs */
+
+@media (max-width: 560px) {
+
+    .modal {
+        padding: 12px;
+    }
+
+    .modal-card {
+        padding: 22px 18px;
+        border-radius: 12px;
+        width: min(450px, 100%);
+        max-height: calc(100dvh - 24px);
+    }
+
+    .modal-card-compact {
+        width: min(400px, 100%);
+    }
+
+    /* Stacked so neither action can be pushed out of reach, primary last
+       where a thumb rests. */
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+
+    .workspace-header h1 {
+        font-size: 25px;
+    }
+}
+
+@media (max-width: 460px) {
+
+    .workspace-main {
+        padding: 18px 13px 92px;
+    }
+
+    .section-header {
+        align-items: flex-start;
+    }
+
+
+    .chat-composer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .chat-composer button {
+        width: 100%;
+    }
+
+    /* Trims rather than hides: the code area is the point of the section, so
+       the gutters give up width before the editor does. */
+    .code-shell {
+        min-height: 340px;
+    }
+
+    .code-gutter {
+        width: 36px;
+        padding: 10px 6px 10px 0;
+        font-size: 12px;
+    }
+
+    .code-highlight,
+    .code-editor-input {
+        font-size: 12px;
+        padding: 10px 10px;
+    }
+
+    .code-preview-entry {
+        max-width: 96px;
+    }
+
+    .code-editor-tab {
+        max-width: 150px;
+    }
+}
+
+/* ==========================================================================
+   FINAL POLISH PASS
+   Additions and refinements only. Everything above keeps working; this layer
+   supplies the warm home page, the single floating create action, the
+   workspace pulse, and the restrained motion layer.
+   ========================================================================== */
+
+
+/* TYPOGRAPHY
+ *
+ * One serif for names and headings, one sans for everything you read and
+ * click, one mono for code. The scale is deliberately shallow: a workspace
+ * name leads, a section heading follows, and nothing shouts. */
+
+.workspace-header h1,
+.home-intro h1,
+.auth-brand h1,
+.welcome-logo {
+    font-family: var(--font);
+    font-weight: 600;
+    letter-spacing: -0.011em;
+    color: var(--text-strong);
+}
+
+.workspace-header h1 {
+    font-size: var(--t-display);
+    line-height: 1.18;
+}
+
+.workspace-header p {
+    max-width: 62ch;
+    margin-top: 6px;
+    font-size: var(--t-meta);
+    color: var(--text-3);
+}
+
+.section-header h2,
+.activity-heading {
+    font-family: var(--font);
+    font-size: var(--t-section);
+    font-weight: 600;
+    letter-spacing: -0.006em;
+    color: var(--text-strong);
+}
+
+.section-header p {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+}
+
+.section-note {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+}
+
+
+/* ==========================================================================
+   ONESPACE HOME
+   ========================================================================== */
+
+.home-page {
+    min-height: 100vh;
+    background: var(--bg);
+}
+
+.home-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 34px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.home-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.008em;
+    color: var(--text-strong);
+}
+
+/* A quiet leaf-shaped mark rather than a logo asset or a coloured dot. */
+.home-brand-mark {
+    width: 15px;
+    height: 15px;
+    border-radius: 50% 50% 50% 2px;
+    background: var(--accent);
+    opacity: .85;
+}
+
+.home-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.home-user {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+}
+
+.home-main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 54px 34px 120px;
+}
+
+.home-intro {
+    margin-bottom: 34px;
+}
+
+.home-intro h1 {
+    font-size: var(--t-display);
+    line-height: 1.18;
+    margin-bottom: 6px;
+}
+
+.home-sub {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+}
+
+.workspace-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+    gap: 14px;
+}
+
+.workspace-grid[hidden] {
+    display: none;
+}
+
+.workspace-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-1);
+    transition: box-shadow var(--t-base) var(--ease),
+                border-color var(--t-base) var(--ease),
+                transform var(--t-base) var(--ease);
+}
+
+/* One or two pixels, and a touch more light. Enough to feel responsive,
+   not enough to look like the card is floating away. */
+.workspace-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--line-2);
+    box-shadow: var(--sh-2);
+}
+
+.workspace-card-open {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    width: 100%;
+    /* The right inset keeps a long workspace name clear of the delete
+       control instead of running underneath it. */
+    padding: 17px 46px 18px 18px;
+    border: 0;
+    border-radius: var(--r-lg);
+    background: transparent;
+    color: inherit;
+    text-align: left;
+}
+
+.workspace-card-open:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.workspace-card-avatar {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--r-md);
+    background: var(--accent-soft);
+    color: var(--accent-2);
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.workspace-card-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.workspace-card-name {
+    display: block;
+    font-family: var(--font);
+    font-size: var(--t-section);
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: var(--text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workspace-card-description {
+    display: block;
+    margin-top: 3px;
+    font-size: var(--t-meta);
+    color: var(--text-3);
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workspace-card-meta {
+    display: block;
+    margin-top: 11px;
+    font-size: var(--t-micro);
+    color: var(--text-4);
+    letter-spacing: .01em;
+}
+
+/* Present but quiet. It only asserts itself once the card is under the
+   pointer or focus, so a grid of cards does not read as a grid of warnings. */
+.workspace-card-delete {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--text-4);
+    opacity: .5;
+    transition: opacity var(--t-fast) var(--ease),
+                background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+.workspace-card:hover .workspace-card-delete,
+.workspace-card-delete:focus-visible {
+    opacity: 1;
+}
+
+.workspace-card-delete:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.workspace-card-delete:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.home-empty {
+    max-width: 380px;
+    padding: 26px 0;
+}
+
+.home-empty h2 {
+    font-family: var(--font);
+    font-size: var(--t-title);
+    font-weight: 600;
+    color: var(--text-strong);
+    margin-bottom: 8px;
+}
+
+.home-empty p {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.home-empty[hidden] {
+    display: none;
+}
+
+/* Home's single create action. Same language as the workspace one, so the
+   affordance is recognisable in both places. */
+.home-create {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--surface);
+    font-size: 24px;
+    line-height: 1;
+    box-shadow: var(--sh-3);
+    transition: transform var(--t-base) var(--ease),
+                box-shadow var(--t-base) var(--ease),
+                background-color var(--t-base) var(--ease);
+}
+
+.home-create:hover {
+    transform: scale(1.03);
+    background: var(--accent-2);
+    box-shadow: var(--sh-4);
+}
+
+.home-create:active {
+    transform: scale(.98);
+}
+
+.home-create:focus-visible {
+    outline: 2px solid var(--accent-2);
+    outline-offset: 3px;
+}
+
+.home-create[hidden] {
+    display: none;
+}
+
+
+/* ==========================================================================
+   FLOATING CREATE — THE ONE CREATION SYSTEM INSIDE A WORKSPACE
+   ========================================================================== */
+
+.quick-create {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.quick-create > * {
+    pointer-events: auto;
+}
+
+.quick-create-button {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--surface);
+    box-shadow: var(--sh-3);
+    transition: transform var(--t-base) var(--ease),
+                box-shadow var(--t-base) var(--ease),
+                background-color var(--t-base) var(--ease);
+}
+
+.quick-create-button:hover {
+    transform: scale(1.03);
+    background: var(--accent-2);
+    box-shadow: var(--sh-4);
+}
+
+.quick-create-button:active {
+    transform: scale(.97);
+}
+
+.quick-create-button:focus-visible {
+    outline: 2px solid var(--accent-2);
+    outline-offset: 3px;
+}
+
+.quick-create-glyph {
+    display: block;
+    font-size: 23px;
+    line-height: 1;
+    transform: rotate(0deg);
+    transition: transform var(--t-base) var(--ease);
+}
+
+/* Plus becomes a cross while the menu is open. One small rotation is enough
+   to say the state changed. */
+.quick-create-button[aria-expanded="true"] .quick-create-glyph {
+    transform: rotate(45deg);
+}
+
+.quick-create-menu {
+    width: 216px;
+    padding: 6px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-3);
+    transform-origin: bottom right;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px) scale(.985);
+    pointer-events: none;
+    transition: opacity var(--t-fast) var(--ease),
+                transform var(--t-base) var(--ease),
+                visibility var(--t-fast) var(--ease);
+}
+
+.quick-create-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+}
+
+.quick-create-label {
+    padding: 6px 10px 5px;
+    font-size: var(--t-micro);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--text-4);
+}
+
+.quick-create-menu button {
+    display: block;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--text);
+    font-size: var(--t-meta);
+    text-align: left;
+    transition: background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+.quick-create-menu button:hover {
+    background: var(--surface-2);
+    color: var(--text-strong);
+}
+
+.quick-create-menu button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    background: var(--accent-soft);
+}
+
+
+/* ==========================================================================
+   WORKSPACE PULSE
+   ========================================================================== */
+
+.overview-lead {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+    margin-bottom: 22px;
+}
+
+.overview-empty {
+    max-width: 420px;
+    padding: 20px 0;
+}
+
+.overview-empty h3 {
+    font-family: var(--font);
+    font-size: var(--t-title);
+    font-weight: 600;
+    color: var(--text-strong);
+    margin-bottom: 7px;
+}
+
+.overview-empty p {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+    line-height: 1.6;
+}
+
+.activity-feed {
+    margin-bottom: 34px;
+}
+
+.activity-heading {
+    margin-bottom: 14px;
+}
+
+.activity-group + .activity-group {
+    margin-top: 20px;
+}
+
+.activity-group-label {
+    font-size: var(--t-micro);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--text-4);
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+}
+
+.activity-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+    margin-left: -10px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    transition: background-color var(--t-fast) var(--ease);
+}
+
+.activity-row:hover {
+    background: var(--surface-2);
+}
+
+.activity-row:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+/* A small type mark rather than an icon set. Colour distinguishes the kind of
+   thing that happened without turning the feed into confetti. */
+.activity-mark {
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--line-3);
+    transform: translateY(-2px);
+}
+
+.activity-row[data-type="task"] .activity-mark { background: var(--accent); }
+.activity-row[data-type="note"] .activity-mark { background: var(--info); }
+.activity-row[data-type="folder"] .activity-mark { background: var(--text-4); }
+.activity-row[data-type="resource"] .activity-mark { background: var(--warn); }
+.activity-row[data-type="member"] .activity-mark { background: var(--ok); }
+.activity-row[data-type="file"] .activity-mark { background: var(--accent-2); }
+
+.activity-verb {
+    flex: 0 0 auto;
+    font-size: var(--t-meta);
+    color: var(--text-3);
+}
+
+.activity-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: var(--t-meta);
+    color: var(--text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.activity-time {
+    flex: 0 0 auto;
+    font-size: var(--t-micro);
+    color: var(--text-4);
+    white-space: nowrap;
+}
+
+.overview-block {
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+}
+
+.overview-block-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.overview-block-header h3 {
+    font-family: var(--font);
+    font-size: var(--t-section);
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.overview-text-link {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    font-size: var(--t-micro);
+    color: var(--accent-2);
+    letter-spacing: .01em;
+    transition: color var(--t-fast) var(--ease);
+}
+
+.overview-text-link:hover {
+    color: var(--text-strong);
+}
+
+.overview-none {
+    font-size: var(--t-meta);
+    color: var(--text-4);
+}
+
+
+/* ==========================================================================
+   REFINEMENTS TO WHAT WAS ALREADY THERE
+   ========================================================================== */
+
+/* Rows and cards inside a workspace settle on a warm surface instead of
+   announcing themselves. No movement, only a change of light. */
+.task-item,
+.note-card,
+.folder-card,
+.resource-row,
+.member-card {
+    transition: background-color var(--t-fast) var(--ease),
+                border-color var(--t-fast) var(--ease);
+}
+
+.note-card:hover,
+.folder-card:hover {
+    border-color: var(--line-2);
+}
+
+/* The tab strip keeps its rail, and the active tab reads as the one page you
+   are actually on. */
+.workspace-tab {
+    transition: background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease),
+                border-color var(--t-fast) var(--ease);
+}
+
+.workspace-tab.active {
+    background: var(--surface);
+    border-color: var(--line);
+    color: var(--text-strong);
+}
+
+.workspace-tab-close {
+    opacity: 0;
+    transition: opacity var(--t-fast) var(--ease),
+                background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+/* The close control is there for anyone who reaches for it, but it stays out
+   of the way until the tab is under the pointer or the keyboard. */
+.workspace-tab:hover .workspace-tab-close,
+.workspace-tab:focus-within .workspace-tab-close,
+.workspace-tab.active .workspace-tab-close {
+    opacity: 1;
+}
+
+.workspace-tab-close:focus-visible {
+    opacity: 1;
+}
+
+.sidebar-item {
+    transition: background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+.sidebar-item.active {
+    background: var(--accent-soft);
+    color: var(--accent-2);
+    font-weight: 600;
+}
+
+.sidebar-item:hover {
+    background: var(--surface-2);
+    color: var(--text-strong);
+}
+
+.primary-button {
+    background: var(--accent);
+    transition: background-color var(--t-base) var(--ease),
+                transform var(--t-fast) var(--ease);
+}
+
+.primary-button:hover {
+    background: var(--accent-2);
+    transform: translateY(-1px);
+}
+
+.primary-button:active {
+    transform: translateY(1px);
+}
+
+.modal-submit {
+    background: var(--accent);
+    transition: background-color var(--t-base) var(--ease);
+}
+
+.modal-submit:hover {
+    background: var(--accent-2);
+}
+
+/* Destructive confirmation. Muted red, never a warning triangle. */
+.modal-submit-danger {
+    background: var(--danger);
+}
+
+.modal-submit-danger:hover {
+    background: var(--danger-2);
+}
+
+.modal-card h2 {
+    font-family: var(--font);
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.modal-card-compact {
+    max-width: 400px;
+}
+
+.modal-card-narrow {
+    max-width: 420px;
+}
+
+.modal-text {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+    line-height: 1.6;
+    margin: 10px 0 22px;
+}
+
+
+/* ==========================================================================
+   MOTION
+   Short, small, and only where something actually changed. Set on state
+   change, never on a loop, never on content that is being typed or read.
+   ========================================================================== */
+
+@keyframes onespace-rise {
+    from { opacity: 0; transform: translateY(7px) scale(.99); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes onespace-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Only runs when a dialog becomes visible, so a re-render never replays it. */
+.modal[style*="flex"] {
+    animation: onespace-fade var(--t-base) var(--ease) both;
+}
+
+.modal[style*="flex"] .modal-card {
+    animation: onespace-rise var(--t-base) var(--ease) both;
+}
+
+.workspace-picker-item {
+    transition: background-color var(--t-fast) var(--ease),
+                color var(--t-fast) var(--ease);
+}
+
+.workspace-picker-item.active {
+    background: var(--accent-soft);
+    color: var(--accent-2);
+}
+
+
+/* ==========================================================================
+   RESPONSIVE
+   The floating actions have to stay reachable and unclipped, and the tab strip
+   has to keep scrolling rather than pushing the page wide.
+   ========================================================================== */
+
+@media (max-width: 760px) {
+
+    .home-topbar {
+        padding: 14px 18px;
+    }
+
+    .home-main {
+        padding: 34px 18px 120px;
+    }
+
+    .workspace-grid {
+        grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+    }
+
+    .quick-create,
+    .home-create {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .quick-create-button,
+    .home-create {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (max-width: 560px) {
+
+    .workspace-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .activity-row {
+        flex-wrap: wrap;
+        gap: 4px 8px;
+    }
+
+    .activity-label {
+        flex: 1 1 100%;
+        order: 3;
+        white-space: normal;
+    }
+
+    .activity-time {
+        margin-left: auto;
+    }
+
+    .quick-create-menu {
+        width: 200px;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .home-user {
+        display: none;
+    }
+}
+
+
+/* Where there is no pointer to hover with, a control that only appears on
+   hover is a control that does not exist. Keep it permanently available. */
+@media (hover: none) {
+
+    .code-explorer-add,
+    .workspace-card-delete,
+    .workspace-tab-close {
+        opacity: 1;
+    }
+}
+
+
+/* ==========================================================================
+   REDUCED MOTION
+   Transforms and decorative transitions come out. State changes stay, because
+   an instant change still has to read as a change.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .workspace-card:hover,
+    .primary-button:hover,
+    .quick-create-button:hover,
+    .home-create:hover {
+        transform: none;
+    }
+
+    .quick-create-glyph,
+    .quick-create-button[aria-expanded="true"] .quick-create-glyph {
+        transform: none;
+    }
+}

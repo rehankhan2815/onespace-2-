@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>OneSpace Workspace</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="workspace-app">
+
+    <button
+        id="sidebarToggle"
+        class="sidebar-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="workspaceSidebar"
+    >
+        <span
+            class="sidebar-toggle-rails"
+            aria-hidden="true"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+        <span class="sidebar-toggle-word">
+            OneSpace
+        </span>
+    </button>
+
+    <div
+        id="sidebarBackdrop"
+        class="sidebar-backdrop"
+        hidden
+    ></div>
+
+    <aside
+        id="workspaceSidebar"
+        class="workspace-sidebar"
+    >
+
+        <button
+            id="sidebarClose"
+            class="sidebar-close"
+            type="button"
+            aria-label="Close navigation"
+        >
+            <span aria-hidden="true">&times;</span>
+        </button>
+
+        <div class="workspace-brand">
+            <span
+                class="workspace-brand-mark"
+                aria-hidden="true"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    focusable="false"
+                >
+                    <path d="M12 4.5 13.7 9.3 18.5 11 13.7 12.7 12 17.5 10.3 12.7 5.5 11 10.3 9.3Z"></path>
+                </svg>
+            </span>
+            <h2 class="workspace-brand-word">
+                OneSpace
+            </h2>
+        </div>
+
+        <div class="current-workspace">
+            <span
+                class="current-workspace-mark"
+                id="activeWorkspaceMark"
+                aria-hidden="true"
+            ></span>
+            <span class="current-workspace-text">
+                <span class="current-workspace-label">
+                    Workspace
+                </span>
+                <strong id="activeWorkspaceName">
+                    Workspace
+                </strong>
+            </span>
+        </div>
+
+        <nav
+            id="workspaceNavigation"
+            class="workspace-navigation"
+            aria-label="Workspace sections"
+        ></nav>
+
+        <div class="sidebar-footer">
+            <button
+                id="sidebarRailToggle"
+                class="sidebar-rail-toggle"
+                type="button"
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar"
+            >
+                <span
+                    class="sidebar-rail-icon"
+                    aria-hidden="true"
+                ></span>
+                <span class="sidebar-rail-word">
+                    Collapse
+                </span>
+            </button>
+
+            <button
+                id="logoutButton"
+                class="logout-button"
+                type="button"
+            >
+                <span
+                    class="logout-button-icon"
+                    aria-hidden="true"
+                ></span>
+                <span class="logout-button-word">
+                    Logout
+                </span>
+            </button>
+        </div>
+
+    </aside>
+
+
+    <!-- WORKSPACE TABS -->
+
+    <div class="workspace-tabbar">
+
+        <div
+            id="workspaceTabs"
+            class="workspace-tabs"
+            role="tablist"
+            aria-label="Open workspaces"
+        ></div>
+
+        <button
+            id="openWorkspaceButton"
+            class="workspace-tab-open"
+            type="button"
+            aria-haspopup="dialog"
+            aria-label="Open workspace"
+            title="Open workspace"
+        >
+            <span
+                class="workspace-tab-open-icon"
+                aria-hidden="true"
+            ></span>
+        </button>
+
+    </div>
+
+
+    <main class="workspace-main">
+
+        <header class="workspace-header">
+
+            <div class="workspace-heading">
+                <h1 id="workspaceTitle">
+                    Overview
+                </h1>
+
+                <p id="workspaceDescription"></p>
+            </div>
+
+            <div
+                id="workspaceHeaderMeta"
+                class="workspace-header-meta"
+            ></div>
+
+        </header>
+
+        <div
+            id="storageError"
+            class="storage-error"
+            role="alert"
+            hidden
+        ></div>
+
+
+        <section
+            id="section-overview"
+            class="workspace-section active"
+        >
+
+            <div id="overviewContent"></div>
+
+        </section>
+
+
+        <section
+            id="section-tasks"
+            class="workspace-section"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Tasks</h2>
+                    <p>What still needs doing, and what is already done.</p>
+                </div>
+
+
+            </div>
+
+            <div class="task-columns">
+
+                <div class="task-column">
+
+                    <div class="task-column-header">
+                        <h3>To do</h3>
+                        <span
+                            id="todoTaskCount"
+                            class="task-column-count"
+                        ></span>
+                    </div>
+
+                    <div
+                        id="todoTasks"
+                        class="task-list"
+                    ></div>
+
+                </div>
+
+                <div class="task-column">
+
+                    <div class="task-column-header">
+                        <h3>Completed</h3>
+                        <span
+                            id="completedTaskCount"
+                            class="task-column-count"
+                        ></span>
+                    </div>
+
+                    <div
+                        id="completedTasks"
+                        class="task-list"
+                    ></div>
+
+                </div>
+
+            </div>
+
+            <div id="tasksEmpty"></div>
+
+        </section>
+
+
+        <section
+            id="section-files"
+            class="workspace-section"
+        >
+
+            <div
+                id="filesBreadcrumb"
+                class="files-breadcrumb"
+                hidden
+            ></div>
+
+            <div
+                id="foldersGrid"
+                class="folders-grid"
+            ></div>
+
+        </section>
+
+
+        <section
+            id="section-notes"
+            class="workspace-section"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Notes</h2>
+                    <p>Short written notes for this workspace.</p>
+                </div>
+
+
+
+            </div>
+
+            <div
+                id="notesGrid"
+                class="notes-grid"
+            ></div>
+
+        </section>
+
+
+        <section
+            id="section-resources"
+            class="workspace-section"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Resources</h2>
+                    <p>Links worth keeping for this workspace.</p>
+                </div>
+
+
+
+            </div>
+
+            <div
+                id="resourcesList"
+                class="resources-list"
+            ></div>
+
+        </section>
+
+
+        <section
+            id="section-code"
+            class="workspace-section"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Code</h2>
+                    <p>
+                        Write project files and see frontend
+                        results without leaving the workspace.
+                    </p>
+                </div>
+
+                <div class="code-header-actions">
+
+                    <div
+                        id="codePanelSwitcher"
+                        class="code-panel-switcher"
+                        role="group"
+                        aria-label="Code panel"
+                    >
+                        <button
+                            type="button"
+                            data-code-panel="explorer"
+                        >
+                            Files
+                        </button>
+                        <button
+                            type="button"
+                            data-code-panel="editor"
+                        >
+                            Editor
+                        </button>
+                        <button
+                            type="button"
+                            data-code-panel="preview"
+                        >
+                            Preview
+                        </button>
+                    </div>
+
+                    <button
+                        id="codeNewFileButton"
+                        class="section-button"
+                        type="button"
+                    >
+                        + File
+                    </button>
+
+                    <button
+                        id="codeNewFolderButton"
+                        class="section-button"
+                        type="button"
+                    >
+                        + Folder
+                    </button>
+
+                    <button
+                        id="codeSaveButton"
+                        class="section-button"
+                        type="button"
+                    >
+                        Save
+                    </button>
+
+                    <button
+                        id="codePreviewButton"
+                        class="section-button"
+                        type="button"
+                    >
+                        Preview
+                    </button>
+
+                    <button
+                        id="codeRunButton"
+                        class="section-button section-button-primary"
+                        type="button"
+                    >
+                        Run &#9654;
+                    </button>
+
+                </div>
+
+            </div>
+
+            <p class="section-note">
+                OneSpace runs HTML, CSS and JavaScript in the browser
+                preview. Other languages need an execution backend,
+                which is not connected yet.
+            </p>
+
+            <div
+                id="codeShell"
+                class="code-shell"
+                data-panel="editor"
+            >
+
+                <aside
+                    id="codeExplorer"
+                    class="code-explorer"
+                    aria-label="Project files"
+                >
+                    <div class="code-explorer-bar">
+                        <h3>Project</h3>
+                    </div>
+
+                    <div
+                        id="codeExplorerTree"
+                        class="code-explorer-tree"
+                    ></div>
+                </aside>
+
+                <div class="code-editor-pane">
+
+                    <div
+                        id="codeEditorTabs"
+                        class="code-editor-tabs"
+                        role="tablist"
+                        aria-label="Open files"
+                    ></div>
+
+                    <div class="code-editor-surface">
+
+                        <div
+                            id="codeGutter"
+                            class="code-gutter"
+                            aria-hidden="true"
+                        ><code
+                            id="codeGutterLines"
+                            class="code-gutter-lines"
+                        ></code></div>
+
+                        <div class="code-editor-scroll">
+
+                            <pre
+                                class="code-highlight"
+                                aria-hidden="true"
+                            ><code
+                                id="codeHighlight"
+                                class="code-highlight-code"
+                            ></code></pre>
+
+                            <textarea
+                                id="codeEditor"
+                                class="code-editor-input"
+                                spellcheck="false"
+                                autocomplete="off"
+                                autocapitalize="off"
+                                autocorrect="off"
+                                wrap="off"
+                                aria-label="Code editor"
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="codeEditorEmpty"
+                        class="code-editor-empty"
+                    ></div>
+
+                </div>
+
+                <div class="code-preview-pane">
+
+                    <div class="code-preview-bar">
+
+                        <h3>Preview</h3>
+
+                        <div class="code-preview-bar-actions">
+
+                            <span
+                                id="codePreviewEntry"
+                                class="code-preview-entry"
+                            ></span>
+
+                            <button
+                                id="codePreviewRefreshButton"
+                                type="button"
+                            >
+                                Refresh
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <iframe
+                        id="codePreviewFrame"
+                        class="code-preview-frame"
+                        title="Frontend preview"
+                        sandbox="allow-scripts"
+                        referrerpolicy="no-referrer"
+                    ></iframe>
+
+                    <div
+                        id="codePreviewPlaceholder"
+                        class="code-preview-placeholder"
+                    ></div>
+
+                </div>
+
+            </div>
+
+            <div
+                id="codeTerminal"
+                class="code-terminal is-open"
+            >
+
+                <div class="code-terminal-bar">
+
+                    <button
+                        id="codeTerminalToggle"
+                        class="code-terminal-toggle"
+                        type="button"
+                        aria-expanded="true"
+                        aria-controls="codeTerminalBody"
+                    >
+                        <span
+                            class="code-terminal-caret"
+                            aria-hidden="true"
+                        >
+                            &#9662;
+                        </span>
+                        Output
+                    </button>
+
+                    <button
+                        id="codeTerminalClearButton"
+                        class="code-terminal-clear"
+                        type="button"
+                    >
+                        Clear
+                    </button>
+
+                </div>
+
+                <div
+                    id="codeTerminalBody"
+                    class="code-terminal-body"
+                    role="log"
+                    aria-label="Code output"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="section-chat"
+            class="workspace-section"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Chat</h2>
+                    <p>Conversations with people in this workspace.</p>
+                </div>
+
+            </div>
+
+            <p class="section-note">
+                Messages are saved in this browser only. They are
+                not sent anywhere and are not live.
+            </p>
+
+            <div
+                class="chat-layout"
+                id="chatLayout"
+            >
+
+                <aside
+                    id="chatContacts"
+                    class="chat-contacts"
+                    aria-label="Workspace members"
+                ></aside>
+
+
+                <div
+                    id="chatPane"
+                    class="chat-pane"
+                >
+
+                    <div
+                        id="chatEmpty"
+                        class="chat-empty"
+                    >
+                        <h3>Select a conversation</h3>
+                        <p>
+                            Choose someone in this workspace
+                            to start a conversation.
+                        </p>
+                    </div>
+
+
+                    <div
+                        id="chatConversation"
+                        class="chat-conversation"
+                        hidden
+                    >
+
+                        <div class="chat-conversation-header">
+
+                            <button
+                                id="chatBackButton"
+                                class="chat-back-button"
+                                type="button"
+                                aria-label="Back to members"
+                            >
+                                &#8592;
+                            </button>
+
+                            <span
+                                id="chatConversationAvatar"
+                                class="chat-conversation-avatar"
+                                aria-hidden="true"
+                            ></span>
+
+                            <span class="chat-conversation-person">
+                                <strong id="chatConversationName"></strong>
+                                <span id="chatConversationEmail"></span>
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            id="chatMessages"
+                            class="chat-messages"
+                            role="log"
+                            aria-label="Messages"
+                        ></div>
+
+
+                        <form
+                            id="chatForm"
+                            class="chat-composer"
+                        >
+
+                            <input
+                                id="chatMessageInput"
+                                type="text"
+                                placeholder="Write a message"
+                                autocomplete="off"
+                                aria-label="Message"
+                            >
+
+                            <button
+                                id="chatSendButton"
+                                type="submit"
+                                class="chat-send-button"
+                            >
+                                Send
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section
+            id="section-members"
+            class="workspace-section"
+        >
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Members</h2>
+                    <p>People working in this workspace.</p>
+                </div>
+
+
+
+            </div>
+
+            <div
+                id="membersList"
+                class="members-list"
+            ></div>
+
+        </section>
+
+    </main>
+
+
+    <!-- QUICK CREATE
+     *
+     * The single creation affordance for the whole workspace. Anchored to the
+     * bottom right of the content area so it stays put, and stays reachable,
+     * while everything scrolls behind it. -->
+
+    <div class="quick-create">
+
+        <div
+            id="quickCreateMenu"
+            class="quick-create-menu"
+            role="menu"
+        >
+
+            <p class="quick-create-label">
+                Add to this workspace
+            </p>
+
+            <button
+                id="quickNewTask"
+                type="button"
+                role="menuitem"
+            >
+                <span
+                    class="quick-create-icon"
+                    data-icon="task"
+                    aria-hidden="true"
+                ></span>
+                <span class="quick-create-word">
+                    New task
+                </span>
+            </button>
+
+            <button
+                id="quickNewNote"
+                type="button"
+                role="menuitem"
+            >
+                <span
+                    class="quick-create-icon"
+                    data-icon="note"
+                    aria-hidden="true"
+                ></span>
+                <span class="quick-create-word">
+                    New note
+                </span>
+            </button>
+
+            <button
+                id="quickNewFolder"
+                type="button"
+                role="menuitem"
+            >
+                <span
+                    class="quick-create-icon"
+                    data-icon="folder"
+                    aria-hidden="true"
+                ></span>
+                <span class="quick-create-word">
+                    New folder
+                </span>
+            </button>
+
+            <button
+                id="quickNewFile"
+                type="button"
+                role="menuitem"
+            >
+                <span
+                    class="quick-create-icon"
+                    data-icon="file"
+                    aria-hidden="true"
+                ></span>
+                <span class="quick-create-word">
+                    New file
+                </span>
+                <span
+                    id="quickNewFileWhere"
+                    class="quick-create-where"
+                ></span>
+            </button>
+
+            <button
+                id="quickNewResource"
+                type="button"
+                role="menuitem"
+            >
+                <span
+                    class="quick-create-icon"
+                    data-icon="resources"
+                    aria-hidden="true"
+                ></span>
+                <span class="quick-create-word">
+                    New resource
+                </span>
+            </button>
+
+            <button
+                id="quickNewMember"
+                type="button"
+                role="menuitem"
+            >
+                <span
+                    class="quick-create-icon"
+                    data-icon="members"
+                    aria-hidden="true"
+                ></span>
+                <span class="quick-create-word">
+                    Add member
+                </span>
+            </button>
+
+        </div>
+
+        <button
+            id="quickCreateButton"
+            class="quick-create-button"
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="quickCreateMenu"
+            aria-label="Create"
+            title="Create"
+        >
+            <span
+                class="quick-create-glyph"
+                aria-hidden="true"
+            >+</span>
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- OPEN WORKSPACE MODAL -->
+
+    <div
+        id="openWorkspaceModal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="openWorkspaceTitle"
+        style="display:none"
+    >
+
+        <div class="modal-card modal-card-compact workspace-picker">
+
+            <button
+                id="openWorkspaceClose"
+                class="modal-close"
+                type="button"
+                aria-label="Close"
+            >
+            </button>
+
+            <h2 id="openWorkspaceTitle">
+                Open workspace
+            </h2>
+
+            <label
+                class="visually-hidden"
+                for="openWorkspaceSearch"
+            >
+                Search workspaces
+            </label>
+
+            <input
+                id="openWorkspaceSearch"
+                class="workspace-picker-search"
+                type="search"
+                placeholder="Search workspaces"
+                autocomplete="off"
+            >
+
+            <div
+                id="openWorkspaceList"
+                class="workspace-picker-list"
+            ></div>
+
+            <p
+                id="openWorkspaceEmpty"
+                class="workspace-picker-empty"
+                hidden
+            >
+                No workspaces match your search.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- TASK MODAL -->
+
+<div
+    id="taskModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="taskModalTitle"
+>
+
+    <div class="modal-card">
+
+        <button
+            type="button"
+            class="modal-close"
+            data-close="taskModal"
+            aria-label="Close"
+        >
+        </button>
+
+        <h2 id="taskModalTitle">Create Task</h2>
+
+        <form id="taskForm" novalidate>
+
+            <label for="taskName">Task name</label>
+
+            <input
+                id="taskName"
+                type="text"
+                placeholder="What needs doing?"
+                autocomplete="off"
+                aria-describedby="taskError"
+            >
+
+            <label for="taskDescription">Description</label>
+
+            <textarea
+                id="taskDescription"
+                placeholder="Optional detail"
+            ></textarea>
+
+            <p
+                id="taskError"
+                class="field-error"
+                role="alert"
+            ></p>
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="modal-cancel"
+                    data-close="taskModal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="modal-submit"
+                >
+                    Create Task
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- NOTE MODAL -->
+
+<div
+    id="noteModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="noteModalTitle"
+>
+
+    <div class="modal-card">
+
+        <button
+            type="button"
+            class="modal-close"
+            data-close="noteModal"
+            aria-label="Close"
+        >
+        </button>
+
+        <h2 id="noteModalTitle">Create Note</h2>
+
+        <form id="noteForm" novalidate>
+
+            <label for="noteTitle">Note title</label>
+
+            <input
+                id="noteTitle"
+                type="text"
+                placeholder="Note title"
+                autocomplete="off"
+                aria-describedby="noteError"
+            >
+
+            <label for="noteContent">Note</label>
+
+            <textarea
+                id="noteContent"
+                placeholder="Write your note..."
+            ></textarea>
+
+            <fieldset class="note-palette">
+                <legend>Note colour</legend>
+
+                <div
+                    id="notePalette"
+                    class="note-palette-row"
+                    role="radiogroup"
+                    aria-label="Note colour"
+                ></div>
+
+                <input
+                    id="noteColor"
+                    type="hidden"
+                    value="#fbf0d4"
+                >
+            </fieldset>
+
+            <p
+                id="noteError"
+                class="field-error"
+                role="alert"
+            ></p>
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="modal-cancel"
+                    data-close="noteModal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="modal-submit"
+                >
+                    Create Note
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- FOLDER MODAL -->
+
+<div
+    id="folderModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="folderModalTitle"
+>
+
+    <div class="modal-card">
+
+        <button
+            type="button"
+            class="modal-close"
+            data-close="folderModal"
+            aria-label="Close"
+        >
+        </button>
+
+        <h2 id="folderModalTitle">Create Folder</h2>
+
+        <form id="folderForm" novalidate>
+
+            <label for="folderName">Folder name</label>
+
+            <input
+                id="folderName"
+                type="text"
+                placeholder="Folder name"
+                autocomplete="off"
+                aria-describedby="folderError"
+            >
+
+            <p
+                id="folderError"
+                class="field-error"
+                role="alert"
+            ></p>
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="modal-cancel"
+                    data-close="folderModal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="modal-submit"
+                >
+                    Create Folder
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- RESOURCE MODAL -->
+
+<div
+    id="resourceModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="resourceModalTitle"
+>
+
+    <div class="modal-card">
+
+        <button
+            type="button"
+            class="modal-close"
+            data-close="resourceModal"
+            aria-label="Close"
+        >
+        </button>
+
+        <h2 id="resourceModalTitle">Add Resource</h2>
+
+        <form id="resourceForm" novalidate>
+
+            <label for="resourceName">Name</label>
+
+            <input
+                id="resourceName"
+                type="text"
+                placeholder="What is this link?"
+                autocomplete="off"
+                aria-describedby="resourceError"
+            >
+
+            <label for="resourceDescription">Description</label>
+
+            <textarea
+                id="resourceDescription"
+                placeholder="Optional detail"
+            ></textarea>
+
+            <label for="resourceLink">URL</label>
+
+            <input
+                id="resourceLink"
+                type="text"
+                inputmode="url"
+                placeholder="https://example.com"
+                autocomplete="off"
+                aria-describedby="resourceError"
+            >
+
+            <p
+                id="resourceError"
+                class="field-error"
+                role="alert"
+            ></p>
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="modal-cancel"
+                    data-close="resourceModal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="modal-submit"
+                >
+                    Add Resource
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- MEMBER MODAL -->
+
+<div
+    id="memberModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="memberModalTitle"
+>
+
+    <div class="modal-card">
+
+        <button
+            type="button"
+            class="modal-close"
+            data-close="memberModal"
+            aria-label="Close"
+        >
+        </button>
+
+        <h2 id="memberModalTitle">Add Member</h2>
+
+        <form id="memberForm" novalidate>
+
+            <label for="memberName">Name</label>
+
+            <input
+                id="memberName"
+                type="text"
+                placeholder="Member name"
+                autocomplete="off"
+                aria-describedby="memberError"
+            >
+
+            <label for="memberEmail">Email</label>
+
+            <input
+                id="memberEmail"
+                type="text"
+                inputmode="email"
+                placeholder="name@company.com"
+                autocomplete="off"
+                aria-describedby="memberError"
+            >
+
+            <p
+                id="memberError"
+                class="field-error"
+                role="alert"
+            ></p>
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="modal-cancel"
+                    data-close="memberModal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="modal-submit"
+                >
+                    Add Member
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- CODE FILE MODAL -->
+
+<div
+    id="codeFileModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="codeFileModalTitle"
+>
+
+    <div class="modal-card">
+
+        <button
+            type="button"
+            class="modal-close"
+            data-close="codeFileModal"
+            aria-label="Close"
+        >
+        </button>
+
+        <h2 id="codeFileModalTitle">New File</h2>
+
+        <form id="codeFileForm" novalidate>
+
+            <label for="codeFileFolder">Folder</label>
+
+            <select id="codeFileFolder"></select>
+
+            <label for="codeFileName">File name</label>
+
+            <input
+                id="codeFileName"
+                type="text"
+                placeholder="index.html"
+                autocomplete="off"
+                aria-describedby="codeFileError"
+            >
+
+            <p
+                id="codeFileHelp"
+                class="field-help"
+            >
+                Include the extension. The extension decides how
+                the file is highlighted and whether it can be
+                previewed.
+            </p>
+
+            <p
+                id="codeFileError"
+                class="field-error"
+                role="alert"
+            ></p>
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="modal-cancel"
+                    data-close="codeFileModal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="modal-submit"
+                >
+                    Create File
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- CONFIRM MODAL -->
+
+<div
+    id="confirmModal"
+    class="modal"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="confirmModalTitle"
+    aria-describedby="confirmModalMessage"
+>
+
+    <div class="modal-card modal-card-compact">
+
+        <h2 id="confirmModalTitle">Are you sure?</h2>
+
+        <p
+            id="confirmModalMessage"
+            class="confirm-message"
+        ></p>
+
+        <div class="confirm-actions">
+
+            <button
+                id="confirmCancelButton"
+                type="button"
+                class="confirm-cancel"
+                data-autofocus
+            >
+                Cancel
+            </button>
+
+            <button
+                id="confirmAcceptButton"
+                type="button"
+                class="confirm-accept"
+            >
+                Confirm
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- STATUS / LIVE REGIONS -->
+
+<div
+    id="appStatus"
+    class="app-status"
+    role="status"
+    aria-live="polite"
+></div>
+
+<div
+    id="appAnnouncer"
+    class="visually-hidden"
+    aria-live="polite"
+    aria-atomic="true"
+></div>
+
+
+<script src="js/app.js"></script>
+
+</body>
+</html>

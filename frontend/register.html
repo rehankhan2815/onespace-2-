@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>OneSpace — Register</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+</head>
+
+<body>
+
+<main class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-brand">
+            <h1>OneSpace</h1>
+
+            <p>
+                Create your space and start building.
+            </p>
+        </div>
+
+
+        <form id="registerForm">
+
+            <h2>Create account</h2>
+
+            <label for="registerName">
+                Name
+            </label>
+
+            <input
+                id="registerName"
+                type="text"
+                placeholder="Your name"
+                required
+            >
+
+
+            <label for="registerEmail">
+                Email
+            </label>
+
+            <input
+                id="registerEmail"
+                type="email"
+                placeholder="Enter your email"
+                required
+            >
+
+
+            <label for="registerPassword">
+                Password
+            </label>
+
+            <input
+                id="registerPassword"
+                type="password"
+                placeholder="Create a password"
+                required
+            >
+
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Create account
+            </button>
+
+        </form>
+
+
+        <p class="auth-switch">
+            Already have an account?
+
+            <a href="index.html">
+                Log in
+            </a>
+        </p>
+
+    </div>
+
+</main>
+
+
+<script src="js/auth.js"></script>
+
+</body>
+</html>

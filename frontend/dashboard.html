@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>OneSpace</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+</head>
+
+<body class="home-page">
+    <header class="home-topbar">
+
+        <div class="home-brand">
+            <span
+                class="home-brand-mark"
+                aria-hidden="true"
+            ></span>
+            OneSpace
+        </div>
+
+        <div class="home-search" id="homeSearchWrap" hidden>
+
+            <span
+                class="home-search-icon"
+                data-icon="search"
+                aria-hidden="true"
+            ></span>
+
+            <input
+                id="homeSearch"
+                type="search"
+                placeholder="Search workspaces"
+                aria-label="Search workspaces"
+                autocomplete="off"
+            >
+
+        </div>
+
+        <div class="home-topbar-right">
+
+            <span
+                id="homeUserName"
+                class="home-user"
+            ></span>
+
+            <button
+                id="logoutButton"
+                class="quiet-button quiet-button-icon"
+                type="button"
+            >
+                <span
+                    class="quiet-button-icon-slot"
+                    data-icon="logout"
+                    aria-hidden="true"
+                ></span>
+                <span class="quiet-button-word">
+                    Logout
+                </span>
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <main class="home-main">
+
+        <div class="home-intro">
+
+            <p class="home-kicker" id="homeDate"></p>
+
+            <h1 id="welcomeMessage">
+                Hello again
+            </h1>
+
+            <p class="home-sub">
+                Everything you are working on, one workspace at a time.
+            </p>
+
+        </div>
+
+
+        <section
+            id="workspaceGrid"
+            class="workspace-grid"
+            aria-label="Your workspaces"
+        ></section>
+
+
+        <section
+            id="noSearchResults"
+            class="home-empty home-empty-compact"
+            hidden
+        >
+
+            <h2>
+                Nothing matches that
+            </h2>
+
+            <p>
+                Try a different word, or clear the search to see all of your
+                workspaces.
+            </p>
+
+            <button
+                id="clearSearchButton"
+                class="quiet-button"
+                type="button"
+            >
+                Clear search
+            </button>
+
+        </section>
+
+
+        <section
+            id="emptyWorkspaceMessage"
+            class="home-empty"
+            hidden
+        >
+
+            <span
+                class="home-empty-mark"
+                data-icon="layers"
+                aria-hidden="true"
+            ></span>
+
+            <h2>
+                Start your first workspace
+            </h2>
+
+            <p>
+                A workspace holds the tasks, notes, files and links for one
+                project, and you can make as many as you need.
+            </p>
+
+            <button
+                id="emptyCreateWorkspaceButton"
+                class="primary-button"
+                type="button"
+            >
+                Create a workspace
+            </button>
+
+            <p class="home-empty-hint">
+                You can rename or delete it later.
+            </p>
+
+        </section>
+
+
+    </main>
+
+
+    <button
+        id="createWorkspaceButton"
+        class="home-create"
+        type="button"
+        aria-label="Create workspace"
+        title="Create workspace"
+    >
+        <span
+            class="home-create-glyph"
+            data-icon="plus"
+            aria-hidden="true"
+        ></span>
+    </button>
+
+
+    <!-- CREATE WORKSPACE -->
+
+    <div
+        id="workspaceModal"
+        class="modal"
+        style="display:none"
+    >
+
+        <div
+            class="modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="createWorkspaceTitle"
+        >
+
+            <button
+                id="closeWorkspaceModal"
+                type="button"
+                class="modal-close"
+                aria-label="Close"
+            >
+                &times;
+            </button>
+
+            <h2 id="createWorkspaceTitle">
+                Create workspace
+            </h2>
+
+            <form id="workspaceForm">
+
+                <label for="workspaceName">
+                    Name
+                </label>
+
+                <input
+                    id="workspaceName"
+                    type="text"
+                    placeholder="Workspace name"
+                    data-autofocus
+                    required
+                >
+
+                <label for="workspaceDescription">
+                    Description
+                </label>
+
+                <textarea
+                    id="workspaceDescription"
+                    rows="3"
+                    placeholder="What is this workspace for?"
+                ></textarea>
+
+                <div class="form-actions">
+                    <button
+                        id="cancelWorkspaceModal"
+                        class="modal-cancel"
+                        type="button"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        class="modal-submit"
+                        type="submit"
+                    >
+                        Create workspace
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- DELETE WORKSPACE -->
+
+    <div
+        id="deleteWorkspaceModal"
+        class="modal"
+        style="display:none"
+    >
+
+        <div
+            class="modal-card modal-card-narrow"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="deleteWorkspaceTitle"
+            aria-describedby="deleteWorkspaceMessage"
+        >
+
+            <h2 id="deleteWorkspaceTitle">
+                Delete workspace?
+            </h2>
+
+            <p
+                id="deleteWorkspaceMessage"
+                class="modal-text"
+            >
+                This will permanently delete this workspace
+                and its stored data.
+            </p>
+
+            <div class="form-actions">
+
+                <button
+                    id="cancelDeleteWorkspace"
+                    class="modal-cancel"
+                    type="button"
+                    data-autofocus
+                >
+                    Cancel
+                </button>
+
+                <button
+                    id="confirmDeleteWorkspace"
+                    class="modal-submit modal-submit-danger"
+                    type="button"
+                >
+                    Delete workspace
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+<script src="js/dashboard.js"></script>
+
+</body>
+</html>
