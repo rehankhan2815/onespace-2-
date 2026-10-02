@@ -75,14 +75,9 @@ function normalizeWorkspace(workspace) {
     workspace.notes = workspace.notes || [];
     workspace.folders = workspace.folders || [];
     workspace.resources = workspace.resources || [];
-
-    /* Members and chat were removed from the product. Workspaces saved
-       before that still carry the arrays, so they are dropped here rather
-       than left in localStorage forever. Deleting on read means the pruning
-       happens on the next save without needing a migration script. */
-    delete workspace.members;
-    delete workspace.personalChats;
-    delete workspace.groupMessages;
+    workspace.members = workspace.members || [];
+    workspace.personalChats = workspace.personalChats || [];
+    workspace.groupMessages = workspace.groupMessages || [];
 
     /* Code and Files are two views of one project tree, so the shape of a
        stored file is settled here rather than at each read site. Older
@@ -331,6 +326,61 @@ function cleanText(value) {
 }
 
 
+function memberDisplayName(member) {
+
+    if (!member) {
+        return "Member";
+    }
+
+    const name = cleanText(member.name);
+
+    if (name) {
+        return name;
+    }
+
+    const email = cleanText(member.email).toLowerCase();
+
+    if (email) {
+
+        const local = email.split("@")[0];
+
+        if (local) {
+            return local;
+        }
+    }
+
+    return "Member";
+}
+
+
+function memberInitials(member) {
+
+    const name = cleanText(member && member.name);
+
+    if (name) {
+
+        const parts = name.split(/\s+/).filter(Boolean);
+
+        if (parts.length >= 2) {
+            return (
+                parts[0].charAt(0) +
+                parts[parts.length - 1].charAt(0)
+            ).toUpperCase();
+        }
+
+        return parts[0].charAt(0).toUpperCase();
+    }
+
+    const email = cleanText(member && member.email);
+
+    if (email) {
+        return email.charAt(0).toUpperCase();
+    }
+
+    return "?";
+}
+
+
 function isValidHttpUrl(value) {
 
     const candidate = cleanText(value);
@@ -387,6 +437,14 @@ function safeHexColor(value, fallback) {
     return /^#[0-9a-f]{6}$/i.test(cleanText(value))
         ? cleanText(value)
         : fallback;
+}
+
+
+function isCurrentUserEmail(email) {
+
+    const own = cleanText(currentUser && currentUser.email).toLowerCase();
+
+    return Boolean(own) && own === cleanText(email).toLowerCase();
 }
 
 
@@ -493,6 +551,11 @@ const ICON_PATHS = {
     note: '<path d="M6 4.5h8.5L19 9v10.5H6Z"/><path d="M14 4.5V9h5"/><path d="M9 13h7"/><path d="M9 16.5h4.5"/>',
     resources: '<path d="M10.5 13.5a3.5 3.5 0 0 0 5 0l3-3a3.54 3.54 0 0 0-5-5l-1.2 1.2"/><path d="M13.5 10.5a3.5 3.5 0 0 0-5 0l-3 3a3.54 3.54 0 0 0 5 5l1.2-1.2"/>',
     code: '<path d="M9 7.5 4.5 12 9 16.5"/><path d="M15 7.5 19.5 12 15 16.5"/>',
+    chat: '<path d="M20 12.5c0 3.6-3.6 6.5-8 6.5a9.4 9.4 0 0 1-2.6-.4L4.5 20l1.1-3.4A6.4 6.4 0 0 1 4 12.5C4 8.9 7.6 6 12 6s8 2.9 8 6.5Z"/>',
+    members: '<circle cx="9.5" cy="8.5" r="3.2"/><path d="M3.5 19.5c0-3.1 2.7-5 6-5s6 1.9 6 5"/><path d="M16 5.6a3.2 3.2 0 0 1 0 5.8"/><path d="M17.5 14.8c1.9.7 3 2.2 3 4.7"/>',
+    /* Singular alias. Activity records are typed "member", so without this a
+       member entry would quietly fall back to the document glyph. */
+    member: '<circle cx="9.5" cy="8.5" r="3.2"/><path d="M3.5 19.5c0-3.1 2.7-5 6-5s6 1.9 6 5"/><path d="M16 5.6a3.2 3.2 0 0 1 0 5.8"/><path d="M17.5 14.8c1.9.7 3 2.2 3 4.7"/>',
     file: '<path d="M6.5 4.5h7L17.5 8v11.5h-11Z"/><path d="M13.5 4.5V8h4"/>',
     html: '<path d="M6 6.5 5 12l1 5.5"/><path d="M18 6.5 19 12l-1 5.5"/><path d="M14 10 11.5 18"/><path d="M10 10l2.5 8"/>',
     css: '<path d="M5 5.5h14L17.6 14 12 19.5 6.4 14Z"/><path d="M9 9.5h6"/><path d="M9.4 13.4c1.6 1.1 3.6 1.1 5.2 0"/>',
@@ -810,7 +873,7 @@ function hydrateWorkspaceShell() {
 
     renderHeaderMeta();
 
-    document.title = currentWorkspace.name + " — OneSpace";
+    document.title = currentWorkspace.name + " ÔÇö OneSpace";
 }
 
 
@@ -866,7 +929,7 @@ function renderHeaderMeta() {
             (folderCount === 1
                 ? " folder"
                 : " folders") +
-            " · " +
+            " ┬À " +
             fileCount +
             (fileCount === 1 ? " file" : " files")
         );
@@ -887,6 +950,28 @@ function renderHeaderMeta() {
             ((currentWorkspace.resources || []).length === 1
                 ? " saved link"
                 : " saved links")
+        );
+    }
+
+    if (activeSection === "members") {
+        lines.push(
+            (currentWorkspace.members || []).length +
+            ((currentWorkspace.members || []).length === 1
+                ? " person"
+                : " people")
+        );
+    }
+
+    if (activeSection === "chat") {
+
+        const memberCount =
+            (currentWorkspace.members || []).length;
+
+        lines.push(
+            memberCount +
+            (memberCount === 1
+                ? " conversation"
+                : " conversations")
         );
     }
 
@@ -1650,7 +1735,7 @@ const WORKSPACE_SECTIONS = [
     },
     {
         id: "files",
-        label: "Folders",
+        label: "Files",
         icon: "files",
         subtitle: "The project tree shared with Code."
     },
@@ -1671,6 +1756,18 @@ const WORKSPACE_SECTIONS = [
         label: "Code",
         icon: "code",
         subtitle: "Write project files and see frontend results without leaving the workspace."
+    },
+    {
+        id: "chat",
+        label: "Chat",
+        icon: "chat",
+        subtitle: "Conversations with the people in this workspace."
+    },
+    {
+        id: "members",
+        label: "Members",
+        icon: "members",
+        subtitle: "People working in this workspace."
     }
 ];
 
@@ -1860,7 +1957,7 @@ if (sidebarToggleButton) {
 /* RAIL MODE
  *
  * On a wide screen the sidebar can shrink to a 64px icon rail so the work
- * area gets the space. This is a preference, not a mode, so it is stored —
+ * area gets the space. This is a preference, not a mode, so it is stored ÔÇö
  * but under its own key, and never applied on a narrow screen where the
  * sidebar is already a drawer and collapsing it would mean something
  * different. */
@@ -1996,7 +2093,7 @@ if (logoutButtonIconHost) {
  *
  * Controls that live in the markup rather than in a render pass: the modal
  * close buttons and the drawer close button. They are drawn here instead of
- * typed as glyphs in the HTML, because a literal "&times;" or "×" is a
+ * typed as glyphs in the HTML, because a literal "&times;" or "├ù" is a
  * different shape in every font, and the icons are wanted to look like the
  * rest of the set. The HTML keeps an empty element and this fills it, so the
  * markup stays declarative and the drawing has exactly one source. */
@@ -2100,10 +2197,6 @@ function showSection(section, isSilent) {
         activeSection !== section;
 
     activeSection = section;
-
-    /* The + menu offers what this section can create, so it has to follow
-       every change, including the silent one that restores a section on load. */
-    applyAddMenuForSection();
 
     document
         .querySelectorAll(
@@ -2313,85 +2406,6 @@ function renderQuickCreateContext() {
 }
 
 
-/* What the floating + offers, per section.
- *
- * It used to list every kind of thing from everywhere, so standing in Files
- * offered a new task and standing in Resources offered a new note. Those
- * actions belong to their own sections, and offering the rest only made the
- * menu longer than the choice actually in front of you.
- *
- * Two sections keep more than one item on purpose. Files is the project tree
- * and is the only place either a file or a folder can be made, so taking
- * either away there would leave no way to create it at all. Overview shows
- * everything, being the one view with nothing specific in it. Code shows only
- * the file because its own header already carries + File, Open and + Folder. */
-const ADD_MENU_ITEMS = {
-    overview: {
-        label: "Add to this workspace",
-        items: [
-            "quickNewTask",
-            "quickNewNote",
-            "quickNewFolder",
-            "quickNewFile",
-            "quickNewResource"
-        ]
-    },
-    tasks: {
-        label: "Add a task",
-        items: ["quickNewTask"]
-    },
-    files: {
-        label: "Add to this project",
-        items: ["quickNewFile", "quickNewFolder"]
-    },
-    notes: {
-        label: "Add a note",
-        items: ["quickNewNote"]
-    },
-    resources: {
-        label: "Add a resource",
-        items: ["quickNewResource"]
-    },
-    code: {
-        label: "Add a file",
-        items: ["quickNewFile"]
-    }
-};
-
-/* The element is looked up here rather than through the shared const because
-   this runs from showSection, which is reached from code above where that
-   const is declared. */
-function applyAddMenuForSection() {
-
-    const menu = document.getElementById("quickCreateMenu");
-
-    if (!menu) {
-        return;
-    }
-
-    const config = ADD_MENU_ITEMS[activeSection];
-
-    const allowed = config ? config.items : [];
-
-    const label = document.getElementById("quickCreateLabel");
-
-    if (label) {
-        label.textContent = config
-            ? config.label
-            : "Add to this workspace";
-    }
-
-    /* The buttons are hidden rather than rebuilt, because their click handlers
-       are wired once at load and a rebuilt node would arrive with none. */
-    Array.prototype.forEach.call(
-        menu.querySelectorAll("button"),
-        function (button) {
-            button.hidden = allowed.indexOf(button.id) === -1;
-        }
-    );
-}
-
-
 function isAddMenuOpen() {
 
     return (
@@ -2430,13 +2444,8 @@ function addMenuItems() {
         return [];
     }
 
-    /* Only the items this section actually offers. Arrow keys must not walk
-       into a hidden button, or focus lands somewhere invisible. */
-    return Array.prototype.filter.call(
-        quickCreateMenu.querySelectorAll("button"),
-        function (button) {
-            return !button.hidden;
-        }
+    return Array.from(
+        quickCreateMenu.querySelectorAll("button")
     );
 }
 
@@ -2558,21 +2567,15 @@ const MODAL_ERRORS = {
     folderModal: [["folderError", "folderName"]],
     resourceModal: [
         ["resourceError", "resourceName"],
-        ["resourceError", "resourceLink"],
-        ["resourceError", "resourceFileInput"]
+        ["resourceError", "resourceLink"]
     ],
-    codeOpenModal: [],
-    codeFilePreviewModal: []
+    memberModal: [
+        ["memberError", "memberName"],
+        ["memberError", "memberEmail"]
+    ]
 };
 
 const modalTriggers = {};
-
-/* Dialogs can sit on top of each other now that a file can be previewed from
-   inside the open dialog. Which one is "the" open dialog is no longer a
-   question the document order can answer, so the order they were opened in is
-   kept here. Escape has to close the one on top, not whichever happens to come
-   first in the markup. */
-const modalStack = [];
 
 
 function openModal(id) {
@@ -2588,16 +2591,6 @@ function openModal(id) {
        whenever one dialog is opened on top of another. */
     modalTriggers[id] =
         document.activeElement;
-
-    /* Reopening a dialog that is already open moves it back to the top rather
-       than adding it twice. */
-    const stacked = modalStack.indexOf(id);
-
-    if (stacked !== -1) {
-        modalStack.splice(stacked, 1);
-    }
-
-    modalStack.push(id);
 
     modal.style.display = "flex";
 
@@ -2657,12 +2650,6 @@ function closeModal(id) {
     }
 
     modal.style.display = "none";
-
-    const stacked = modalStack.indexOf(id);
-
-    if (stacked !== -1) {
-        modalStack.splice(stacked, 1);
-    }
 
     const pairs = MODAL_ERRORS[id] || [];
 
@@ -2862,23 +2849,7 @@ if (confirmCancelButton) {
 }
 
 
-/* The dialog on top of the stack. Falling back to the markup order covers a
-   dialog that was opened before this existed, and costs nothing when the
-   stack is in step. */
 function openModalElement() {
-
-    while (modalStack.length) {
-
-        const top = modalStack[modalStack.length - 1];
-
-        const modal = document.getElementById(top);
-
-        if (modal && modal.style.display === "flex") {
-            return modal;
-        }
-
-        modalStack.pop();
-    }
 
     return document.querySelector(
         ".modal[style*='flex']"
@@ -2905,6 +2876,13 @@ document.addEventListener(
 
         if (open) {
             closeModal(open.id);
+            return;
+        }
+
+        /* On a narrow screen the conversation fills the pane, so Escape is
+           the keyboard equivalent of the Back arrow. */
+        if (isChatNarrow() && activeChatMemberId) {
+            closeChatConversation();
         }
     }
 );
@@ -2971,7 +2949,8 @@ const HIGHLIGHT_SELECTORS = {
     task: ".task-item",
     note: ".note-card",
     folder: ".folder-card",
-    resource: ".resource-row"
+    resource: ".resource-row",
+    member: ".member-card"
 };
 
 function applyHighlight(root) {
@@ -3014,11 +2993,14 @@ function commitChanges(options) {
 
     const saved = saveCurrentWorkspace();
 
-    /* The whole workspace is re-rendered by default. Code opts out, because a
-       full render would pull the text out from under the caret while it is
-       being typed, and rebuilding five other sections on every keystroke
-       makes typing feel heavy. */
-    if (config.only === "code") {
+    /* The whole workspace is re-rendered by default. Chat opts out,
+       because rebuilding five other sections on every keystroke of a
+       message is wasted work and makes sending feel heavy. Code opts out
+       for the same reason, and because a full render would pull the text
+       out from under the caret while it is being typed. */
+    if (config.only === "chat") {
+        renderChat();
+    } else if (config.only === "code") {
         renderCode();
     } else {
         renderAll();
@@ -3397,10 +3379,6 @@ function renderTasks() {
 
     const isEmpty = tasks.length === 0;
 
-    const tasksSectionDesc = document.getElementById("tasksSectionDesc");
-    if (tasksSectionDesc) {
-        tasksSectionDesc.hidden = !isEmpty;
-    }
 
     /* Two columns both reading "No tasks yet." tells the user nothing about
        what to do next. Once the workspace genuinely has no tasks, the
@@ -3805,11 +3783,6 @@ function renderNotes() {
 
     const notes = currentWorkspace.notes || [];
 
-    const notesSectionDesc = document.getElementById("notesSectionDesc");
-    if (notesSectionDesc) {
-        notesSectionDesc.hidden = notes.length > 0;
-    }
-
     if (notes.length === 0) {
 
         grid.appendChild(
@@ -4064,11 +4037,6 @@ function renderFolders() {
 
     const folders = currentWorkspace.folders || [];
 
-    const foldersSectionDesc = document.getElementById("foldersSectionDesc");
-    if (foldersSectionDesc) {
-        foldersSectionDesc.hidden = folders.length > 0;
-    }
-
     const openFolder = codeFindFolder(openFolderId);
 
     /* A folder that was deleted elsewhere must not leave the browser
@@ -4100,7 +4068,7 @@ function renderFolders() {
         return;
     }
 
-    /* ROOT — one row per folder, each a button rather than a card with its
+    /* ROOT ÔÇö one row per folder, each a button rather than a card with its
        own separate target. The whole tile opens the folder, so there is
        nothing to miss. */
     const list = document.createElement("div");
@@ -4230,7 +4198,7 @@ function renderFolderContents(grid, folder) {
                 {
                     icon: "file",
                     wide: false,
-                    hint: "Use “New file” above, or the + button."
+                    hint: "Use ÔÇ£New fileÔÇØ above, or the + button."
                 }
             )
         );
@@ -4404,39 +4372,6 @@ const CODE_STARTERS = {
     cpp: "#include <iostream>\n\nint main() {\n    std::cout << \"Hello\" << std::endl;\n    return 0;\n}\n"
 };
 
-/* Binary file extensions that should be stored as data URLs and displayed, not edited */
-const BINARY_EXTENSIONS = {
-    /* Images */
-    png: "image/png",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    gif: "image/gif",
-    webp: "image/webp",
-    svg: "image/svg+xml",
-    bmp: "image/bmp",
-    ico: "image/x-icon",
-    /* PDF */
-    pdf: "application/pdf",
-    /* Other binary formats */
-    zip: "application/zip",
-    doc: "application/msword",
-    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    xls: "application/vnd.ms-excel",
-    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ppt: "application/vnd.ms-powerpoint",
-    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-};
-
-function isBinaryExtension(fileName) {
-    const ext = codeExtensionOf(fileName);
-    return BINARY_EXTENSIONS.hasOwnProperty(ext);
-}
-
-function getMimeType(fileName) {
-    const ext = codeExtensionOf(fileName);
-    return BINARY_EXTENSIONS[ext] || "application/octet-stream";
-}
-
 /* The HTML starter points at style.css and script.js. Creating the page
    without them would make the very first preview report two missing files
    that the user never asked for, so they are created alongside it. */
@@ -4476,27 +4411,6 @@ function codeSizeLabel(content) {
 
     return (
         Math.round(text.length / 102.4) / 10 +
-        " KB"
-    );
-}
-
-/* Same unit, but for a byte count that already exists. A device file arrives
-   with a size and no string, and building a throwaway string just to measure
-   it would be both wasteful and misleading for anything that large. */
-function codeByteLabel(bytes) {
-
-    const size = Number(bytes) || 0;
-
-    if (!size) {
-        return "Empty file";
-    }
-
-    if (size < 1024) {
-        return size + " B";
-    }
-
-    return (
-        Math.round(size / 102.4) / 10 +
         " KB"
     );
 }
@@ -4961,34 +4875,6 @@ function codeSyncEditor() {
     codeEditorEmpty.hidden = true;
     codeEditorEmpty.innerHTML = "";
 
-    /* Handle binary files - display instead of edit */
-    if (file.isBinary) {
-        codeEditor.style.display = "none";
-        codeHighlight.style.display = "none";
-        codeGutterLines.style.display = "none";
-
-        const mimeType = file.mimeType || "application/octet-stream";
-        const content = codeTextOf(key);
-
-        let viewerHtml = "";
-        if (mimeType.startsWith("image/")) {
-            viewerHtml = '<img src="' + content + '" alt="' + file.name + '" style="max-width:100%;max-height:70vh;display:block;margin:auto;">';
-        } else if (mimeType === "application/pdf") {
-            viewerHtml = '<iframe src="' + content + '" style="width:100%;height:70vh;border:none;"></iframe>';
-        } else {
-            viewerHtml = '<div style="padding:20px;text-align:center;color:var(--text-2);">Cannot preview this file type (' + (file.mimeType || "unknown") + ').<br>File: ' + file.name + '</div>';
-        }
-
-        codeEditorEmpty.hidden = false;
-        codeEditorEmpty.innerHTML = viewerHtml;
-        return;
-    }
-
-    /* Text files - normal editor behavior */
-    codeEditor.style.display = "";
-    codeHighlight.style.display = "";
-    codeGutterLines.style.display = "";
-
     const text = codeTextOf(key);
 
     /* Only write when the text actually differs, otherwise the caret would
@@ -5419,829 +5305,6 @@ function codeRefreshPreviewForSave(folderId, file) {
 }
 
 
-/* OPEN FILES
- *
- * Two sources, one tree. A file already in the project is opened by clicking
- * it. A file on the device is read through the browser's own picker and copied
- * into a folder here, because nothing else in Code can hold a handle to
- * something outside localStorage: a blob URL would die on the next reload and
- * take the preview with it. Copying also means an imported file is a real
- * project file afterwards, saved by the same Save button as any other.
- *
- * What gets copied is decided by what can honestly be stored and run, so the
- * list is explicit and anything refused is reported rather than dropped. */
-
-const CODE_IMPORT_EXTENSIONS = [
-    "html", "htm", "css", "js", "mjs", "cjs", "json",
-    "md", "markdown", "txt", "csv", "xml", "svg",
-    "py", "java", "c", "h", "cpp", "cc", "cxx", "hpp"
-];
-
-/* localStorage holds roughly five megabytes for the whole origin and the
-   project tree shares that budget with everything else saved here. These caps
-   keep one oversized paste from pushing the workspace over the edge, which
-   would otherwise fail on the next unrelated save. */
-const CODE_IMPORT_MAX_FILE_BYTES = 400 * 1024;
-const CODE_IMPORT_MAX_TOTAL_BYTES = 1500 * 1024;
-
-/* Where device files land when the project has no folder to put them in.
-   Created on demand rather than asked about, so the picker stays one click. */
-const CODE_IMPORT_FALLBACK_FOLDER = "Imported";
-
-/* Shown in place of a name that could not be read from the device. The row is
-   refused either way, so the label only has to be recognisable. */
-const CODE_IMPORT_UNNAMED = "unnamed file";
-
-let codeChosenFiles = [];
-let codeOpenSource = "workspace";
-
-
-function codeIsImportable(name) {
-    return CODE_IMPORT_EXTENSIONS.indexOf(
-        codeExtensionOf(name)
-    ) !== -1;
-}
-
-/* A name from the device is untrusted input that ends up as a key and a
-   label. Directory parts are dropped rather than honoured, because the
-   project tree is flat per folder and a path would silently become a file
-   called "src/index.html". */
-function codeSafeFileName(rawName) {
-
-    const base = String(rawName || "")
-        .split(/[\\/]/).pop()
-        .trim();
-
-    if (!base || base === "." || base === "..") {
-        return "";
-    }
-
-    /* Control characters and the characters that break a URL or a label. */
-    return base.replace(/[\u0000-\u001f<>:"|?*]/g, "_");
-}
-
-/* An import must never overwrite work that is already in the project, so a
-   collision is suffixed rather than replaced. The user is told which name each
-   file ended up with. */
-function codeUniqueFileName(folder, name) {
-
-    const taken = function (candidate) {
-        return (folder.files || []).some(function (file) {
-            return file.name === candidate;
-        });
-    };
-
-    if (!taken(name)) {
-        return name;
-    }
-
-    const dot = name.lastIndexOf(".");
-    const stem = dot > 0 ? name.slice(0, dot) : name;
-    const ext = dot > 0 ? name.slice(dot) : "";
-
-    let suffix = 2;
-
-    while (taken(stem + "-" + suffix + ext)) {
-        suffix += 1;
-    }
-
-    return stem + "-" + suffix + ext;
-}
-
-function codeCreateImportFolder() {
-
-    const folder = {
-        id: Date.now(),
-        name: CODE_IMPORT_FALLBACK_FOLDER,
-        files: [],
-        createdAt: nowIso()
-    };
-
-    currentWorkspace.folders.push(folder);
-
-    return folder;
-}
-
-/* Where an import lands is the reader's decision, made in the dialog, so the
-   choice is read from the select rather than inferred from whatever file
-   happens to be open. Guessing here is what put files in the wrong folder:
-   the select looked like it worked and silently did nothing. */
-function codeResolveImportFolder() {
-
-    const select = document.getElementById("codeLocalFolder");
-
-    const chosen = codeFindFolder(select ? select.value : null);
-
-    if (chosen) {
-        return chosen;
-    }
-
-    /* No folder to put files in yet. One is created and shown in the select
-       so the destination stays visible rather than being decided silently. */
-    const created = codeFolders().length
-        ? codeFolders()[0]
-        : codeCreateImportFolder();
-
-    populateCodeLocalFolderSelect();
-
-    const selectNow = document.getElementById("codeLocalFolder");
-
-    if (selectNow) {
-        selectNow.value = String(created.id);
-    }
-
-    return created;
-}
-
-function populateCodeLocalFolderSelect() {
-
-    const select = document.getElementById("codeLocalFolder");
-
-    if (!select) {
-        return;
-    }
-
-    select.innerHTML = "";
-
-    codeFolders().forEach(function (folder) {
-
-        const option = document.createElement("option");
-        option.value = String(folder.id);
-        option.textContent = folder.name;
-
-        if (codeActiveFolder() && sameId(folder.id, codeActiveFolder().id)) {
-            option.selected = true;
-        }
-
-        select.appendChild(option);
-    });
-}
-
-
-function codeSetOpenSource(source) {
-
-    codeOpenSource = source === "computer" ? "computer" : "workspace";
-
-    const isWorkspace = codeOpenSource === "workspace";
-
-    const workspaceTab = document.getElementById("codeOpenSourceWorkspace");
-    const computerTab = document.getElementById("codeOpenSourceComputer");
-
-    [workspaceTab, computerTab].forEach(function (tab) {
-
-        if (!tab) {
-            return;
-        }
-
-        const isOn =
-            tab.dataset.openSource === codeOpenSource;
-
-        tab.classList.toggle("is-active", isOn);
-        tab.setAttribute("aria-selected", isOn ? "true" : "false");
-    });
-
-    const workspacePane = document.getElementById("codeOpenWorkspacePane");
-    const computerPane = document.getElementById("codeOpenComputerPane");
-
-    if (workspacePane) {
-        workspacePane.hidden = !isWorkspace;
-    }
-
-    if (computerPane) {
-        computerPane.hidden = isWorkspace;
-    }
-
-    if (isWorkspace) {
-        codeRenderWorkspaceFiles();
-        return;
-    }
-
-    populateCodeLocalFolderSelect();
-    codeRenderChosenFiles();
-
-    const search = document.getElementById("codeOpenSearch");
-
-    if (search) {
-        search.value = "";
-    }
-}
-
-
-function codeRenderWorkspaceFiles() {
-
-    const list = document.getElementById("codeOpenWorkspaceList");
-
-    if (!list) {
-        return;
-    }
-
-    list.innerHTML = "";
-
-    const search = document.getElementById("codeOpenSearch");
-    const term = cleanText(search ? search.value : "").toLowerCase();
-
-    let total = 0;
-
-    codeFolders().forEach(function (folder) {
-
-        (folder.files || []).forEach(function (file) {
-
-            total += 1;
-
-            if (
-                term &&
-                file.name.toLowerCase().indexOf(term) === -1 &&
-                folder.name.toLowerCase().indexOf(term) === -1
-            ) {
-                return;
-            }
-
-            const row = document.createElement("button");
-            row.type = "button";
-            row.className = "code-open-row";
-
-            const key = codeKey(folder.id, file.id);
-
-            if (key === codeActiveKey) {
-                row.classList.add("is-active");
-                row.setAttribute("aria-current", "true");
-            }
-
-            row.appendChild(createFileBadge(file.name));
-
-            const name = document.createElement("span");
-            name.className = "code-open-row-name";
-            name.textContent = file.name;
-            row.appendChild(name);
-
-            const where = document.createElement("span");
-            where.className = "code-open-row-where";
-            where.textContent = folder.name;
-            row.appendChild(where);
-
-            const meta = document.createElement("span");
-            meta.className = "code-open-row-meta";
-            meta.textContent =
-                codeLanguageLabel(file.name) +
-                "  ·  " +
-                codeSizeLabel(file.content);
-            row.appendChild(meta);
-
-            row.addEventListener("click", function () {
-
-                codeOpenEntry(folder.id, file.id);
-
-                closeModal("codeOpenModal");
-
-                renderCode();
-
-                if (isCodeNarrow()) {
-                    setCodePanel("editor");
-                }
-
-                showStatus("Opened " + file.name);
-            });
-
-            list.appendChild(row);
-        });
-    });
-
-    if (!total) {
-
-        const empty = document.createElement("div");
-        empty.className = "code-open-empty";
-        empty.textContent =
-            "This workspace has no files yet. Create one, or copy some in from your computer.";
-
-        list.appendChild(empty);
-        return;
-    }
-
-    if (!list.childNodes.length) {
-
-        const empty = document.createElement("div");
-        empty.className = "code-open-empty";
-        empty.textContent = "No file matches that search.";
-
-        list.appendChild(empty);
-    }
-}
-
-
-function codeRenderChosenFiles() {
-
-    const list = document.getElementById("codeLocalChosen");
-    const empty = document.getElementById("codeLocalEmpty");
-
-    if (!list) {
-        return;
-    }
-
-    list.innerHTML = "";
-
-    if (empty) {
-        empty.hidden = codeChosenFiles.length > 0;
-    }
-
-    codeChosenFiles.forEach(function (entry) {
-
-        const row = document.createElement("li");
-        row.className = "code-open-chosen-row";
-
-        if (entry.rejected) {
-            row.classList.add("is-rejected");
-        }
-
-        const name = document.createElement("span");
-        name.className = "code-open-chosen-name";
-        name.textContent = entry.name;
-        row.appendChild(name);
-
-        const meta = document.createElement("span");
-        meta.className = "code-open-chosen-meta";
-        meta.textContent = entry.note;
-        row.appendChild(meta);
-
-        /* The picker only ever reports a name and a size, so this is the only
-           way to tell before committing whether a file is the one wanted. A
-           file too large to copy is not read here either: previewing it would
-           defeat the limit that refused it. */
-        const peek = document.createElement("button");
-        peek.type = "button";
-        peek.className = "code-open-chosen-peek";
-        peek.textContent = "Preview";
-        peek.disabled = Boolean(entry.rejected);
-        peek.title = entry.rejected
-            ? "This file will not be copied in, so there is nothing to preview."
-            : "See what is inside " + entry.name;
-
-        peek.addEventListener("click", function () {
-            showCodeFilePreview(entry);
-        });
-
-        row.appendChild(peek);
-
-        const drop = document.createElement("button");
-        drop.type = "button";
-        drop.className = "code-open-chosen-drop";
-        drop.textContent = "×";
-        drop.title = "Remove " + entry.name;
-        drop.setAttribute(
-            "aria-label",
-            "Remove " + entry.name
-        );
-
-        drop.addEventListener("click", function () {
-            codeChosenFiles = codeChosenFiles.filter(function (item) {
-                return item !== entry;
-            });
-            codeRenderChosenFiles();
-        });
-
-        row.appendChild(drop);
-
-        list.appendChild(row);
-    });
-
-    const importButton =
-        document.getElementById("codeImportButton");
-
-    if (importButton) {
-        importButton.disabled =
-            !codeChosenFiles.some(function (entry) {
-                return !entry.rejected;
-            });
-    }
-}
-
-
-/* FILE CONTENTS
- *
- * Reading a device file is the only asynchronous step between choosing files
- * and copying them in, so the dialog opens first with a placeholder and fills
- * itself when the read lands. The text is kept on the entry afterwards, so
- * looking at the same file twice does not read it twice, and the copy that
- * eventually goes into the workspace is the exact text that was on screen
- * rather than a second, possibly different, read. */
-
-let codePreviewingEntry = null;
-
-function showCodeFilePreview(entry) {
-
-    const nameEl = document.getElementById("codeFilePreviewName");
-    const metaEl = document.getElementById("codeFilePreviewMeta");
-    const codeEl = document.getElementById("codeFilePreviewCode");
-    const bodyEl = document.getElementById("codeFilePreviewBody");
-    const copyEl = document.getElementById("codeFilePreviewCopy");
-
-    if (!nameEl || !metaEl || !codeEl || !bodyEl) {
-        return;
-    }
-
-    if (entry.rejected) {
-        codeLog(
-            "warn",
-            entry.name + " will not be copied in, so it has no contents to show."
-        );
-        return;
-    }
-
-    codePreviewingEntry = entry;
-
-    nameEl.textContent = entry.name;
-
-    metaEl.textContent =
-        codeLanguageLabel(entry.name) +
-        "  ·  " +
-        codeByteLabel(entry.file.size);
-
-    codeEl.textContent = "Reading…";
-
-    bodyEl.scrollTop = 0;
-
-    if (copyEl) {
-        copyEl.disabled = true;
-    }
-
-    openModal("codeFilePreviewModal");
-
-    if (entry.text !== undefined) {
-        codeFillFilePreview(entry);
-        return;
-    }
-
-    entry.file.text().then(
-        function (text) {
-            entry.text = text;
-            codeFillFilePreview(entry);
-        },
-        function () {
-            if (codePreviewingEntry !== entry) {
-                return;
-            }
-
-            codeEl.textContent = "";
-            metaEl.textContent =
-                codeLanguageLabel(entry.name) +
-                "  ·  could not be read";
-        }
-    );
-}
-
-function codeFillFilePreview(entry) {
-
-    /* The reader may finish after the dialog was closed or after another file
-       was opened in it, in which case the newer view is left alone. */
-    if (codePreviewingEntry !== entry) {
-        return;
-    }
-
-    const codeEl = document.getElementById("codeFilePreviewCode");
-    const copyEl = document.getElementById("codeFilePreviewCopy");
-
-    if (!codeEl) {
-        return;
-    }
-
-    const text = entry.text;
-
-    codeEl.innerHTML = codeHighlightSource(
-        text + "\n",
-        codeLanguageOf(entry.name)
-    );
-
-    if (copyEl) {
-        copyEl.disabled = !text;
-    }
-}
-
-
-function codeCollectDeviceFiles(fileList) {
-
-    const files = Array.prototype.slice.call(fileList || []);
-
-    const rejectedNames = files
-        .filter(function (file) {
-            return !codeIsImportable(file.name);
-        })
-        .map(function (file) {
-            return file.name;
-        });
-
-    const accepted = files.filter(function (file) {
-        return codeIsImportable(file.name);
-    });
-
-    accepted.forEach(function (file) {
-
-        const name = codeSafeFileName(file.name);
-
-        const duplicate = codeChosenFiles.some(function (entry) {
-            return entry.name === name;
-        });
-
-        if (duplicate) {
-            return;
-        }
-
-        const overCap = file.size > CODE_IMPORT_MAX_FILE_BYTES;
-
-        const unusable = !name;
-
-        let note = codeByteLabel(file.size);
-
-        if (overCap) {
-            note += " — over the " +
-                codeByteLabel(CODE_IMPORT_MAX_FILE_BYTES) +
-                " limit";
-        } else if (unusable) {
-            note += " — no usable file name";
-        }
-
-        codeChosenFiles.push({
-            file: file,
-            name: name || CODE_IMPORT_UNNAMED,
-            note: note,
-            rejected: overCap || unusable
-        });
-    });
-
-    /* Everything refused is named in the terminal rather than vanishing,
-       because a silent skip reads as "the picker is broken". */
-    if (rejectedNames.length) {
-        codeLogMany(
-            "warn",
-            rejectedNames.map(function (name) {
-                return name +
-                    " was skipped: OneSpace opens text project files, " +
-                    "and that is not one.";
-            })
-        );
-    }
-
-    codeRenderChosenFiles();
-}
-
-
-function codeImportChosenFiles() {
-
-    const usable = codeChosenFiles.filter(function (entry) {
-        return !entry.rejected;
-    });
-
-    if (!usable.length) {
-        codeLog("warn", "Choose at least one file to copy in.");
-        return;
-    }
-
-    const folder = codeResolveImportFolder();
-
-    const added = [];
-    const skipped = [];
-
-    /* Reading is asynchronous, so the files are gathered first and written in
-       one pass afterwards. Doing it any other way would let a slow read land
-       after the save and vanish. */
-    const reads = usable.map(function (entry) {
-
-        /* Whatever the contents dialog showed is what gets copied in, so a
-           preview and a copy can never disagree about the same file. */
-        if (entry.text !== undefined) {
-            added.push({
-                name: entry.name,
-                content: entry.text
-            });
-            return Promise.resolve();
-        }
-
-        return entry.file.text().then(
-            function (text) {
-                entry.text = text;
-
-                added.push({
-                    name: entry.name,
-                    content: text
-                });
-            },
-            function () {
-                skipped.push(entry.name);
-            }
-        );
-    });
-
-    Promise.all(reads).then(function () {
-
-        if (!added.length) {
-            codeLog(
-                "error",
-                "None of those files could be read."
-            );
-            return;
-        }
-
-        /* Copy until the budget for this import is used up, then stop rather
-           than overshoot it. Anything refused is named afterwards so a partly
-           completed import is never mistaken for a complete one. */
-        let budget = CODE_IMPORT_MAX_TOTAL_BYTES;
-        const created = [];
-
-        added.forEach(function (item) {
-
-            if (item.content.length > budget) {
-                skipped.push(item.name);
-                return;
-            }
-
-            budget -= item.content.length;
-
-            const record = makeCodeFileRecord(
-                codeUniqueFileName(folder, item.name),
-                item.content
-            );
-
-            folder.files.push(record);
-            created.push(record);
-        });
-
-        codeChosenFiles = [];
-
-        codeRenderChosenFiles();
-
-        if (!created.length) {
-            codeLog(
-                "error",
-                "Those files are too large to copy into this workspace."
-            );
-            return;
-        }
-
-        /* Open everything that arrived. An imported page becomes the entry so
-           Preview and Run have something to work from; otherwise the last file
-           copied in is left selected, which is the one most recently touched. */
-        let entry = null;
-
-        created.forEach(function (record) {
-            codeOpenEntry(folder.id, record.id);
-        });
-
-        created.forEach(function (record) {
-            if (codeLanguageOf(record.name) === "html") {
-                entry = entry || record;
-            }
-        });
-
-        if (entry) {
-            codeActiveKey = codeKey(folder.id, entry.id);
-        }
-
-        closeModal("codeOpenModal");
-
-        commitChanges({ only: "code" });
-
-        codeLog(
-            "info",
-            "Copied " +
-            created.length +
-            (created.length === 1 ? " file" : " files") +
-            " into " +
-            folder.name +
-            "."
-        );
-
-        created.forEach(function (record) {
-            codeLog(
-                "info",
-                "  " +
-                codePathOf(folder, record) +
-                "  " +
-                codeSizeLabel(record.content)
-            );
-        });
-
-        if (skipped.length) {
-            codeLogMany(
-                "warn",
-                skipped.map(function (name) {
-                    return name +
-                        " was skipped: it did not fit the " +
-                        codeByteLabel(CODE_IMPORT_MAX_TOTAL_BYTES) +
-                        " budget for a single copy-in.";
-                })
-            );
-        }
-
-        showStatus(
-            created.length +
-            (created.length === 1
-                ? " file copied in"
-                : " files copied in")
-        );
-
-        /* The preview is built whenever the project has an entry page at all,
-           not only when an .html file happened to be in this batch. Copying a
-           stylesheet or a script into a folder that already has an index.html
-           is the common case, and refusing to preview it is what made copied
-           CSS and JS look like they had not arrived. */
-        const page = codeEntryCandidate();
-
-        /* Checked rather than assumed. Announcing a preview for something
-           that is not a page is worse than announcing none, because it reads
-           as a working preview while the frame stays empty. */
-        if (!page || codeLanguageOf(page.file.name) !== "html") {
-
-            const many = created.length !== 1;
-
-            codeLog(
-                "warn",
-                "No HTML page in this workspace yet, so there is nothing to " +
-                "preview. " +
-                created.length +
-                (many ? " files were" : " file was") +
-                " copied in and saved: " +
-                created.map(function (record) {
-                    return record.name;
-                }).join(", ") +
-                ". Add an .html file that loads " +
-                (many ? "them" : "it") +
-                " and it will run from here."
-            );
-
-            renderCodePreviewState();
-
-            setCodePanel("preview");
-
-            return;
-        }
-
-        buildCodePreview(true);
-
-        const language = codeLanguageLabel(page.file.name);
-
-        /* Inlining happens by reference: a copied stylesheet or script only
-           reaches the page when the entry markup names it. The question has
-           to be asked of the entry's own text, not the copied file's, so a
-           correctly linked file is not reported as doing nothing. */
-        const entryText = codeTextOf(
-            codeKey(page.folder.id, page.file.id)
-        );
-
-        const unreferenced = created.filter(function (record) {
-
-            return (
-                codeLanguageOf(record.name) !== "html" &&
-                entryText.indexOf(record.name) === -1
-            );
-        });
-
-        if (unreferenced.length) {
-            /* Only meaningful now that a page exists to have missed them.
-               Without one every file looks unreferenced, and naming all of
-               them is noise that buries the real message above. */
-            codeLogMany(
-                "warn",
-                unreferenced.map(function (record) {
-                    return record.name +
-                        " is copied in, but " +
-                        page.file.name +
-                        " never names it, so it has no effect on the " +
-                        "preview until something links to it.";
-                })
-            );
-        }
-
-        codeLog(
-            "info",
-            "Previewing " +
-            codePathOf(page.folder, page.file) +
-            ". Run executes the " +
-            language +
-            " in the browser; other languages need a backend."
-        );
-
-        setCodePanel("preview");
-    });
-}
-
-
-function openCodeFileBrowser() {
-
-    closeAddMenu(false);
-
-    codeChosenFiles = [];
-    codeRenderChosenFiles();
-
-    const errorEl = document.getElementById("codeOpenError");
-
-    if (errorEl) {
-        errorEl.textContent = "";
-    }
-
-    codeSetOpenSource("workspace");
-
-    openModal("codeOpenModal");
-}
-
-
 /* NEW FILE / NEW FOLDER */
 
 function populateCodeFolderSelect() {
@@ -6364,8 +5427,6 @@ function validateCodeFile() {
     return { name: name, folder: folder };
 }
 
-let codeFileUpload = null;
-
 if (codeFileForm) {
 
     wireLiveValidation(
@@ -6373,33 +5434,6 @@ if (codeFileForm) {
         CODE_MODAL_ERRORS,
         validateCodeFile
     );
-
-    const pickButton = document.getElementById("codeFilePickButton");
-    const fileInput = document.getElementById("codeFileUpload");
-    const chosenDisplay = document.getElementById("codeFileChosen");
-
-    if (pickButton && fileInput) {
-        pickButton.addEventListener("click", function () {
-            fileInput.click();
-        });
-    }
-
-    if (fileInput) {
-        fileInput.addEventListener("change", function () {
-            codeFileUpload = fileInput.files[0] || null;
-            if (chosenDisplay) {
-                chosenDisplay.textContent = codeFileUpload
-                    ? codeFileUpload.name + " (" + codeByteLabel(codeFileUpload.size) + ")"
-                    : "";
-            }
-            if (codeFileUpload) {
-                const nameInput = document.getElementById("codeFileName");
-                if (nameInput && !nameInput.value) {
-                    nameInput.value = codeFileUpload.name;
-                }
-            }
-        });
-    }
 
     codeFileForm.addEventListener(
         "submit",
@@ -6411,45 +5445,6 @@ if (codeFileForm) {
 
             if (!values) {
                 focusFirstInvalid(CODE_MODAL_ERRORS);
-                return;
-            }
-
-            if (codeFileUpload) {
-                const isBinary = isBinaryExtension(codeFileUpload.name);
-                const reader = new FileReader();
-                reader.onload = function () {
-                    const file = makeCodeFileRecord(
-                        values.name,
-                        reader.result
-                    );
-
-                    if (isBinary) {
-                        file.isBinary = true;
-                        file.mimeType = getMimeType(codeFileUpload.name);
-                    }
-
-                    values.folder.files.push(file);
-
-                    codeOpenEntry(values.folder.id, file.id);
-
-                    closeModal("codeFileModal");
-                    codeFileUpload = null;
-                    if (chosenDisplay) chosenDisplay.textContent = "";
-
-                    commitChanges({ only: "code" });
-
-                    if (activeSection === "files") {
-                        setOpenFolder(values.folder.id);
-                    }
-
-                    showStatus("Uploaded " + file.name);
-                    codeLog("info", "Uploaded " + codePathOf(values.folder, file) + ".");
-                };
-                if (isBinary) {
-                    reader.readAsDataURL(codeFileUpload);
-                } else {
-                    reader.readAsText(codeFileUpload);
-                }
                 return;
             }
 
@@ -6472,6 +5467,8 @@ if (codeFileForm) {
 
             commitChanges({ only: "code" });
 
+            /* If the reader is browsing Files rather than writing code, the
+               new file should appear in the folder they were standing in. */
             if (activeSection === "files") {
                 setOpenFolder(values.folder.id);
             }
@@ -6506,32 +5503,6 @@ if (codeFileForm) {
  * opaque origin, so preview code cannot read the workspace, its storage, or
  * anything outside itself. */
 
-/* The first page in a folder, if that folder has one. */
-function codeFirstHtmlFile(folder) {
-
-    const files = (folder && folder.files) || [];
-
-    for (let index = 0; index < files.length; index += 1) {
-        if (codeLanguageOf(files[index].name) === "html") {
-            return files[index];
-        }
-    }
-
-    return null;
-}
-
-/* What Preview and Run act on.
- *
- * Only a page can be an entry point, so this never returns a script or a
- * stylesheet however it is spelled. It used to fall back to whichever file
- * happened to be open, which let a bare login.js be reported as the page being
- * previewed: Preview showed nothing while the terminal claimed it had built
- * something, and the real cause was invisible.
- *
- * The order follows the reader's intent. The page they are looking at wins,
- * then a page in the folder they are standing in, so login.html is a perfectly
- * good entry without being called index.html, then the conventional index.html,
- * and finally any remaining page. */
 function codeEntryCandidate() {
 
     const active = codeActiveFile();
@@ -6540,42 +5511,24 @@ function codeEntryCandidate() {
         return { folder: codeActiveFolder(), file: active };
     }
 
+    /* Otherwise the project's index.html is the obvious entry point. */
     const folders = codeFolders();
 
-    const activeFolder = codeActiveFolder();
-
-    if (activeFolder) {
-
-        const page = codeFirstHtmlFile(activeFolder);
-
-        if (page) {
-            return { folder: activeFolder, file: page };
-        }
-    }
-
     for (let index = 0; index < folders.length; index += 1) {
-
-        const files = folders[index].files || [];
+        const folder = folders[index];
+        const files = folder.files || [];
 
         for (let f = 0; f < files.length; f += 1) {
             if (
                 files[f].name.toLowerCase() === "index.html"
             ) {
-                return {
-                    folder: folders[index],
-                    file: files[f]
-                };
+                return { folder: folder, file: files[f] };
             }
         }
     }
 
-    for (let index = 0; index < folders.length; index += 1) {
-
-        const page = codeFirstHtmlFile(folders[index]);
-
-        if (page) {
-            return { folder: folders[index], file: page };
-        }
+    if (active) {
+        return { folder: codeActiveFolder(), file: active };
     }
 
     return null;
@@ -7154,14 +6107,6 @@ function renderCode() {
         return;
     }
 
-    const codeSectionDesc = document.getElementById("codeSectionDesc");
-    if (codeSectionDesc) {
-        const hasFiles = codeFolders().some(function (folder) {
-            return (folder.files || []).length > 0;
-        });
-        codeSectionDesc.hidden = hasFiles;
-    }
-
     /* Drop open files whose folder or file no longer exists, so a deleted
        entry cannot leave a dead tab behind. */
     codeOpenFiles = codeOpenFiles.filter(function (open) {
@@ -7319,214 +6264,7 @@ onCodeControl("codePreviewRefreshButton", "click", function () {
 
 onCodeControl("codeNewFileButton", "click", openCodeFile);
 
-onCodeControl("codeOpenButton", "click", openCodeFileBrowser);
-
 onCodeControl("codeNewFolderButton", "click", openFolder);
-
-onCodeControl("codeOpenSearch", "input", function () {
-    codeRenderWorkspaceFiles();
-});
-
-onCodeControl("codeOpenSearch", "keydown", function (event) {
-
-    /* Escape inside a search field clears it rather than closing the
-       dialog, which is the only sensible meaning there. */
-    if (event.key !== "Escape") {
-        return;
-    }
-
-    const search = document.getElementById("codeOpenSearch");
-
-    if (!search || !search.value) {
-        return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    search.value = "";
-
-    codeRenderWorkspaceFiles();
-});
-
-onCodeControl("codeImportButton", "click", codeImportChosenFiles);
-
-onCodeControl("codeFilePreviewCopy", "click", function () {
-
-    const entry = codePreviewingEntry;
-
-    if (!entry || entry.text === undefined) {
-        return;
-    }
-
-    const nameEl = document.getElementById("codeFilePreviewName");
-    const copyEl = document.getElementById("codeFilePreviewCopy");
-
-    const label = entry.name;
-
-    const done = function (ok) {
-
-        if (copyEl) {
-            copyEl.disabled = false;
-        }
-
-        showStatus(
-            ok
-                ? "Copied " + label + " to the clipboard."
-                : "Could not reach the clipboard."
-        );
-
-        codeLog(
-            ok ? "info" : "error",
-            ok
-                ? label + " copied to the clipboard."
-                : label + " could not be copied. Select the text and copy it manually."
-        );
-    };
-
-    /* The async clipboard needs a secure context, which a page opened straight
-       off disk does not have, so a selection-based copy is kept as the
-       fallback rather than leaving the button broken there. */
-    if (
-        navigator.clipboard &&
-        navigator.clipboard.writeText
-    ) {
-        navigator.clipboard.writeText(entry.text).then(
-            function () {
-                done(true);
-            },
-            function () {
-                done(codeCopyTextFallback(entry.text));
-            }
-        );
-        return;
-    }
-
-    done(codeCopyTextFallback(entry.text));
-});
-
-function codeCopyTextFallback(text) {
-
-    const scratch = document.createElement("textarea");
-
-    scratch.value = text;
-    scratch.setAttribute("readonly", "");
-    scratch.style.position = "fixed";
-    scratch.style.top = "-1000px";
-    scratch.style.opacity = "0";
-
-    document.body.appendChild(scratch);
-    scratch.select();
-
-    let ok = false;
-
-    try {
-        ok = document.execCommand("copy");
-    } catch (error) {
-        ok = false;
-    }
-
-    document.body.removeChild(scratch);
-
-    return ok;
-}
-
-onCodeControl("codePickFilesButton", "click", function () {
-
-    const input = document.getElementById("codeLocalInput");
-
-    if (!input) {
-        return;
-    }
-
-    /* A folder is required before a device file has anywhere to go, and
-       making one here rather than failing quietly keeps the picker usable
-       from a workspace that has no folders yet. */
-    if (!codeFolders().length) {
-        codeCreateImportFolder();
-        populateCodeLocalFolderSelect();
-
-        const select =
-            document.getElementById("codeLocalFolder");
-
-        if (select && select.options.length) {
-            select.selectedIndex = 0;
-        }
-    }
-
-    input.value = "";
-
-    input.click();
-});
-
-(function wireCodeOpenSources() {
-
-    const switcher =
-        document.getElementById("codeOpenSources");
-
-    if (!switcher) {
-        return;
-    }
-
-    switcher.addEventListener("click", function (event) {
-
-        const tab = event.target.closest(
-            "[data-open-source]"
-        );
-
-        if (!tab) {
-            return;
-        }
-
-        codeSetOpenSource(tab.dataset.openSource);
-    });
-
-    switcher.addEventListener("keydown", function (event) {
-
-        if (
-            event.key !== "ArrowLeft" &&
-            event.key !== "ArrowRight"
-        ) {
-            return;
-        }
-
-        event.preventDefault();
-
-        codeSetOpenSource(
-            codeOpenSource === "workspace"
-                ? "computer"
-                : "workspace"
-        );
-
-        const target = document.querySelector(
-            '#codeOpenSources [data-open-source="' +
-            codeOpenSource + '"]'
-        );
-
-        if (target) {
-            target.focus();
-        }
-    });
-
-})();
-
-(function wireCodeLocalInput() {
-
-    const input =
-        document.getElementById("codeLocalInput");
-
-    if (!input) {
-        return;
-    }
-
-    input.addEventListener(
-        "change",
-        function () {
-            codeCollectDeviceFiles(input.files);
-        }
-    );
-
-})();
 
 onCodeControl("codeTerminalToggle", "click", function () {
 
@@ -7549,8 +6287,6 @@ const resourceForm =
     );
 
 
-let resourceFileInput = null;
-
 function openResource() {
 
     closeAddMenu(false);
@@ -7560,66 +6296,8 @@ function openResource() {
         MODAL_ERRORS.resourceModal
     );
 
-    /* Reset to default link type */
-    const linkRadio = document.querySelector('input[name="resourceType"][value="link"]');
-    const fileRadio = document.querySelector('input[name="resourceType"][value="file"]');
-    const linkSection = document.getElementById("resourceLinkSection");
-    const fileSection = document.getElementById("resourceFileSection");
-    const fileNameEl = document.getElementById("resourceFileName");
-
-    if (linkRadio) linkRadio.checked = true;
-    if (fileRadio) fileRadio.checked = false;
-    if (linkSection) linkSection.hidden = false;
-    if (fileSection) fileSection.hidden = true;
-    if (fileNameEl) fileNameEl.textContent = "";
-
     openModal("resourceModal");
 }
-
-
-/* Wire resource type radio buttons and file picker */
-(function wireResourceModal() {
-    const linkRadio = document.querySelector('input[name="resourceType"][value="link"]');
-    const fileRadio = document.querySelector('input[name="resourceType"][value="file"]');
-    const linkSection = document.getElementById("resourceLinkSection");
-    const fileSection = document.getElementById("resourceFileSection");
-    const fileNameEl = document.getElementById("resourceFileName");
-    const pickBtn = document.getElementById("resourcePickFileButton");
-    const fileInput = document.getElementById("resourceFileInput");
-
-    function setType(isFile) {
-        if (linkRadio) linkRadio.checked = !isFile;
-        if (fileRadio) fileRadio.checked = isFile;
-        if (linkSection) linkSection.hidden = isFile;
-        if (fileSection) fileSection.hidden = !isFile;
-    }
-
-    if (linkRadio) {
-        linkRadio.addEventListener("change", function () {
-            if (this.checked) setType(false);
-        });
-    }
-    if (fileRadio) {
-        fileRadio.addEventListener("change", function () {
-            if (this.checked) setType(true);
-        });
-    }
-    if (pickBtn && fileInput) {
-        pickBtn.addEventListener("click", function () {
-            fileInput.click();
-        });
-    }
-    if (fileInput) {
-        fileInput.addEventListener("change", function () {
-            resourceFileInput = fileInput;
-            if (fileInput.files.length) {
-                fileNameEl.textContent = fileInput.files[0].name;
-            } else {
-                fileNameEl.textContent = "";
-            }
-        });
-    }
-})();
 
 
 document
@@ -7641,6 +6319,13 @@ function validateResource() {
                 .value
         );
 
+    const url =
+        cleanText(
+            document
+                .getElementById("resourceLink")
+                .value
+        );
+
     if (!title) {
         setFieldError(
             "resourceError",
@@ -7652,68 +6337,35 @@ function validateResource() {
 
     setFieldError("resourceError", "resourceName", "");
 
-    const resourceType = document.querySelector('input[name="resourceType"]:checked');
-    const isFile = resourceType && resourceType.value === "file";
-
-    if (isFile) {
-        if (!resourceFileInput || !resourceFileInput.files.length) {
-            setFieldError(
-                "resourceError",
-                "resourceFileInput",
-                "Choose a file."
-            );
-            return null;
-        }
-        setFieldError("resourceError", "resourceFileInput", "");
-        return {
-            title: title,
-            type: "file",
-            file: resourceFileInput.files[0],
-            description: cleanText(
-                document
-                    .getElementById("resourceDescription")
-                    .value
-            )
-        };
-    } else {
-        const url =
-            cleanText(
-                document
-                    .getElementById("resourceLink")
-                    .value
-            );
-
-        if (!url) {
-            setFieldError(
-                "resourceError",
-                "resourceLink",
-                "Add the link for this resource."
-            );
-            return null;
-        }
-
-        if (!isValidHttpUrl(url)) {
-            setFieldError(
-                "resourceError",
-                "resourceLink",
-                "Enter a full link starting with http:// or https://"
-            );
-            return null;
-        }
-
-        setFieldError("resourceError", "resourceLink", "");
-
-        return {
-            title: title,
-            type: "link",
-            url: url,
-            description: cleanText(
-                document
-                    .getElementById("resourceDescription")
-                    .value
-            )
-        };
+    if (!url) {
+        setFieldError(
+            "resourceError",
+            "resourceLink",
+            "Add the link for this resource."
+        );
+        return null;
     }
+
+    if (!isValidHttpUrl(url)) {
+        setFieldError(
+            "resourceError",
+            "resourceLink",
+            "Enter a full link starting with http:// or https://"
+        );
+        return null;
+    }
+
+    setFieldError("resourceError", "resourceLink", "");
+
+    return {
+        title: title,
+        url: url,
+        description: cleanText(
+            document
+                .getElementById("resourceDescription")
+                .value
+        )
+    };
 }
 
 
@@ -7737,40 +6389,16 @@ resourceForm.addEventListener(
             return;
         }
 
-        if (values.type === "file") {
-            const reader = new FileReader();
-            reader.onload = function () {
-                const resource = {
-                    id: Date.now(),
-                    title: values.title,
-                    type: "file",
-                    fileName: values.file.name,
-                    fileType: values.file.type || "application/octet-stream",
-                    fileData: reader.result,
-                    description: values.description,
-                    createdAt: nowIso()
-                };
-
-                currentWorkspace.resources.push(resource);
-
-                highlight("resource", resource.id);
-
-                closeModal("resourceModal");
-
-                commitChanges({
-                    message: "Resource saved."
-                });
-            };
-            reader.readAsDataURL(values.file);
-            return;
-        }
-
         const resource = {
+
             id: Date.now(),
+
             title: values.title,
-            type: "link",
+
             url: values.url,
+
             description: values.description,
+
             createdAt: nowIso()
         };
 
@@ -7860,20 +6488,15 @@ function renderResources() {
 
     const resources = currentWorkspace.resources || [];
 
-    const resourcesSectionDesc = document.getElementById("resourcesSectionDesc");
-    if (resourcesSectionDesc) {
-        resourcesSectionDesc.hidden = resources.length > 0;
-    }
-
     if (resources.length === 0) {
 
         list.appendChild(
                 createSectionEmpty(
                     "No resources yet",
-                    "Keep the links and files this workspace keeps coming back to.",
+                    "Keep the links this workspace keeps coming back to.",
                     {
                         icon: "resources",
-                        hint: "Use the + button to add a resource."
+                        hint: "Use the + button to save a link."
                     }
                 )
             );
@@ -7894,8 +6517,6 @@ function renderResources() {
         const title =
             cleanText(resource.title) || "Untitled resource";
 
-        const isFile = resource.type === "file";
-
         const href =
             safeHref(resource.url);
 
@@ -7909,17 +6530,10 @@ function renderResources() {
 
         mark.setAttribute("aria-hidden", "true");
 
-        if (isFile) {
-            /* File icon using first letter of filename */
-            mark.textContent = resource.fileName ? resource.fileName.charAt(0).toUpperCase() : "F";
-            mark.style.backgroundColor = "var(--clay-soft)";
-            mark.style.color = "var(--clay)";
-        } else {
-            mark.style.backgroundColor =
-                hostTintOf(href);
+        mark.style.backgroundColor =
+            hostTintOf(href);
 
-            mark.textContent = hostInitialOf(href);
-        }
+        mark.textContent = hostInitialOf(href);
 
         row.appendChild(mark);
 
@@ -7930,32 +6544,7 @@ function renderResources() {
         body.className = "resource-row-body";
 
 
-        if (isFile) {
-            const fileLink = document.createElement("button");
-            fileLink.className = "resource-row-title resource-file-link";
-            fileLink.type = "button";
-            fileLink.textContent = title;
-
-            const fileIcon = document.createElement("span");
-            fileIcon.className = "resource-file-icon";
-            fileIcon.setAttribute("aria-hidden", "true");
-            fileIcon.appendChild(createIcon("document", { size: 14 }));
-            fileLink.insertBefore(fileIcon, fileLink.firstChild);
-
-            fileLink.addEventListener("click", function () {
-                if (resource.fileData) {
-                    window.open(resource.fileData, "_blank");
-                }
-            });
-
-            body.appendChild(fileLink);
-
-            const fileMeta = document.createElement("span");
-            fileMeta.className = "resource-file-meta";
-            const fileTypeLabel = resource.fileType || "File";
-            fileMeta.textContent = resource.fileName + " · " + fileTypeLabel;
-            body.appendChild(fileMeta);
-        } else if (href) {
+        if (href) {
 
             const link =
                 document.createElement("a");
@@ -7988,6 +6577,7 @@ function renderResources() {
             link.appendChild(arrow);
 
             body.appendChild(link);
+
         } else {
 
             const plain =
@@ -8000,18 +6590,16 @@ function renderResources() {
         }
 
 
-        if (!isFile) {
-            const url =
-                document.createElement("span");
+        const url =
+            document.createElement("span");
 
-            url.className = "resource-row-url";
+        url.className = "resource-row-url";
 
-            url.textContent =
-                cleanText(resource.url) ||
-                "No link stored";
+        url.textContent =
+            cleanText(resource.url) ||
+            "No link stored";
 
-            body.appendChild(url);
-        }
+        body.appendChild(url);
 
 
         if (cleanText(resource.description)) {
@@ -8062,9 +6650,7 @@ function renderResources() {
                 confirmAction({
                     title: "Remove resource?",
                     message:
-                        isFile
-                            ? "This file will be removed from the workspace."
-                            : "This link will be removed from the workspace.",
+                        "This link will be removed from the workspace.",
                     confirmLabel: "Remove"
                 }).then(function (confirmed) {
 
@@ -8092,6 +6678,964 @@ function renderResources() {
     });
 }
 
+
+/* MEMBERS */
+
+const memberForm =
+    document.getElementById(
+        "memberForm"
+    );
+
+
+function openMember() {
+
+    closeAddMenu(false);
+
+    clearFormErrors(
+        memberForm,
+        MODAL_ERRORS.memberModal
+    );
+
+    openModal("memberModal");
+}
+
+
+document
+    .getElementById(
+        "quickNewMember"
+    )
+    .addEventListener(
+        "click",
+        openMember
+    );
+
+
+function isPlausibleEmail(value) {
+
+    return (
+        value.indexOf("@") !== -1 &&
+        value.indexOf(".") !== -1 &&
+        !/\s/.test(value)
+    );
+}
+
+
+function validateMember() {
+
+    const name =
+        cleanText(
+            document
+                .getElementById("memberName")
+                .value
+        );
+
+    const email =
+        cleanText(
+            document
+                .getElementById("memberEmail")
+                .value
+        ).toLowerCase();
+
+    if (!name) {
+        setFieldError(
+            "memberError",
+            "memberName",
+            "Enter a name for this member."
+        );
+        return null;
+    }
+
+    setFieldError("memberError", "memberName", "");
+
+    if (!email) {
+        setFieldError(
+            "memberError",
+            "memberEmail",
+            "Enter an email address."
+        );
+        return null;
+    }
+
+    if (!isPlausibleEmail(email)) {
+        setFieldError(
+            "memberError",
+            "memberEmail",
+            "That does not look like an email address."
+        );
+        return null;
+    }
+
+    setFieldError("memberError", "memberEmail", "");
+
+    const alreadyAdded =
+        (currentWorkspace.members || []).some(
+            function (member) {
+
+                return cleanText(member.email).toLowerCase() === email;
+            }
+        );
+
+    if (alreadyAdded) {
+        setFieldError(
+            "memberError",
+            "memberEmail",
+            "That member is already in this workspace."
+        );
+        return null;
+    }
+
+    return { name: name, email: email };
+}
+
+
+wireLiveValidation(
+    memberForm,
+    MODAL_ERRORS.memberModal,
+    validateMember
+);
+
+
+memberForm.addEventListener(
+    "submit",
+    function (event) {
+
+        event.preventDefault();
+
+        const values = validateMember();
+
+        if (!values) {
+            focusFirstInvalid(MODAL_ERRORS.memberModal);
+            return;
+        }
+
+        const member = {
+
+            id: Date.now(),
+
+            name: values.name,
+
+            email: values.email,
+
+            messages: [],
+
+            createdAt: nowIso()
+        };
+
+        currentWorkspace.members.push(member);
+
+        highlight("member", member.id);
+
+        closeModal("memberModal");
+
+        commitChanges({
+            message: "Member added."
+        });
+
+        /* Adding someone from the workspace header should land you where
+           the new member is visible, not back on whatever section you were
+           reading. */
+        if (activeSection !== "members") {
+            requestSectionChange("members");
+        }
+    }
+);
+
+
+function removeMember(member) {
+
+    const name = memberDisplayName(member);
+
+    confirmAction({
+        title: "Remove member?",
+        message:
+            name + " will no longer be listed in this workspace. " +
+            "Saved conversations are kept.",
+        confirmLabel: "Remove"
+    }).then(function (confirmed) {
+
+        if (!confirmed) {
+            return;
+        }
+
+        currentWorkspace.members =
+            currentWorkspace.members.filter(
+                function (item) {
+                    return item.id !== member.id;
+                }
+            );
+
+        commitChanges({
+            message: name + " removed."
+        });
+    });
+}
+
+
+function renderMembers() {
+
+    const membersList =
+        document.getElementById(
+            "membersList"
+        );
+
+    if (!membersList) {
+        return;
+    }
+
+
+    membersList.innerHTML = "";
+
+    const members = currentWorkspace.members || [];
+
+    if (members.length === 0) {
+
+        membersList.appendChild(
+                createSectionEmpty(
+                    "No members yet",
+                    "Invite the people working in this workspace. They also become your chat contacts.",
+                    {
+                        icon: "members",
+                        hint: "Use the + button to add someone."
+                    }
+                )
+            );
+
+        return;
+    }
+
+
+    members.forEach(function (member) {
+
+        const card =
+            document.createElement("div");
+
+        card.className = "member-card";
+
+        card.dataset.id = String(member.id);
+
+
+        const avatar =
+            document.createElement("span");
+
+        avatar.className = "member-avatar";
+        avatar.setAttribute("aria-hidden", "true");
+        avatar.textContent = memberInitials(member);
+
+
+        const body =
+            document.createElement("div");
+
+        body.className = "member-body";
+
+
+        const nameLine =
+            document.createElement("div");
+
+        nameLine.className = "member-name-line";
+
+
+        const name =
+            document.createElement("h3");
+
+        name.textContent = memberDisplayName(member);
+
+        nameLine.appendChild(name);
+
+        if (isCurrentUserEmail(member.email)) {
+
+            const you =
+                document.createElement("span");
+
+            you.className = "member-you";
+            you.textContent = "You";
+
+            nameLine.appendChild(you);
+        }
+
+
+        const email =
+            document.createElement("p");
+
+        email.textContent =
+            cleanText(member.email) ||
+            "No email on file";
+
+
+        body.appendChild(nameLine);
+        body.appendChild(email);
+
+
+        const remove =
+            document.createElement("button");
+
+        remove.type = "button";
+        remove.className = "member-remove";
+        remove.setAttribute(
+            "aria-label",
+            "Remove member: " + memberDisplayName(member)
+        );
+
+        remove.title = "Remove from workspace";
+
+        remove.appendChild(
+            createIcon("close", { size: 15 })
+        );
+
+        remove.addEventListener(
+            "click",
+            function () {
+                removeMember(member);
+            }
+        );
+
+
+        /* A member is a chat contact, so the way to start talking to them
+           belongs on their card rather than two navigation steps away. */
+        const talk =
+            document.createElement("button");
+
+        talk.type = "button";
+        talk.className = "member-talk";
+
+        talk.appendChild(
+            createIcon("chat", { size: 14 })
+        );
+
+        const talkWord =
+            document.createElement("span");
+
+        talkWord.textContent = "Message";
+
+        talk.appendChild(talkWord);
+
+        talk.addEventListener(
+            "click",
+            function () {
+                selectChatContact(member.id);
+                showSection("chat");
+            }
+        );
+
+
+        const actions =
+            document.createElement("div");
+
+        actions.className = "member-actions";
+
+        actions.appendChild(talk);
+        actions.appendChild(remove);
+
+
+        card.appendChild(avatar);
+        card.appendChild(body);
+        card.appendChild(actions);
+
+        membersList.appendChild(card);
+    });
+}
+
+
+/* CHAT */
+
+const chatLayout =
+    document.getElementById(
+        "chatLayout"
+    );
+
+const chatContacts =
+    document.getElementById(
+        "chatContacts"
+    );
+
+const chatEmpty =
+    document.getElementById(
+        "chatEmpty"
+    );
+
+const chatConversation =
+    document.getElementById(
+        "chatConversation"
+    );
+
+const chatConversationName =
+    document.getElementById(
+        "chatConversationName"
+    );
+
+const chatConversationEmail =
+    document.getElementById(
+        "chatConversationEmail"
+    );
+
+const chatConversationAvatar =
+    document.getElementById(
+        "chatConversationAvatar"
+    );
+
+const chatMessages =
+    document.getElementById(
+        "chatMessages"
+    );
+
+const chatForm =
+    document.getElementById(
+        "chatForm"
+    );
+
+const chatMessageInput =
+    document.getElementById(
+        "chatMessageInput"
+    );
+
+const chatBackButton =
+    document.getElementById(
+        "chatBackButton"
+    );
+
+const chatSendButton =
+    document.getElementById(
+        "chatSendButton"
+    );
+
+let activeChatMemberId = null;
+
+/* Identifies the message just sent so it can be briefly marked, the same
+   way a newly created record is marked in the other sections. */
+let lastSentMessageId = null;
+
+/* The composer survives re-renders so typing is not interrupted, which
+   also means a half-written message would otherwise follow the user into
+   the next conversation. Tracking who the draft belongs to is what stops
+   that leak. */
+let draftOwnerMemberId = null;
+
+
+function isChatNarrow() {
+
+    if (!chatLayout) {
+        return false;
+    }
+
+    return (
+        window.matchMedia(
+            "(max-width: 800px)"
+        ).matches
+    );
+}
+
+
+function getChatThread(memberId) {
+
+    return (currentWorkspace.personalChats || []).find(
+        function (thread) {
+            return thread.memberId === memberId;
+        }
+    ) || null;
+}
+
+
+function ensureChatThread(memberId) {
+
+    const existing = getChatThread(memberId);
+
+    if (existing) {
+
+        existing.messages =
+            existing.messages || [];
+
+        return existing;
+    }
+
+
+    const thread = {
+
+        id: Date.now() + "-" + memberId,
+
+        memberId: memberId,
+
+        createdAt: nowIso(),
+
+        messages: []
+    };
+
+    currentWorkspace.personalChats.push(thread);
+
+    return thread;
+}
+
+
+function findChatMember(memberId) {
+
+    return (currentWorkspace.members || []).find(
+        function (member) {
+            return member.id === memberId;
+        }
+    ) || null;
+}
+
+
+function selectChatContact(memberId) {
+
+    activeChatMemberId = memberId;
+
+    renderChat();
+
+    /* Move the keyboard somewhere useful instead of leaving it on a
+       contact row that is about to be hidden on narrow screens. */
+    if (chatMessageInput) {
+        chatMessageInput.focus({ preventScroll: true });
+    }
+}
+
+
+function closeChatConversation() {
+
+    activeChatMemberId = null;
+
+    renderChat();
+}
+
+
+if (chatBackButton) {
+
+    chatBackButton.addEventListener(
+        "click",
+        closeChatConversation
+    );
+}
+
+
+if (chatMessageInput) {
+
+    chatMessageInput.addEventListener(
+        "input",
+        function () {
+
+            if (chatSendButton) {
+                chatSendButton.disabled =
+                    cleanText(chatMessageInput.value).length === 0;
+            }
+        }
+    );
+}
+
+
+if (chatForm) {
+
+    chatForm.addEventListener(
+        "submit",        function (event) {
+
+            event.preventDefault();
+
+            const member = findChatMember(
+                activeChatMemberId
+            );
+
+            if (!member) {
+                return;
+            }
+
+            const body = cleanText(
+                chatMessageInput
+                    ? chatMessageInput.value
+                    : ""
+            );
+
+            if (!body) {
+                return;
+            }
+
+            const thread =
+                ensureChatThread(member.id);
+
+            const message = {
+
+                id: Date.now(),
+
+                authorId: currentUser.id,
+
+                body: body,
+
+                createdAt: nowIso()
+            };
+
+            thread.messages.push(message);
+
+            if (chatMessageInput) {
+                chatMessageInput.value = "";
+            }
+
+            /* Scoped to chat on purpose: sending should not rebuild the
+               other six sections, and the draft stays owned by the
+               conversation it was written in. */
+            lastSentMessageId = message.id;
+
+            commitChanges({ only: "chat" });
+        }
+    );
+}
+
+
+function createChatMessage(message) {
+
+    const mine = message.authorId === currentUser.id;
+
+    const wrap =
+        document.createElement("div");
+
+    wrap.className =
+        "chat-message " +
+        (mine ? "is-mine" : "is-theirs");
+
+    wrap.dataset.id = String(message.id);
+
+    if (message.id === lastSentMessageId) {
+        wrap.classList.add("is-new");
+        setTimeout(function () {
+            wrap.classList.remove("is-new");
+        }, 1400);
+        lastSentMessageId = null;
+    }
+
+
+    if (!mine) {
+
+        const author =
+            document.createElement("span");
+
+        author.className =
+            "chat-message-author";
+
+        const member = findChatMember(
+            message.authorId
+        );
+
+        author.textContent = member
+            ? memberDisplayName(member)
+            : "Unknown";
+
+        wrap.appendChild(author);
+    }
+
+
+    const body =
+        document.createElement("div");
+
+    body.className = "chat-message-body";
+    body.textContent =
+        cleanText(message.body);
+
+    wrap.appendChild(body);
+
+
+    const time =
+        document.createElement("span");
+
+    time.className = "chat-message-time";
+
+    time.textContent = relativeTime(
+        message.createdAt
+    );
+
+    wrap.appendChild(time);
+
+    return wrap;
+}
+
+
+function renderChat() {
+
+    if (!chatContacts) {
+        return;
+    }
+
+
+    const members = currentWorkspace.members || [];
+
+    if (
+        activeChatMemberId !== null &&
+        !findChatMember(activeChatMemberId)
+    ) {
+        activeChatMemberId = null;
+    }
+
+    const selected =
+        findChatMember(activeChatMemberId);
+
+    /* If the draft was written for a different conversation, it is not
+       ours to keep. Dropping it is the whole point: a message must never
+       be deliverable to someone it was not written for. */
+    const draftBelongsHere =
+        selected !== null &&
+        (draftOwnerMemberId === null ||
+            draftOwnerMemberId === selected.id);
+
+    const draft =
+        chatMessageInput && draftBelongsHere
+            ? chatMessageInput.value
+            : "";
+
+    if (!draftBelongsHere && chatMessageInput) {
+        chatMessageInput.value = "";
+    }
+
+
+    chatContacts.innerHTML = "";
+
+    if (members.length === 0) {
+
+        const empty =
+            document.createElement("div");
+
+        empty.className =
+            "chat-contacts-empty";
+
+        /* The other six sections name their empty state, so this one does
+           too. A bare sentence left the reader to work out what was
+           missing before the explanation said so. */
+        const heading =
+            document.createElement("h3");
+
+        heading.textContent =
+            "No conversations yet";
+
+        const text =
+            document.createElement("p");
+
+        text.textContent =
+            "There is nobody to chat with in this workspace yet, so there are no conversations to open.";
+
+        empty.appendChild(heading);
+
+        empty.appendChild(text);
+
+        empty.appendChild(
+            createQuietButton(
+                "+ Member",
+                openMember
+            )
+        );
+
+        chatContacts.appendChild(empty);
+
+    } else {
+
+        members.forEach(function (member) {
+
+            const button =
+                document.createElement("button");
+
+            button.type = "button";
+            button.className = "chat-contact";
+
+            if (selected && member.id === selected.id) {
+                button.classList.add("is-selected");
+                button.setAttribute("aria-current", "true");
+            }
+
+            button.setAttribute(
+                "aria-label",
+                "Chat with " + memberDisplayName(member)
+            );
+
+            const avatar =
+                document.createElement("span");
+
+            avatar.className =
+                "chat-contact-avatar";
+
+            avatar.setAttribute("aria-hidden", "true");
+
+            avatar.textContent =
+                memberInitials(member);
+
+            const name =
+                document.createElement("span");
+
+            name.className =
+                "chat-contact-name";
+
+            name.textContent =
+                memberDisplayName(member);
+
+            const text =
+                document.createElement("span");
+
+            text.className =
+                "chat-contact-text";
+
+            const preview =
+                document.createElement("span");
+
+            preview.className =
+                "chat-contact-preview";
+
+            const thread = getChatThread(member.id);
+
+            const messages =
+                thread && thread.messages
+                    ? thread.messages
+                    : [];
+
+            const last =
+                messages.length
+                    ? messages[messages.length - 1]
+                    : null;
+
+            if (last) {
+
+                preview.textContent =
+                    (last.authorId === currentUser.id
+                        ? "You: "
+                        : "") +
+                    cleanText(last.body);
+
+                const when =
+                    document.createElement("span");
+
+                when.className =
+                    "chat-contact-time";
+
+                when.textContent =
+                    relativeTime(last.createdAt);
+
+                text.appendChild(preview);
+                text.appendChild(when);
+
+            } else {
+
+                preview.textContent =
+                    "No messages yet";
+
+                text.appendChild(preview);
+            }
+
+            button.appendChild(avatar);
+
+            const label =
+                document.createElement("span");
+
+            label.className =
+                "chat-contact-label";
+
+            label.appendChild(name);
+            label.appendChild(text);
+
+            button.appendChild(label);
+
+            button.addEventListener(
+                "click",
+                function () {
+                    selectChatContact(member.id);
+                }
+            );
+
+            chatContacts.appendChild(button);
+        });
+    }
+
+
+    if (chatLayout) {
+        chatLayout.classList.toggle(
+            "has-selection",
+            Boolean(selected)
+        );
+    }
+
+
+    if (chatEmpty) {
+        chatEmpty.hidden = Boolean(selected);
+    }
+
+    if (chatConversation) {
+        chatConversation.hidden = !selected;
+    }
+
+    if (!selected) {
+
+        draftOwnerMemberId = null;
+
+        if (chatMessageInput) {
+            chatMessageInput.value = "";
+        }
+
+        if (chatSendButton) {
+            chatSendButton.disabled = true;
+        }
+
+        return;
+    }
+
+
+    if (chatConversationAvatar) {
+        chatConversationAvatar.textContent =
+            memberInitials(selected);
+    }
+
+    if (chatConversationName) {
+        chatConversationName.textContent =
+            memberDisplayName(selected);
+    }
+
+    if (chatConversationEmail) {
+        chatConversationEmail.textContent =
+            cleanText(selected.email) ||
+            "No email on file";
+    }
+
+
+    if (chatMessages) {
+
+        chatMessages.innerHTML = "";
+
+        const thread = getChatThread(selected.id);
+        const messages =
+            thread && thread.messages
+                ? thread.messages
+                : [];
+
+        if (messages.length === 0) {
+
+            const empty =
+                document.createElement("p");
+
+            empty.className =
+                "chat-messages-empty";
+
+            empty.textContent =
+                "No messages yet. Say hello to " +
+                memberDisplayName(selected) +
+                ".";
+
+            chatMessages.appendChild(empty);
+
+        } else {
+
+            messages.forEach(function (message) {
+                chatMessages.appendChild(
+                    createChatMessage(message)
+                );
+            });
+
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
+        }
+    }
+
+
+    if (chatMessageInput) {
+        chatMessageInput.value = draft;
+    }
+
+    draftOwnerMemberId = selected.id;
+
+    if (chatSendButton) {
+        chatSendButton.disabled =
+            cleanText(draft).length === 0;
+    }
+}
+
+
 /* OVERVIEW */
 
 const overviewContent =
@@ -8118,7 +7662,9 @@ function workspaceCounts() {
 
         folders: (currentWorkspace.folders || []).length,
 
-        resources: (currentWorkspace.resources || []).length
+        resources: (currentWorkspace.resources || []).length,
+
+        members: (currentWorkspace.members || []).length
     };
 }
 
@@ -8132,7 +7678,8 @@ function workspaceIsEmpty() {
         counts.done === 0 &&
         counts.notes === 0 &&
         counts.folders === 0 &&
-        counts.resources === 0
+        counts.resources === 0 &&
+        counts.members === 0
     );
 }
 
@@ -8228,6 +7775,11 @@ function workspaceActivity() {
     (currentWorkspace.resources || []).forEach(function (resource) {
         push("resource", "resources", "Added resource",
             cleanText(resource.title) || "Untitled resource", resource);
+    });
+
+    (currentWorkspace.members || []).forEach(function (member) {
+        push("member", "members", "Added member",
+            memberDisplayName(member), member);
     });
 
     return entries.sort(function (a, b) {
@@ -8660,9 +8212,13 @@ function renderAll() {
 
     renderNotes();
 
-    renderResources();
+renderResources();
+   
+       renderCode();
+   
+       renderMembers();
 
-    renderCode();
+    renderChat();
 
     applyHighlight(document);
 }

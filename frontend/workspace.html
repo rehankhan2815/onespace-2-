@@ -1029,7 +1029,7 @@
             <input
                 id="resourceName"
                 type="text"
-                placeholder="What is this link?"
+                placeholder="What is this resource?"
                 autocomplete="off"
                 aria-describedby="resourceError"
             >
@@ -1041,16 +1041,53 @@
                 placeholder="Optional detail"
             ></textarea>
 
-            <label for="resourceLink">URL</label>
+            <fieldset class="resource-type-fieldset">
+                <legend>Resource type</legend>
+                <div class="resource-type-options" role="radiogroup" aria-label="Resource type">
+                    <label class="resource-type-option">
+                        <input type="radio" name="resourceType" value="link" checked>
+                        <span>Link</span>
+                    </label>
+                    <label class="resource-type-option">
+                        <input type="radio" name="resourceType" value="file">
+                        <span>File</span>
+                    </label>
+                </div>
+            </fieldset>
 
-            <input
-                id="resourceLink"
-                type="text"
-                inputmode="url"
-                placeholder="https://example.com"
-                autocomplete="off"
-                aria-describedby="resourceError"
-            >
+            <div id="resourceLinkSection">
+                <label for="resourceLink">URL</label>
+
+                <input
+                    id="resourceLink"
+                    type="text"
+                    inputmode="url"
+                    placeholder="https://example.com"
+                    autocomplete="off"
+                    aria-describedby="resourceError"
+                >
+            </div>
+
+            <div id="resourceFileSection" hidden>
+                <label for="resourceFile">File</label>
+                <div class="resource-file-target">
+                    <button
+                        id="resourcePickFileButton"
+                        class="quiet-button"
+                        type="button"
+                    >
+                        Choose file&#8230;
+                    </button>
+                    <input
+                        id="resourceFileInput"
+                        class="visually-hidden"
+                        type="file"
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                </div>
+                <p id="resourceFileName" class="resource-file-name"></p>
+            </div>
 
             <p
                 id="resourceError"
