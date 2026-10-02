@@ -311,8 +311,6 @@
                     <p>Links worth keeping for this workspace.</p>
                 </div>
 
-
-
             </div>
 
             <div
@@ -372,6 +370,16 @@
                         type="button"
                     >
                         + File
+                    </button>
+
+                    <button
+                        id="codeOpenButton"
+                        class="section-button"
+                        type="button"
+                        aria-haspopup="dialog"
+                        title="Open a file from this workspace or your computer"
+                    >
+                        Open &#9662;
                     </button>
 
                     <button
@@ -575,148 +583,6 @@
         </section>
 
 
-        <section
-            id="section-chat"
-            class="workspace-section"
-        >
-
-            <div class="section-header">
-
-                <div>
-                    <h2>Chat</h2>
-                    <p>Conversations with people in this workspace.</p>
-                </div>
-
-            </div>
-
-            <p class="section-note">
-                Messages are saved in this browser only. They are
-                not sent anywhere and are not live.
-            </p>
-
-            <div
-                class="chat-layout"
-                id="chatLayout"
-            >
-
-                <aside
-                    id="chatContacts"
-                    class="chat-contacts"
-                    aria-label="Workspace members"
-                ></aside>
-
-
-                <div
-                    id="chatPane"
-                    class="chat-pane"
-                >
-
-                    <div
-                        id="chatEmpty"
-                        class="chat-empty"
-                    >
-                        <h3>Select a conversation</h3>
-                        <p>
-                            Choose someone in this workspace
-                            to start a conversation.
-                        </p>
-                    </div>
-
-
-                    <div
-                        id="chatConversation"
-                        class="chat-conversation"
-                        hidden
-                    >
-
-                        <div class="chat-conversation-header">
-
-                            <button
-                                id="chatBackButton"
-                                class="chat-back-button"
-                                type="button"
-                                aria-label="Back to members"
-                            >
-                                &#8592;
-                            </button>
-
-                            <span
-                                id="chatConversationAvatar"
-                                class="chat-conversation-avatar"
-                                aria-hidden="true"
-                            ></span>
-
-                            <span class="chat-conversation-person">
-                                <strong id="chatConversationName"></strong>
-                                <span id="chatConversationEmail"></span>
-                            </span>
-
-                        </div>
-
-
-                        <div
-                            id="chatMessages"
-                            class="chat-messages"
-                            role="log"
-                            aria-label="Messages"
-                        ></div>
-
-
-                        <form
-                            id="chatForm"
-                            class="chat-composer"
-                        >
-
-                            <input
-                                id="chatMessageInput"
-                                type="text"
-                                placeholder="Write a message"
-                                autocomplete="off"
-                                aria-label="Message"
-                            >
-
-                            <button
-                                id="chatSendButton"
-                                type="submit"
-                                class="chat-send-button"
-                            >
-                                Send
-                            </button>
-
-                        </form>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <section
-            id="section-members"
-            class="workspace-section"
-        >
-
-            <div class="section-header">
-
-                <div>
-                    <h2>Members</h2>
-                    <p>People working in this workspace.</p>
-                </div>
-
-
-
-            </div>
-
-            <div
-                id="membersList"
-                class="members-list"
-            ></div>
-
-        </section>
-
     </main>
 
 
@@ -734,7 +600,10 @@
             role="menu"
         >
 
-            <p class="quick-create-label">
+            <p
+                id="quickCreateLabel"
+                class="quick-create-label"
+            >
                 Add to this workspace
             </p>
 
@@ -814,21 +683,6 @@
                 ></span>
                 <span class="quick-create-word">
                     New resource
-                </span>
-            </button>
-
-            <button
-                id="quickNewMember"
-                type="button"
-                role="menuitem"
-            >
-                <span
-                    class="quick-create-icon"
-                    data-icon="members"
-                    aria-hidden="true"
-                ></span>
-                <span class="quick-create-word">
-                    Add member
                 </span>
             </button>
 
@@ -1226,53 +1080,151 @@
 </div>
 
 
-<!-- MEMBER MODAL -->
+<!-- OPEN FILE MODAL
+     *
+     One dialog for both places a file can come from. The workspace tab lists
+     what this project already holds; the computer tab hands off to the system
+     file picker and copies what comes back into a folder, so everything after
+     this point reads and runs from the one project tree. -->
 
 <div
-    id="memberModal"
+    id="codeOpenModal"
     class="modal"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="memberModalTitle"
+    aria-labelledby="codeOpenTitle"
 >
 
-    <div class="modal-card">
+    <div class="modal-card modal-card-wide">
 
         <button
             type="button"
             class="modal-close"
-            data-close="memberModal"
+            data-close="codeOpenModal"
             aria-label="Close"
         >
         </button>
 
-        <h2 id="memberModalTitle">Add Member</h2>
+        <h2 id="codeOpenTitle">Open a file</h2>
 
-        <form id="memberForm" novalidate>
+        <div
+            id="codeOpenSources"
+            class="code-open-sources"
+            role="tablist"
+            aria-label="Where to open a file from"
+        >
 
-            <label for="memberName">Name</label>
+            <button
+                id="codeOpenSourceWorkspace"
+                type="button"
+                role="tab"
+                data-open-source="workspace"
+            >
+                This workspace
+            </button>
+
+            <button
+                id="codeOpenSourceComputer"
+                type="button"
+                role="tab"
+                data-open-source="computer"
+            >
+                This computer
+            </button>
+
+        </div>
+
+
+        <!-- SOURCE: ALREADY IN THE PROJECT -->
+
+        <section
+            id="codeOpenWorkspacePane"
+            class="code-open-pane"
+            role="tabpanel"
+            aria-labelledby="codeOpenSourceWorkspace"
+        >
+
+            <label
+                class="visually-hidden"
+                for="codeOpenSearch"
+            >
+                Search project files
+            </label>
 
             <input
-                id="memberName"
-                type="text"
-                placeholder="Member name"
+                id="codeOpenSearch"
+                class="code-open-search"
+                type="search"
+                placeholder="Search project files"
                 autocomplete="off"
-                aria-describedby="memberError"
+                data-autofocus
             >
 
-            <label for="memberEmail">Email</label>
+            <div
+                id="codeOpenWorkspaceList"
+                class="code-open-list"
+            ></div>
+
+        </section>
+
+
+        <!-- SOURCE: THE DEVICE -->
+
+        <section
+            id="codeOpenComputerPane"
+            class="code-open-pane"
+            role="tabpanel"
+            aria-labelledby="codeOpenSourceComputer"
+            hidden
+        >
+
+            <p class="field-help">
+                Choosing files opens your computer's file manager. Each
+                file is copied into this workspace as text, so it can be
+                edited, previewed and run here.
+            </p>
+
+            <div class="code-open-target">
+
+                <label for="codeLocalFolder">
+                    Add files to
+                </label>
+
+                <select id="codeLocalFolder"></select>
+
+                <button
+                    id="codePickFilesButton"
+                    class="modal-submit code-open-pick"
+                    type="button"
+                >
+                    Choose files&#8230;
+                </button>
+
+            </div>
 
             <input
-                id="memberEmail"
-                type="text"
-                inputmode="email"
-                placeholder="name@company.com"
-                autocomplete="off"
-                aria-describedby="memberError"
+                id="codeLocalInput"
+                class="visually-hidden"
+                type="file"
+                multiple
+                tabindex="-1"
+                aria-hidden="true"
             >
+
+            <ul
+                id="codeLocalChosen"
+                class="code-open-chosen"
+            ></ul>
 
             <p
-                id="memberError"
+                id="codeLocalEmpty"
+                class="code-open-chosen-empty"
+            >
+                Nothing chosen yet.
+            </p>
+
+            <p
+                id="codeOpenError"
                 class="field-error"
                 role="alert"
             ></p>
@@ -1282,21 +1234,90 @@
                 <button
                     type="button"
                     class="modal-cancel"
-                    data-close="memberModal"
+                    data-close="codeOpenModal"
                 >
                     Cancel
                 </button>
 
                 <button
-                    type="submit"
+                    id="codeImportButton"
                     class="modal-submit"
+                    type="button"
                 >
-                    Add Member
+                    Add to workspace
                 </button>
 
             </div>
 
-        </form>
+        </section>
+
+    </div>
+
+</div>
+
+
+<!-- FILE CONTENTS DIALOG
+     *
+     Shows a chosen file as it actually is, before it is copied in. The picker
+     only ever hands back a name and a size, which is not enough to tell a
+     useful script from a stray one, so the contents are readable here rather
+     than only after the files are already in the workspace. -->
+
+<div
+    id="codeFilePreviewModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="codeFilePreviewName"
+>
+
+    <div class="modal-card modal-card-wide">
+
+        <button
+            type="button"
+            class="modal-close"
+            data-close="codeFilePreviewModal"
+            aria-label="Close"
+        >
+        </button>
+
+        <h2 id="codeFilePreviewName">File</h2>
+
+        <p
+            id="codeFilePreviewMeta"
+            class="code-file-preview-meta"
+        >
+        </p>
+
+        <pre
+            id="codeFilePreviewBody"
+            class="code-file-preview-body"
+            tabindex="0"
+            aria-label="File contents"
+        ><code
+            id="codeFilePreviewCode"
+            class="code-file-preview-code"
+        ></code></pre>
+
+        <div class="form-actions">
+
+            <button
+                id="codeFilePreviewCopy"
+                class="modal-cancel"
+                type="button"
+            >
+                Copy
+            </button>
+
+            <button
+                type="button"
+                class="modal-submit"
+                data-close="codeFilePreviewModal"
+            >
+                Close
+            </button>
+
+        </div>
 
     </div>
 

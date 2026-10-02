@@ -362,7 +362,7 @@ function lastActivityOf(workspace) {
     consider(workspace.lastOpened);
     consider(workspace.createdAt);
 
-    ["tasks", "notes", "resources", "members",
+    ["tasks", "notes", "resources",
      "folders"].forEach(function (key) {
 
         (workspace[key] || []).forEach(
@@ -410,8 +410,7 @@ function metaLine(workspace) {
     const counts = [
         [workspace.notes, "note", "notes"],
         [workspace.folders, "folder", "folders"],
-        [workspace.resources, "resource", "resources"],
-        [workspace.members, "member", "members"]
+        [workspace.resources, "resource", "resources"]
     ];
 
     counts.forEach(function (pair) {
@@ -1096,13 +1095,7 @@ workspaceForm.addEventListener(
 
             folders: [],
 
-            resources: [],
-
-            members: [],
-
-            groupMessages: [],
-
-            personalChats: []
+            resources: []
         };
 
 

@@ -1681,6 +1681,13 @@ textarea:focus-visible,
     outline-offset: -2px;
 }
 
+/* The menu rows are flex, which outranks the user agent's rule for the hidden
+   attribute. Without this a filtered-out item would still be laid out and
+   still reachable by keyboard. */
+.quick-create-menu button[hidden] {
+    display: none;
+}
+
 .quick-create-icon {
     display: grid;
     place-items: center;
@@ -2527,667 +2534,6 @@ button.files-crumb:hover {
 }
 
 
-/* CHAT */
-
-.chat-layout {
-    display: grid;
-    grid-template-columns: 230px minmax(0, 1fr);
-    gap: 22px;
-    align-items: start;
-}
-
-.chat-contacts {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-}
-
-.chat-contact {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    width: 100%;
-    text-align: left;
-    padding: 9px 10px;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text-2);
-    min-width: 0;
-    transition: background-color .15s ease;
-}
-
-.chat-contact:hover {
-    background: var(--surface-3);
-}
-
-.chat-contact:focus-visible {
-    outline: 2px solid var(--text);
-    outline-offset: -2px;
-}
-
-.chat-contact.is-selected {
-    background: var(--surface-3);
-    color: var(--text);
-    font-weight: 600;
-    /* The selected row used to share its colour with :hover, so it was
-       impossible to tell "selected" from "pointed at". The inset bar and
-       the avatar inversion are the persistent cues. */
-    box-shadow: inset 2px 0 0 var(--text);
-}
-
-.chat-contact-avatar {
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: var(--line);
-    color: var(--text-2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11.5px;
-    font-weight: 600;
-}
-
-.chat-contact.is-selected .chat-contact-avatar {
-    background: var(--text);
-    color: white;
-}
-
-/* The name and the last thing said, so the list of people answers "who do I
-   need to reply to" without opening each thread. */
-.chat-contact-label {
-    min-width: 0;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-}
-
-.chat-contact-name {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 14px;
-}
-
-.chat-contact-text {
-    min-width: 0;
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    font-weight: 400;
-}
-
-.chat-contact-preview {
-    min-width: 0;
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 12px;
-    color: var(--text-3);
-}
-
-.chat-contact-time {
-    flex: 0 0 auto;
-    font-size: 10.5px;
-    color: var(--text-4);
-    white-space: nowrap;
-}
-
-.chat-contacts-empty {
-    padding: 14px 2px;
-    color: var(--text-3);
-    font-size: 13.5px;
-    line-height: 1.5;
-}
-
-.chat-contacts-empty h3 {
-    font-size: 15px;
-    color: var(--text-2);
-    margin: 0 0 6px;
-}
-
-.chat-contacts-empty p {
-    margin-bottom: 12px;
-}
-
-.chat-pane {
-    min-width: 0;
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    min-height: 420px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.chat-empty {
-    margin: auto;
-    padding: 40px 30px;
-    text-align: center;
-}
-
-.chat-empty[hidden] {
-    display: none;
-}
-
-.chat-empty h3 {
-    font-size: 15px;
-    margin-bottom: 7px;
-}
-
-.chat-empty p {
-    color: var(--text-3);
-    font-size: 13.5px;
-    max-width: 34ch;
-    margin: 0 auto;
-    line-height: 1.5;
-}
-
-.chat-conversation {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-}
-
-.chat-conversation[hidden] {
-    display: none;
-}
-
-.chat-conversation-header {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--surface-3);
-    flex-shrink: 0;
-}
-
-.chat-back-button {
-    display: none;
-    border: 0;
-    background: transparent;
-    color: var(--text-2);
-    font-size: 17px;
-    padding: 3px 7px;
-    border-radius: 6px;
-    flex-shrink: 0;
-}
-
-.chat-back-button:hover {
-    background: var(--surface-2);
-}
-
-.chat-conversation-avatar {
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: var(--text);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12.5px;
-    font-weight: 600;
-}
-
-.chat-conversation-person {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.chat-conversation-person strong {
-    font-size: 14.5px;
-    line-height: 1.3;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.chat-conversation-person span {
-    font-size: 12px;
-    color: var(--text-3);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.chat-messages {
-    flex: 1;
-    min-height: 260px;
-    max-height: 420px;
-    overflow-y: auto;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background: var(--surface);
-}
-
-.chat-messages-empty {
-    margin: auto;
-    color: var(--text-3);
-    font-size: 13.5px;
-    text-align: center;
-    line-height: 1.5;
-}
-
-.chat-message {
-    max-width: 78%;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.chat-message.is-mine {
-    align-self: flex-end;
-    align-items: flex-end;
-}
-
-.chat-message.is-theirs {
-    align-self: flex-start;
-}
-
-.chat-message-author {
-    font-size: 11.5px;
-    color: var(--text-3);
-    padding: 0 2px;
-}
-
-.chat-message-body {
-    background: white;
-    border: 1px solid var(--surface-3);
-    border-radius: 10px;
-    padding: 9px 12px;
-    font-size: 13.5px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
-
-.chat-message.is-mine .chat-message-body {
-    background: var(--text);
-    border-color: var(--text);
-    color: white;
-}
-
-.chat-message-time {
-    font-size: 11px;
-    color: var(--text-4);
-    padding: 0 2px;
-}
-
-.chat-composer {
-    display: flex;
-    gap: 9px;
-    padding: 12px;
-    border-top: 1px solid var(--surface-3);
-    flex-shrink: 0;
-}
-
-.chat-composer input {
-    flex: 1;
-    min-width: 0;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 14px;
-}
-
-.chat-composer input:focus {
-    border-color: var(--text-3);
-}
-
-.chat-composer input:focus-visible {
-    outline: 2px solid var(--text);
-    outline-offset: 1px;
-    border-color: var(--text);
-}
-
-.chat-send-button {
-    border: 0;
-    background: var(--text);
-    color: white;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    flex-shrink: 0;
-}
-
-.chat-send-button:hover {
-    background: var(--text-strong);
-}
-
-
-/* OVERVIEW */
-
-/* The first thing on the page: one record, named, and a way into it. It is
-   a lead paragraph with a border, not a card, because it is prose that
-   happens to be clickable rather than a thing in a grid. */
-.overview-continue {
-    border-left: 2px solid var(--accent);
-    padding: 2px 0 2px 18px;
-    margin-bottom: 28px;
-    max-width: 64ch;
-}
-
-.overview-continue-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11.5px;
-    font-weight: 600;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--text-4);
-    margin-bottom: 7px;
-}
-
-.overview-continue-kicker .icon {
-    color: var(--accent);
-    line-height: 0;
-}
-
-.overview-continue-main {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 8px 16px;
-}
-
-.overview-continue-line {
-    flex: 1 1 280px;
-    min-width: 0;
-    font-size: 16px;
-    line-height: 1.5;
-    color: var(--text-2);
-}
-
-.overview-continue-verb {
-    color: var(--text-3);
-}
-
-.overview-continue-label {
-    font-weight: 600;
-    color: var(--text);
-    overflow-wrap: anywhere;
-}
-
-.overview-continue-when {
-    color: var(--text-4);
-    font-size: 13px;
-    white-space: nowrap;
-}
-
-.overview-continue-go {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    flex: 0 0 auto;
-    padding: 7px 13px;
-    border-radius: 8px;
-    border: 1px solid var(--line-2);
-    background: var(--surface);
-    color: var(--text-2);
-    font-size: 13px;
-    font-weight: 500;
-    white-space: nowrap;
-    transition: background .14s ease,
-                border-color .14s ease,
-                color .14s ease;
-}
-
-.overview-continue-go:hover {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent-strong);
-}
-
-.overview-continue-go:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-.overview-continue-go .icon {
-    line-height: 0;
-    transition: transform .14s ease;
-}
-
-.overview-continue-go:hover .icon {
-    transform: rotate(180deg) translateX(2px) !important;
-}
-
-
-.overview-lead {
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--text-2);
-    max-width: 64ch;
-    margin-bottom: 26px;
-}
-
-
-
-.overview-block {
-    margin-bottom: 30px;
-}
-
-.overview-block-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    padding-bottom: 8px;
-    margin-bottom: 4px;
-    border-bottom: 1px solid var(--line);
-}
-
-.overview-block-header h3 {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: .07em;
-    color: var(--text-2);
-}
-
-.overview-text-link {
-    border: 0;
-    background: transparent;
-    color: var(--text-2);
-    font-size: 12.5px;
-    padding: 2px 0;
-    text-decoration: underline;
-}
-
-.overview-text-link:hover {
-    color: var(--text);
-}
-
-
-
-
-
-
-
-
-.overview-none {
-    padding: 18px 2px;
-    color: var(--text-4);
-    font-size: 13.5px;
-    line-height: 1.5;
-}
-
-.overview-empty {
-    border: 1px dashed var(--line);
-    border-radius: 12px;
-    padding: 44px 28px;
-    text-align: center;
-    max-width: 520px;
-}
-
-.overview-empty h3 {
-    font-size: 17px;
-    margin-bottom: 8px;
-}
-
-.overview-empty p {
-    color: var(--text-3);
-    font-size: 14px;
-    line-height: 1.55;
-    max-width: 40ch;
-    margin: 0 auto;
-}
-
-
-
-/* MEMBERS */
-
-.members-list {
-    display: grid;
-    grid-template-columns: repeat(
-        auto-fill,
-        minmax(min(250px, 100%), 1fr)
-    );
-    gap: 12px;
-}
-
-.member-card {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    background: white;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px 15px;
-    min-width: 0;
-}
-
-.member-avatar {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: var(--surface-3);
-    color: var(--text-2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    flex-shrink: 0;
-}
-
-.member-body {
-    flex: 1;
-    min-width: 0;
-}
-
-.member-name-line {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    min-width: 0;
-}
-
-.member-card h3 {
-    font-size: 14.5px;
-    font-weight: 600;
-    line-height: 1.3;
-    /* A person's name is worth wrapping rather than truncating: the tail of
-       a surname is usually the part that distinguishes two people. */
-    overflow-wrap: anywhere;
-}
-
-.member-you {
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    color: var(--text-3);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 1px 5px;
-    flex-shrink: 0;
-}
-
-.member-card p {
-    color: var(--text-3);
-    font-size: 12.5px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Member actions sit together on the right of the card. Two different
-   weights of intent, so they are told apart by shape rather than only by
-   colour: one is a labelled button, the other a bare cross. */
-.member-actions {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.member-talk {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 11px;
-    border-radius: 7px;
-    border: 1px solid var(--line-2);
-    background: var(--surface);
-    color: var(--text-2);
-    font-size: 12.5px;
-    font-weight: 500;
-    white-space: nowrap;
-    transition: background .13s ease,
-                border-color .13s ease,
-                color .13s ease;
-}
-
-.member-talk:hover {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    color: var(--accent-strong);
-}
-
-.member-talk:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-.member-remove {
-    flex-shrink: 0;
-    border: 0;
-    background: transparent;
-    color: var(--text-4);
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border-radius: 7px;
-    display: grid;
-    place-items: center;
-    transition: background .13s ease,
-                color .13s ease;
-}
-
-.member-remove:hover {
-    background: var(--surface-2);
-    color: var(--text-2);
-}
-
-.member-remove:focus-visible {
-    outline: 2px solid var(--text);
-    outline-offset: 1px;
-}
-
-
 /* MODALS */
 
 .modal {
@@ -3441,8 +2787,6 @@ button.files-crumb:hover {
 .modal-cancel:active,
 .confirm-cancel:active,
 .confirm-accept:active,
-.chat-send-button:active,
-.chat-back-button:active,
 .quiet-button:active,
 .section-button:active,
 .quick-create-button:active,
@@ -3453,14 +2797,6 @@ button.files-crumb:hover {
 
 .modal-close:active {
     transform: translateY(1px);
-}
-
-/* Disabled: only used where the reason is self-evident from context. */
-.chat-send-button:disabled {
-    background: var(--line-3);
-    color: var(--surface-2);
-    cursor: not-allowed;
-    transform: none;
 }
 
 /* Quiet transient confirmation. Fixed bottom-right, no shadow bloom,
@@ -3511,15 +2847,12 @@ button.files-crumb:hover {
     display: none;
 }
 
-/* Newly created or newly sent item. An inset bar rather than a
-   background change, because note cards and chat bubbles already own
-   their own background colour. */
+/* Newly created item. An inset bar rather than a background change, because
+   the cards already own their own background colour. */
 .task-item.is-new,
 .note-card.is-new,
 .folder-card.is-new,
-.resource-row.is-new,
-.member-card.is-new,
-.chat-message.is-new {
+.resource-row.is-new {
     box-shadow: inset 3px 0 0 #3f6b4f;
     transition: box-shadow 500ms ease;
 }
@@ -3527,11 +2860,6 @@ button.files-crumb:hover {
 /* Interactive elements that had no hover affordance in Phase 2. */
 .logout-button:hover,
 .header-action-button:hover {
-    background: var(--surface-3);
-}
-
-
-.chat-back-button:hover {
     background: var(--surface-3);
 }
 
@@ -4298,31 +3626,12 @@ button.files-crumb:hover {
         gap: 26px;
     }
 
-    .chat-layout {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .chat-pane {
-        min-height: 340px;
-    }
-
-    /* Structural idea borrowed from the reference: on narrow screens the
-       contact list and the conversation never compete for the same space. */
-    .chat-layout.has-selection .chat-contacts {
-        display: none;
-    }
-
-    .chat-layout.has-selection .chat-back-button {
-        display: block;
-    }
-
     .workspace-header {
         flex-direction: column;
     }
 
-    /* Same idea as the chat panes: on a narrow screen the tree, the editor
-       and the preview each take the width in turn instead of competing for
-       thirds of it. */
+    /* On a narrow screen the tree, the editor and the preview each take the
+       width in turn instead of competing for thirds of it. */
     .code-shell {
         grid-template-columns: minmax(0, 1fr);
     }
@@ -4493,9 +3802,7 @@ button.files-crumb:hover {
     }
 
     .note-delete,
-    .member-remove,
-    .resource-remove,
-    .chat-back-button {
+    .resource-remove {
         min-height: 40px;
     }
 }
@@ -4631,16 +3938,6 @@ button.files-crumb:hover {
 
     .section-header {
         align-items: flex-start;
-    }
-
-
-    .chat-composer {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .chat-composer button {
-        width: 100%;
     }
 
     /* Trims rather than hides: the code area is the point of the section, so
@@ -5212,7 +4509,6 @@ button.files-crumb:hover {
 .activity-row[data-type="note"] .activity-mark { background: var(--info); }
 .activity-row[data-type="folder"] .activity-mark { background: var(--text-4); }
 .activity-row[data-type="resource"] .activity-mark { background: var(--warn); }
-.activity-row[data-type="member"] .activity-mark { background: var(--ok); }
 .activity-row[data-type="file"] .activity-mark { background: var(--accent-2); }
 
 .activity-verb {
@@ -5288,8 +4584,7 @@ button.files-crumb:hover {
 .task-item,
 .note-card,
 .folder-card,
-.resource-row,
-.member-card {
+.resource-row {
     transition: background-color var(--t-fast) var(--ease),
                 border-color var(--t-fast) var(--ease);
 }
@@ -5393,6 +4688,311 @@ button.files-crumb:hover {
 
 .modal-card-narrow {
     max-width: 420px;
+}
+
+.modal-card-wide {
+    max-width: 560px;
+}
+
+
+/* OPEN FILE DIALOG
+ *
+ * Reuses the panel-switcher shape already used for Code's Files / Editor /
+ * Preview control, because it answers the same question: which of two or three
+ * views is showing. Keeping the two identical is why the dialog reads as part
+ * of the product rather than something bolted onto it. */
+
+.code-open-sources {
+    display: flex;
+    gap: 4px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    margin-bottom: 16px;
+}
+
+.code-open-sources button {
+    flex: 1;
+    border: 0;
+    background: white;
+    color: var(--text-2);
+    padding: 9px 12px;
+    font-size: var(--t-meta);
+    border-right: 1px solid var(--line);
+}
+
+.code-open-sources button:last-child {
+    border-right: 0;
+}
+
+.code-open-sources button:hover {
+    background: var(--surface-2);
+}
+
+.code-open-sources button.is-active {
+    background: var(--text);
+    color: white;
+}
+
+.code-open-pane[hidden] {
+    display: none;
+}
+
+.code-open-search {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: white;
+    color: var(--text);
+    font-size: var(--t-body);
+}
+
+.code-open-search::placeholder {
+    color: var(--text-3);
+}
+
+.code-open-search:hover {
+    border-color: var(--line-2);
+}
+
+.code-open-search:focus {
+    border-color: var(--text-4);
+}
+
+.code-open-search:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+.code-open-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface);
+}
+
+.code-open-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    padding: 9px 12px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    transition: background-color var(--t-fast) var(--ease);
+}
+
+.code-open-row:last-child {
+    border-bottom: 0;
+}
+
+.code-open-row:hover {
+    background: var(--surface-2);
+}
+
+.code-open-row.is-active {
+    background: var(--accent-soft);
+}
+
+.code-open-row-name {
+    font-size: var(--t-body);
+    color: var(--text-strong);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.code-open-row-where {
+    font-size: var(--t-micro);
+    color: var(--text-3);
+    padding: 2px 7px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.code-open-row-meta {
+    margin-left: auto;
+    font-size: var(--t-micro);
+    color: var(--text-3);
+    white-space: nowrap;
+}
+
+.code-open-empty {
+    padding: 22px 16px;
+    text-align: center;
+    font-size: var(--t-meta);
+    color: var(--text-3);
+    line-height: 1.6;
+}
+
+/* Target folder and the hand-off to the system picker sit on one line while
+   there is room, and stack once there isn't. */
+.code-open-target {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin: 4px 0 12px;
+}
+
+.code-open-target label {
+    font-size: var(--t-meta);
+    color: var(--text-2);
+    white-space: nowrap;
+}
+
+.code-open-target select {
+    flex: 1;
+    min-width: 120px;
+}
+
+.code-open-pick {
+    margin-top: 0;
+    padding: 9px 14px;
+    white-space: nowrap;
+}
+
+.code-open-chosen {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    overflow: hidden;
+}
+
+.code-open-chosen-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+}
+
+.code-open-chosen-row:last-child {
+    border-bottom: 0;
+}
+
+.code-open-chosen-row.is-rejected {
+    background: var(--danger-soft);
+}
+
+.code-open-chosen-name {
+    font-size: var(--t-body);
+    color: var(--text-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.code-open-chosen-meta {
+    font-size: var(--t-micro);
+    color: var(--text-3);
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.code-open-chosen-drop {
+    border: 0;
+    background: transparent;
+    color: var(--text-3);
+    font-size: 17px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: var(--r-sm);
+    flex: 0 0 auto;
+}
+
+.code-open-chosen-drop:hover {
+    background: var(--surface-2);
+    color: var(--danger);
+}
+
+.code-open-chosen-drop:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* Read before committing. Sits between the note and the remove control so the
+   row keeps its reading order: what it is, how big, then what to do. */
+.code-open-chosen-peek {
+    flex: 0 0 auto;
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text-2);
+    border-radius: var(--r-sm);
+    padding: 3px 9px;
+    font-size: var(--t-micro);
+    white-space: nowrap;
+    transition: background-color var(--t-fast) var(--ease);
+}
+
+.code-open-chosen-peek:hover:not(:disabled) {
+    background: var(--surface-2);
+    color: var(--text-strong);
+}
+
+.code-open-chosen-peek:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+
+/* FILE CONTENTS DIALOG
+ *
+ * A reader, not an editor: nothing here can be typed into, and the file on
+ * disk is never changed by looking at it. The monospace metrics match the
+ * editor so a file looks the same in both places, which is what makes the
+ * preview worth trusting as a preview. */
+
+.code-file-preview-meta {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+    margin: 2px 0 14px;
+}
+
+.code-file-preview-body {
+    max-height: 52vh;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    padding: 12px 14px;
+    margin: 0 0 20px;
+}
+
+.code-file-preview-body:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
+}
+
+.code-file-preview-code {
+    display: block;
+    font-family: Consolas, "SF Mono", Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre;
+    color: var(--text);
+}
+
+.code-open-chosen-empty {
+    font-size: var(--t-meta);
+    color: var(--text-3);
+    text-align: center;
+    padding: 18px 0 4px;
+    margin: 0;
+}
+
+.code-open-chosen-empty[hidden] {
+    display: none;
 }
 
 .modal-text {
