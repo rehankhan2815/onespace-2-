@@ -1650,7 +1650,7 @@ const WORKSPACE_SECTIONS = [
     },
     {
         id: "files",
-        label: "Files",
+        label: "Folders",
         icon: "files",
         subtitle: "The project tree shared with Code."
     },
@@ -3396,6 +3396,10 @@ function renderTasks() {
 
     const isEmpty = tasks.length === 0;
 
+    const tasksSectionDesc = document.getElementById("tasksSectionDesc");
+    if (tasksSectionDesc) {
+        tasksSectionDesc.hidden = !isEmpty;
+    }
 
     /* Two columns both reading "No tasks yet." tells the user nothing about
        what to do next. Once the workspace genuinely has no tasks, the
@@ -3800,6 +3804,11 @@ function renderNotes() {
 
     const notes = currentWorkspace.notes || [];
 
+    const notesSectionDesc = document.getElementById("notesSectionDesc");
+    if (notesSectionDesc) {
+        notesSectionDesc.hidden = notes.length > 0;
+    }
+
     if (notes.length === 0) {
 
         grid.appendChild(
@@ -4053,6 +4062,11 @@ function renderFolders() {
     grid.textContent = "";
 
     const folders = currentWorkspace.folders || [];
+
+    const foldersSectionDesc = document.getElementById("foldersSectionDesc");
+    if (foldersSectionDesc) {
+        foldersSectionDesc.hidden = folders.length > 0;
+    }
 
     const openFolder = codeFindFolder(openFolderId);
 
@@ -6288,6 +6302,8 @@ function validateCodeFile() {
     return { name: name, folder: folder };
 }
 
+let codeFileUpload = null;
+
 if (codeFileForm) {
 
     wireLiveValidation(
@@ -6295,6 +6311,33 @@ if (codeFileForm) {
         CODE_MODAL_ERRORS,
         validateCodeFile
     );
+
+    const pickButton = document.getElementById("codeFilePickButton");
+    const fileInput = document.getElementById("codeFileUpload");
+    const chosenDisplay = document.getElementById("codeFileChosen");
+
+    if (pickButton && fileInput) {
+        pickButton.addEventListener("click", function () {
+            fileInput.click();
+        });
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener("change", function () {
+            codeFileUpload = fileInput.files[0] || null;
+            if (chosenDisplay) {
+                chosenDisplay.textContent = codeFileUpload
+                    ? codeFileUpload.name + " (" + codeByteLabel(codeFileUpload.size) + ")"
+                    : "";
+            }
+            if (codeFileUpload) {
+                const nameInput = document.getElementById("codeFileName");
+                if (nameInput && !nameInput.value) {
+                    nameInput.value = codeFileUpload.name;
+                }
+            }
+        });
+    }
 
     codeFileForm.addEventListener(
         "submit",
@@ -6306,6 +6349,35 @@ if (codeFileForm) {
 
             if (!values) {
                 focusFirstInvalid(CODE_MODAL_ERRORS);
+                return;
+            }
+
+            if (codeFileUpload) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const file = makeCodeFileRecord(
+                        values.name,
+                        reader.result
+                    );
+
+                    values.folder.files.push(file);
+
+                    codeOpenEntry(values.folder.id, file.id);
+
+                    closeModal("codeFileModal");
+                    codeFileUpload = null;
+                    if (chosenDisplay) chosenDisplay.textContent = "";
+
+                    commitChanges({ only: "code" });
+
+                    if (activeSection === "files") {
+                        setOpenFolder(values.folder.id);
+                    }
+
+                    showStatus("Uploaded " + file.name);
+                    codeLog("info", "Uploaded " + codePathOf(values.folder, file) + ".");
+                };
+                reader.readAsText(codeFileUpload);
                 return;
             }
 
@@ -6328,8 +6400,6 @@ if (codeFileForm) {
 
             commitChanges({ only: "code" });
 
-            /* If the reader is browsing Files rather than writing code, the
-               new file should appear in the folder they were standing in. */
             if (activeSection === "files") {
                 setOpenFolder(values.folder.id);
             }
@@ -7012,6 +7082,14 @@ function renderCode() {
         return;
     }
 
+    const codeSectionDesc = document.getElementById("codeSectionDesc");
+    if (codeSectionDesc) {
+        const hasFiles = codeFolders().some(function (folder) {
+            return (folder.files || []).length > 0;
+        });
+        codeSectionDesc.hidden = hasFiles;
+    }
+
     /* Drop open files whose folder or file no longer exists, so a deleted
        entry cannot leave a dead tab behind. */
     codeOpenFiles = codeOpenFiles.filter(function (open) {
@@ -7599,6 +7677,11 @@ function renderResources() {
     list.innerHTML = "";
 
     const resources = currentWorkspace.resources || [];
+
+    const resourcesSectionDesc = document.getElementById("resourcesSectionDesc");
+    if (resourcesSectionDesc) {
+        resourcesSectionDesc.hidden = resources.length > 0;
+    }
 
     if (resources.length === 0) {
 

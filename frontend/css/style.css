@@ -4983,6 +4983,37 @@ button.files-crumb:hover {
     color: var(--text);
 }
 
+/* Code file upload (New File modal) */
+.code-file-upload {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.code-file-upload label {
+    display: block;
+    font-size: var(--t-meta);
+    color: var(--text-2);
+    margin-bottom: 8px;
+}
+
+.code-file-upload-target {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.code-file-chosen {
+    font-size: var(--t-meta);
+    color: var(--text-2);
+    min-height: 1.4em;
+}
+
+.code-file-upload-target .quiet-button {
+    white-space: nowrap;
+}
+
 .code-open-chosen-empty {
     font-size: var(--t-meta);
     color: var(--text-3);

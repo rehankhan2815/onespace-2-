@@ -207,7 +207,7 @@
 
                 <div>
                     <h2>Tasks</h2>
-                    <p>What still needs doing, and what is already done.</p>
+                    <p id="tasksSectionDesc">What still needs doing, and what is already done.</p>
                 </div>
 
 
@@ -261,6 +261,13 @@
             class="workspace-section"
         >
 
+            <div class="section-header">
+                <div>
+                    <h2>Folders</h2>
+                    <p id="foldersSectionDesc">No folders yet. Create a folder to get started.</p>
+                </div>
+            </div>
+
             <div
                 id="filesBreadcrumb"
                 class="files-breadcrumb"
@@ -284,7 +291,7 @@
 
                 <div>
                     <h2>Notes</h2>
-                    <p>Short written notes for this workspace.</p>
+                    <p id="notesSectionDesc">Short written notes for this workspace.</p>
                 </div>
 
 
@@ -308,7 +315,7 @@
 
                 <div>
                     <h2>Resources</h2>
-                    <p>Links worth keeping for this workspace.</p>
+                    <p id="resourcesSectionDesc">Links worth keeping for this workspace.</p>
                 </div>
 
             </div>
@@ -330,10 +337,7 @@
 
                 <div>
                     <h2>Code</h2>
-                    <p>
-                        Write project files and see frontend
-                        results without leaving the workspace.
-                    </p>
+                    <p id="codeSectionDesc">Write project files and see frontend results without leaving the workspace.</p>
                 </div>
 
                 <div class="code-header-actions">
@@ -1370,6 +1374,27 @@
                 the file is highlighted and whether it can be
                 previewed.
             </p>
+
+            <div class="code-file-upload">
+                <label for="codeFileUpload">Or choose a file from your device</label>
+                <div class="code-file-upload-target">
+                    <button
+                        id="codeFilePickButton"
+                        class="quiet-button"
+                        type="button"
+                    >
+                        Choose file&#8230;
+                    </button>
+                    <input
+                        id="codeFileUpload"
+                        class="visually-hidden"
+                        type="file"
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                </div>
+                <p id="codeFileChosen" class="code-file-chosen"></p>
+            </div>
 
             <p
                 id="codeFileError"
