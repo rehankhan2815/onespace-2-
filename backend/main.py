@@ -200,6 +200,26 @@ def delete_workspace(workspace_id: int, current_user: User = Depends(get_current
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace not found")
 
+    # Delete physical files for folder files
+    for folder in workspace.folders:
+        for file in folder.files:
+            if os.path.exists(file.storage_path):
+                os.remove(file.storage_path)
+        # Also handle nested folders recursively
+        def delete_folder_files(f):
+            for child in f.child_folders:
+                delete_folder_files(child)
+            for file in f.files:
+                if os.path.exists(file.storage_path):
+                    os.remove(file.storage_path)
+        for child in folder.child_folders:
+            delete_folder_files(child)
+
+    # Delete physical files for resources
+    for resource in workspace.resources:
+        if resource.resource_type == "file" and resource.storage_path and os.path.exists(resource.storage_path):
+            os.remove(resource.storage_path)
+
     db.delete(workspace)
     db.commit()
     return None
