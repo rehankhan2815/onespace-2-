@@ -290,3 +290,70 @@ class NoteResponse(NoteBase):
 class NoteListResponse(BaseModel):
     notes: List[NoteResponse]
     total: int
+
+
+class ResourceBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    resource_type: str
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Resource name cannot be empty")
+        if len(v) > 255:
+            raise ValueError("Resource name too long")
+        return v
+
+    @field_validator("resource_type")
+    @classmethod
+    def validate_resource_type(cls, v: str) -> str:
+        v = v.strip().lower()
+        if v not in ("link", "file"):
+            raise ValueError("Resource type must be 'link' or 'file'")
+        return v
+
+
+class ResourceCreate(ResourceBase):
+    url: Optional[str] = None
+
+
+class ResourceUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    url: Optional[str] = None
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if not v:
+                raise ValueError("Resource name cannot be empty")
+            if len(v) > 255:
+                raise ValueError("Resource name too long")
+        return v
+
+
+class ResourceResponse(BaseModel):
+    id: int
+    workspace_id: int
+    name: str
+    description: Optional[str]
+    resource_type: str
+    url: Optional[str]
+    original_filename: Optional[str]
+    mime_type: Optional[str]
+    file_size: Optional[int]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ResourceListResponse(BaseModel):
+    resources: List[ResourceResponse]
+    total: int

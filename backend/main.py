@@ -3,20 +3,22 @@ from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse as FastAPIFileResponse
 from sqlalchemy.orm import Session
+from typing import Optional
 import os
 import uuid
 from pathlib import Path
 
 from config import settings
 from database import init_db, get_db
-from models import User, Workspace, Task, Folder, File as FileModel, Note
+from models import User, Workspace, Task, Folder, File as FileModel, Note, Resource
 from schemas import (
     UserCreate, UserLogin, UserResponse, Token,
     WorkspaceCreate, WorkspaceUpdate, WorkspaceResponse, WorkspaceListResponse,
     TaskCreate, TaskUpdate, TaskResponse, TaskListResponse,
     FolderCreate, FolderUpdate, FolderResponse, FolderListResponse,
     FileResponse, FileListResponse,
-    NoteCreate, NoteUpdate, NoteResponse, NoteListResponse
+    NoteCreate, NoteUpdate, NoteResponse, NoteListResponse,
+    ResourceCreate, ResourceUpdate, ResourceResponse, ResourceListResponse
 )
 from auth import (
     pwd_context, create_access_token, decode_token,
@@ -557,6 +559,16 @@ def get_note_or_404(note_id: int, workspace_id: int, db: Session) -> Note:
     return note
 
 
+def get_resource_or_404(resource_id: int, workspace_id: int, db: Session) -> Resource:
+    resource = db.query(Resource).filter(
+        Resource.id == resource_id,
+        Resource.workspace_id == workspace_id
+    ).first()
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return resource
+
+
 @app.post("/api/workspaces/{workspace_id}/notes", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)
 def create_note(
     workspace_id: int,
@@ -636,5 +648,171 @@ def delete_note(
     note = get_note_or_404(note_id, workspace_id, db)
 
     db.delete(note)
+    db.commit()
+    return None
+
+
+@app.post("/api/workspaces/{workspace_id}/resources", response_model=ResourceResponse, status_code=status.HTTP_201_CREATED)
+def create_link_resource(
+    workspace_id: int,
+    resource: ResourceCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+
+    if resource.resource_type != "link":
+        raise HTTPException(status_code=400, detail="Use /resources/file endpoint for file resources")
+
+    if not resource.url:
+        raise HTTPException(status_code=400, detail="URL is required for link resources")
+
+    resource_obj = Resource(
+        workspace_id=workspace_id,
+        name=resource.name,
+        description=resource.description,
+        resource_type="link",
+        url=resource.url,
+    )
+    db.add(resource_obj)
+    db.commit()
+    db.refresh(resource_obj)
+    return resource_obj
+
+
+@app.post("/api/workspaces/{workspace_id}/resources/file", response_model=ResourceResponse, status_code=status.HTTP_201_CREATED)
+async def upload_file_resource(
+    workspace_id: int,
+    name: str = File(..., description="Resource name"),
+    description: Optional[str] = File(None, description="Resource description"),
+    file: UploadFile = File(..., description="File to upload"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+
+    # Validate name
+    name = name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Resource name cannot be empty")
+    if len(name) > 255:
+        raise HTTPException(status_code=400, detail="Resource name too long")
+
+    content = await file.read()
+    file_size = len(content)
+
+    safe_filename = f"{uuid.uuid4().hex}_{file.filename}"
+    workspace_storage = STORAGE_DIR / str(workspace_id) / "resources"
+    workspace_storage.mkdir(parents=True, exist_ok=True)
+    storage_path = workspace_storage / safe_filename
+
+    with open(storage_path, "wb") as f:
+        f.write(content)
+
+    resource_obj = Resource(
+        workspace_id=workspace_id,
+        name=name,
+        description=description,
+        resource_type="file",
+        original_filename=file.filename,
+        mime_type=file.content_type,
+        file_size=file_size,
+        storage_path=str(storage_path),
+    )
+    db.add(resource_obj)
+    db.commit()
+    db.refresh(resource_obj)
+    return resource_obj
+
+
+@app.get("/api/workspaces/{workspace_id}/resources", response_model=ResourceListResponse)
+def list_resources(
+    workspace_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+
+    resources = db.query(Resource).filter(Resource.workspace_id == workspace_id).all()
+    return {
+        "resources": resources,
+        "total": len(resources)
+    }
+
+
+@app.get("/api/workspaces/{workspace_id}/resources/{resource_id}", response_model=ResourceResponse)
+def get_resource(
+    workspace_id: int,
+    resource_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+    resource = get_resource_or_404(resource_id, workspace_id, db)
+    return resource
+
+
+@app.patch("/api/workspaces/{workspace_id}/resources/{resource_id}", response_model=ResourceResponse)
+def update_resource(
+    workspace_id: int,
+    resource_id: int,
+    resource_update: ResourceUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+    resource = get_resource_or_404(resource_id, workspace_id, db)
+
+    update_data = resource_update.model_dump(exclude_unset=True)
+
+    # Don't allow changing resource_type or URL for file resources
+    if resource.resource_type == "file" and "url" in update_data:
+        raise HTTPException(status_code=400, detail="Cannot set URL for file resource")
+
+    for field, value in update_data.items():
+        setattr(resource, field, value)
+
+    db.commit()
+    db.refresh(resource)
+    return resource
+
+
+@app.get("/api/workspaces/{workspace_id}/resources/{resource_id}/download")
+def download_resource(
+    workspace_id: int,
+    resource_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+    resource = get_resource_or_404(resource_id, workspace_id, db)
+
+    if resource.resource_type != "file":
+        raise HTTPException(status_code=400, detail="Download only available for file resources")
+
+    if not resource.storage_path or not os.path.exists(resource.storage_path):
+        raise HTTPException(status_code=404, detail="File not found on disk")
+
+    return FastAPIFileResponse(
+        path=resource.storage_path,
+        filename=resource.original_filename,
+        media_type=resource.mime_type
+    )
+
+
+@app.delete("/api/workspaces/{workspace_id}/resources/{resource_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_resource(
+    workspace_id: int,
+    resource_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+    resource = get_resource_or_404(resource_id, workspace_id, db)
+
+    if resource.resource_type == "file" and resource.storage_path and os.path.exists(resource.storage_path):
+        os.remove(resource.storage_path)
+
+    db.delete(resource)
     db.commit()
     return None

@@ -34,6 +34,7 @@ class Workspace(Base):
     folders = relationship("Folder", back_populates="workspace", cascade="all, delete-orphan")
     files = relationship("File", back_populates="workspace", cascade="all, delete-orphan")
     notes = relationship("Note", back_populates="workspace", cascade="all, delete-orphan")
+    resources = relationship("Resource", back_populates="workspace", cascade="all, delete-orphan")
 
 
 class Task(Base):
@@ -95,3 +96,22 @@ class Note(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     workspace = relationship("Workspace", back_populates="notes")
+
+
+class Resource(Base):
+    __tablename__ = "resources"
+
+    id = Column(Integer, primary_key=True, index=True)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    resource_type = Column(String(20), nullable=False)  # "link" or "file"
+    url = Column(String(2048), nullable=True)  # For link resources
+    original_filename = Column(String(255), nullable=True)  # For file resources
+    mime_type = Column(String(255), nullable=True)  # For file resources
+    file_size = Column(Integer, nullable=True)  # For file resources
+    storage_path = Column(String(512), nullable=True)  # For file resources
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    workspace = relationship("Workspace", back_populates="resources")
