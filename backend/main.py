@@ -9,13 +9,14 @@ from pathlib import Path
 
 from config import settings
 from database import init_db, get_db
-from models import User, Workspace, Task, Folder, File as FileModel
+from models import User, Workspace, Task, Folder, File as FileModel, Note
 from schemas import (
     UserCreate, UserLogin, UserResponse, Token,
     WorkspaceCreate, WorkspaceUpdate, WorkspaceResponse, WorkspaceListResponse,
     TaskCreate, TaskUpdate, TaskResponse, TaskListResponse,
     FolderCreate, FolderUpdate, FolderResponse, FolderListResponse,
-    FileResponse, FileListResponse
+    FileResponse, FileListResponse,
+    NoteCreate, NoteUpdate, NoteResponse, NoteListResponse
 )
 from auth import (
     pwd_context, create_access_token, decode_token,
@@ -542,5 +543,98 @@ def delete_file(
         os.remove(file.storage_path)
 
     db.delete(file)
+    db.commit()
+    return None
+
+
+def get_note_or_404(note_id: int, workspace_id: int, db: Session) -> Note:
+    note = db.query(Note).filter(
+        Note.id == note_id,
+        Note.workspace_id == workspace_id
+    ).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return note
+
+
+@app.post("/api/workspaces/{workspace_id}/notes", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)
+def create_note(
+    workspace_id: int,
+    note: NoteCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+
+    note_obj = Note(
+        workspace_id=workspace_id,
+        title=note.title,
+        content=note.content,
+        color=note.color or "yellow",
+    )
+    db.add(note_obj)
+    db.commit()
+    db.refresh(note_obj)
+    return note_obj
+
+
+@app.get("/api/workspaces/{workspace_id}/notes", response_model=NoteListResponse)
+def list_notes(
+    workspace_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+
+    notes = db.query(Note).filter(Note.workspace_id == workspace_id).all()
+    return {
+        "notes": notes,
+        "total": len(notes)
+    }
+
+
+@app.get("/api/workspaces/{workspace_id}/notes/{note_id}", response_model=NoteResponse)
+def get_note(
+    workspace_id: int,
+    note_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+    note = get_note_or_404(note_id, workspace_id, db)
+    return note
+
+
+@app.patch("/api/workspaces/{workspace_id}/notes/{note_id}", response_model=NoteResponse)
+def update_note(
+    workspace_id: int,
+    note_id: int,
+    note_update: NoteUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+    note = get_note_or_404(note_id, workspace_id, db)
+
+    update_data = note_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(note, field, value)
+
+    db.commit()
+    db.refresh(note)
+    return note
+
+
+@app.delete("/api/workspaces/{workspace_id}/notes/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_note(
+    workspace_id: int,
+    note_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace_or_404(workspace_id, current_user, db)
+    note = get_note_or_404(note_id, workspace_id, db)
+
+    db.delete(note)
     db.commit()
     return None

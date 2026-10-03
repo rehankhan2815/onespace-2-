@@ -33,6 +33,7 @@ class Workspace(Base):
     tasks = relationship("Task", back_populates="workspace", cascade="all, delete-orphan")
     folders = relationship("Folder", back_populates="workspace", cascade="all, delete-orphan")
     files = relationship("File", back_populates="workspace", cascade="all, delete-orphan")
+    notes = relationship("Note", back_populates="workspace", cascade="all, delete-orphan")
 
 
 class Task(Base):
@@ -80,3 +81,17 @@ class File(Base):
 
     workspace = relationship("Workspace", back_populates="files")
     folder = relationship("Folder", back_populates="files")
+
+
+class Note(Base):
+    __tablename__ = "notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id"), nullable=False)
+    title = Column(String(255), nullable=False)
+    content = Column(Text, nullable=True)
+    color = Column(String(50), default="yellow", nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    workspace = relationship("Workspace", back_populates="notes")

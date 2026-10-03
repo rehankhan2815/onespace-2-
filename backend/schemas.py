@@ -220,3 +220,73 @@ class FileResponse(BaseModel):
 class FileListResponse(BaseModel):
     files: List[FileResponse]
     total: int
+
+
+class NoteBase(BaseModel):
+    title: str
+    content: Optional[str] = None
+    color: Optional[str] = "yellow"
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Note title cannot be empty")
+        if len(v) > 255:
+            raise ValueError("Note title too long")
+        return v
+
+    @field_validator("color")
+    @classmethod
+    def validate_color(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip().lower()
+            if v not in ("yellow", "blue", "green", "red", "purple", "orange", "pink", "gray", "white"):
+                raise ValueError("Invalid color")
+        return v
+
+
+class NoteCreate(NoteBase):
+    pass
+
+
+class NoteUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    color: Optional[str] = None
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if not v:
+                raise ValueError("Note title cannot be empty")
+            if len(v) > 255:
+                raise ValueError("Note title too long")
+        return v
+
+    @field_validator("color")
+    @classmethod
+    def validate_color(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip().lower()
+            if v not in ("yellow", "blue", "green", "red", "purple", "orange", "pink", "gray", "white"):
+                raise ValueError("Invalid color")
+        return v
+
+
+class NoteResponse(NoteBase):
+    id: int
+    workspace_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class NoteListResponse(BaseModel):
+    notes: List[NoteResponse]
+    total: int
