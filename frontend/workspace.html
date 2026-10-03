@@ -1312,7 +1312,7 @@
     aria-labelledby="codeFilePreviewName"
 >
 
-    <div class="modal-card modal-card-wide">
+    <div class="modal-card modal-card-wide file-preview-modal-card">
 
         <button
             type="button"
@@ -1322,32 +1322,98 @@
         >
         </button>
 
-        <h2 id="codeFilePreviewName">File</h2>
+        <div class="file-preview-header">
+            <div>
+                <h2 id="codeFilePreviewName">File</h2>
+                <p
+                    id="codeFilePreviewMeta"
+                    class="code-file-preview-meta"
+                >
+                </p>
+            </div>
 
-        <p
-            id="codeFilePreviewMeta"
-            class="code-file-preview-meta"
-        >
-        </p>
+            <!-- ZOOM CONTROLS -->
+            <div class="file-preview-zoom-bar" role="toolbar" aria-label="Zoom controls">
+                <button
+                    id="filePreviewZoomOut"
+                    class="zoom-btn"
+                    type="button"
+                    title="Zoom Out"
+                    aria-label="Zoom Out"
+                >
+                    &minus;
+                </button>
+                <span
+                    id="filePreviewZoomLevel"
+                    class="zoom-level-badge"
+                >100%</span>
+                <button
+                    id="filePreviewZoomIn"
+                    class="zoom-btn"
+                    type="button"
+                    title="Zoom In"
+                    aria-label="Zoom In"
+                >
+                    +
+                </button>
+                <button
+                    id="filePreviewZoomReset"
+                    class="zoom-reset-btn"
+                    type="button"
+                    title="Reset Zoom"
+                >
+                    Reset
+                </button>
+            </div>
+        </div>
 
-        <pre
+        <div
             id="codeFilePreviewBody"
             class="code-file-preview-body"
             tabindex="0"
             aria-label="File contents"
-        ><code
-            id="codeFilePreviewCode"
-            class="code-file-preview-code"
-        ></code></pre>
+        >
+            <div id="filePreviewImageWrap" class="file-preview-image-wrap" hidden>
+                <img
+                    id="filePreviewImage"
+                    class="file-preview-image"
+                    alt="File preview"
+                >
+            </div>
 
-        <div class="form-actions">
+            <pre
+                id="codeFilePreviewPre"
+                class="file-preview-pre"
+            ><code
+                id="codeFilePreviewCode"
+                class="code-file-preview-code"
+            ></code></pre>
+        </div>
+
+        <div class="form-actions file-preview-actions">
+
+            <button
+                id="filePreviewEditInCode"
+                class="modal-cancel"
+                type="button"
+            >
+                Edit in Code
+            </button>
+
+            <button
+                id="filePreviewDownload"
+                class="modal-cancel"
+                type="button"
+            >
+                Download
+            </button>
 
             <button
                 id="codeFilePreviewCopy"
                 class="modal-cancel"
                 type="button"
             >
-                Copy
+                Copy Content
             </button>
 
             <button

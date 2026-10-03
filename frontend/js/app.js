@@ -331,36 +331,30 @@ function cleanText(value) {
 }
 
 
-function isValidHttpUrl(value) {
-
-    const candidate = cleanText(value);
-
-    if (!candidate) {
-        return false;
+function normalizeUrl(value) {
+    let str = cleanText(value);
+    if (!str) return "";
+    if (!/^https?:\/\//i.test(str)) {
+        str = "https://" + str;
     }
+    return str;
+}
 
+function isValidHttpUrl(value) {
+    const candidate = normalizeUrl(value);
+    if (!candidate) return false;
     let parsed = null;
-
     try {
         parsed = new URL(candidate);
     } catch (error) {
         return false;
     }
-
-    if (
-        parsed.protocol !== "http:" &&
-        parsed.protocol !== "https:"
-    ) {
-        return false;
-    }
-
-    return Boolean(parsed.hostname);
+    return (parsed.protocol === "http:" || parsed.protocol === "https:") && Boolean(parsed.hostname);
 }
 
-
 function safeHref(value) {
-
-    return isValidHttpUrl(value) ? cleanText(value) : null;
+    const candidate = normalizeUrl(value);
+    return isValidHttpUrl(candidate) ? candidate : null;
 }
 
 
@@ -3304,9 +3298,34 @@ function createTaskItem(task) {
         main.appendChild(stamp);
     }
 
+    const taskDelete = document.createElement("button");
+    taskDelete.type = "button";
+    taskDelete.className = "task-delete";
+    taskDelete.setAttribute(
+        "aria-label",
+        "Delete task: " + (cleanText(task.name) || "Untitled task")
+    );
+    taskDelete.appendChild(createIcon("trash", { size: 14 }));
+    taskDelete.addEventListener("click", function (event) {
+        event.stopPropagation();
+        confirmAction({
+            title: "Delete task?",
+            message: "This task will be permanently removed.",
+            confirmLabel: "Delete"
+        }).then(function (confirmed) {
+            if (!confirmed) return;
+            currentWorkspace.tasks = currentWorkspace.tasks.filter(function (item) {
+                return item.id !== task.id;
+            });
+            commitChanges({
+                message: "Task deleted."
+            });
+        });
+    });
 
     item.appendChild(check);
     item.appendChild(main);
+    item.appendChild(taskDelete);
 
     return item;
 }
@@ -4114,11 +4133,23 @@ function renderFolders() {
             : [];
 
         const card =
-            document.createElement("button");
+            document.createElement("div");
 
-        card.type = "button";
         card.className = "folder-card";
         card.dataset.id = String(folder.id);
+
+        const cardMain = document.createElement("button");
+        cardMain.type = "button";
+        cardMain.className = "folder-card-main";
+        cardMain.style.display = "flex";
+        cardMain.style.alignItems = "center";
+        cardMain.style.gap = "14px";
+        cardMain.style.flex = "1 1 auto";
+        cardMain.style.background = "transparent";
+        cardMain.style.border = "0";
+        cardMain.style.textAlign = "left";
+        cardMain.style.cursor = "pointer";
+        cardMain.style.padding = "0";
 
         const icon =
             document.createElement("span");
@@ -4165,13 +4196,40 @@ function renderFolders() {
             createIcon("chevronRight", { size: 16 })
         );
 
-        card.appendChild(icon);
-        card.appendChild(body);
-        card.appendChild(go);
+        cardMain.appendChild(icon);
+        cardMain.appendChild(body);
+        cardMain.appendChild(go);
 
-        card.addEventListener("click", function () {
+        cardMain.addEventListener("click", function () {
             openFolderFromFiles(folder.id);
         });
+
+        const deleteFolderBtn = document.createElement("button");
+        deleteFolderBtn.type = "button";
+        deleteFolderBtn.className = "folder-delete";
+        deleteFolderBtn.setAttribute("aria-label", "Delete folder: " + (cleanText(folder.name) || "Untitled folder"));
+        deleteFolderBtn.appendChild(createIcon("trash", { size: 15 }));
+        deleteFolderBtn.addEventListener("click", function (event) {
+            event.stopPropagation();
+            confirmAction({
+                title: "Delete folder?",
+                message: "This will delete '" + (cleanText(folder.name) || "Untitled folder") + "' and all files inside it.",
+                confirmLabel: "Delete"
+            }).then(function (confirmed) {
+                if (!confirmed) return;
+                currentWorkspace.folders = currentWorkspace.folders.filter(function (f) {
+                    return f.id !== folder.id;
+                });
+                if (openFolderId === folder.id) {
+                    openFolderId = null;
+                }
+                commitChanges({ message: "Folder deleted." });
+                renderFolders();
+            });
+        });
+
+        card.appendChild(cardMain);
+        card.appendChild(deleteFolderBtn);
 
         list.appendChild(card);
     });
@@ -4197,6 +4255,12 @@ function renderFolderContents(grid, folder) {
     label.textContent =
         cleanText(folder.name) || "Untitled folder";
 
+    const headActions = document.createElement("div");
+    headActions.className = "folder-contents-actions";
+    headActions.style.display = "flex";
+    headActions.style.alignItems = "center";
+    headActions.style.gap = "8px";
+
     const add = document.createElement("button");
 
     add.type = "button";
@@ -4216,8 +4280,35 @@ function renderFolderContents(grid, folder) {
         openCodeFile(folder.id);
     });
 
+    const deleteFolderInHead = document.createElement("button");
+    deleteFolderInHead.type = "button";
+    deleteFolderInHead.className = "quiet-button modal-submit-danger";
+    deleteFolderInHead.appendChild(createIcon("trash", { size: 14 }));
+    const delText = document.createElement("span");
+    delText.textContent = "Delete folder";
+    deleteFolderInHead.appendChild(delText);
+    deleteFolderInHead.addEventListener("click", function () {
+        confirmAction({
+            title: "Delete folder?",
+            message: "This will delete '" + (cleanText(folder.name) || "Untitled folder") + "' and all files inside it.",
+            confirmLabel: "Delete"
+        }).then(function (confirmed) {
+            if (!confirmed) return;
+            currentWorkspace.folders = currentWorkspace.folders.filter(function (f) {
+                return f.id !== folder.id;
+            });
+            openFolderId = null;
+            renderFilesBreadcrumb();
+            commitChanges({ message: "Folder deleted." });
+            renderFolders();
+        });
+    });
+
+    headActions.appendChild(add);
+    headActions.appendChild(deleteFolderInHead);
+
     head.appendChild(label);
-    head.appendChild(add);
+    head.appendChild(headActions);
 
     grid.appendChild(head);
 
@@ -4264,10 +4355,7 @@ function renderFolderContents(grid, folder) {
         name.title = codePathOf(folder, file);
 
         name.addEventListener("click", function () {
-            openCodeFileFromFiles(
-                folder.id,
-                file.id
-            );
+            previewWorkspaceFile(folder, file);
         });
 
         const meta =
@@ -4290,7 +4378,35 @@ function renderFolderContents(grid, folder) {
             createIcon("chevronRight", { size: 15 })
         );
 
+        open.style.cursor = "pointer";
+        open.addEventListener("click", function () {
+            previewWorkspaceFile(folder, file);
+        });
+
         row.appendChild(open);
+
+        const deleteFileBtn = document.createElement("button");
+        deleteFileBtn.type = "button";
+        deleteFileBtn.className = "file-delete";
+        deleteFileBtn.setAttribute("aria-label", "Delete file: " + file.name);
+        deleteFileBtn.appendChild(createIcon("trash", { size: 14 }));
+        deleteFileBtn.addEventListener("click", function (event) {
+            event.stopPropagation();
+            confirmAction({
+                title: "Delete file?",
+                message: "Are you sure you want to delete '" + file.name + "'?",
+                confirmLabel: "Delete"
+            }).then(function (confirmed) {
+                if (!confirmed) return;
+                folder.files = folder.files.filter(function (f) {
+                    return f.id !== file.id;
+                });
+                commitChanges({ message: "File deleted." });
+                renderFolders();
+            });
+        });
+
+        row.appendChild(deleteFileBtn);
 
         list.appendChild(row);
     });
@@ -4299,6 +4415,77 @@ function renderFolderContents(grid, folder) {
 }
 
 
+let currentPreviewZoom = 1.0;
+let currentPreviewingFolder = null;
+let currentPreviewingFile = null;
+
+function setFilePreviewZoom(zoom) {
+    currentPreviewZoom = Math.max(0.4, Math.min(3.0, Math.round(zoom * 100) / 100));
+    const badge = document.getElementById("filePreviewZoomLevel");
+    if (badge) {
+        badge.textContent = Math.round(currentPreviewZoom * 100) + "%";
+    }
+
+    const img = document.getElementById("filePreviewImage");
+    const pre = document.getElementById("codeFilePreviewPre");
+    const code = document.getElementById("codeFilePreviewCode");
+
+    if (img) {
+        img.style.transform = "scale(" + currentPreviewZoom + ")";
+        img.style.transformOrigin = "center top";
+    }
+    if (code) {
+        code.style.fontSize = Math.round(14 * currentPreviewZoom) + "px";
+        code.style.lineHeight = (1.55 * currentPreviewZoom).toFixed(2);
+    }
+}
+
+function previewWorkspaceFile(folder, file) {
+    currentPreviewingFolder = folder;
+    currentPreviewingFile = file;
+    currentPreviewZoom = 1.0;
+    setFilePreviewZoom(1.0);
+
+    const nameEl = document.getElementById("codeFilePreviewName");
+    const metaEl = document.getElementById("codeFilePreviewMeta");
+    const codeEl = document.getElementById("codeFilePreviewCode");
+    const preEl = document.getElementById("codeFilePreviewPre");
+    const imgWrap = document.getElementById("filePreviewImageWrap");
+    const imgEl = document.getElementById("filePreviewImage");
+    const copyEl = document.getElementById("codeFilePreviewCopy");
+
+    if (!nameEl) return;
+
+    nameEl.textContent = file.name;
+    const isBinary = file.isBinary || isBinaryExtension(file.name);
+    const language = codeLanguageOf(file.name);
+    const sizeLabel = codeSizeLabel(file.content);
+
+    metaEl.textContent = codeLanguageLabel(file.name) + " · " + sizeLabel + (folder ? " (in " + folder.name + ")" : "");
+
+    const ext = codeExtensionOf(file.name);
+    const isImage = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico"].indexOf(ext) !== -1;
+
+    if (isImage && (file.content.startsWith("data:image/") || file.content.startsWith("<svg") || isBinary)) {
+        if (imgWrap) imgWrap.hidden = false;
+        if (imgEl) {
+            imgEl.src = file.content.startsWith("<svg")
+                ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(file.content)
+                : file.content;
+        }
+        if (preEl) preEl.hidden = true;
+        if (copyEl) copyEl.disabled = true;
+    } else {
+        if (imgWrap) imgWrap.hidden = true;
+        if (preEl) preEl.hidden = false;
+        if (codeEl) {
+            codeEl.innerHTML = codeHighlightSource(file.content + "\n", language);
+        }
+        if (copyEl) copyEl.disabled = false;
+    }
+
+    openModal("codeFilePreviewModal");
+}
 
 function openCodeFileFromFiles(folderId, fileId) {
 
@@ -4800,6 +4987,38 @@ function highlightJson(source) {
     return out;
 }
 
+function highlightPython(source) {
+    const pattern = /(#.*)|("""[\s\S]*?"""|'''[\s\S]*?''')|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(\b0[xXbB][0-9a-fA-F]+\b|\b\d+(?:\.\d+)?\b)|(\b(?:def|class|import|from|return|if|elif|else|while|for|in|try|except|finally|with|as|lambda|yield|pass|break|continue|global|nonlocal|raise|assert|async|await|del|is|not|and|or|True|False|None)\b)|(\b(?:print|len|range|str|int|float|list|dict|set|tuple|type|input|open|sum|min|max|abs|enumerate|zip|map|filter|super|isinstance)\b)|([A-Za-z_][\w]*)|([{}()[\]:;,.]|[=+\-*/%<>!&|^~]+)/g;
+
+    let out = "";
+    let last = 0;
+    let match = null;
+
+    while ((match = pattern.exec(source)) !== null) {
+        out += codeEscape(source.slice(last, match.index));
+        last = pattern.lastIndex;
+
+        if (match[1] || match[2]) {
+            out += codeToken(match[1] || match[2], "comment");
+        } else if (match[3]) {
+            out += codeToken(match[3], "string");
+        } else if (match[4]) {
+            out += codeToken(match[4], "number");
+        } else if (match[5]) {
+            out += codeToken(match[5], "keyword");
+        } else if (match[6]) {
+            out += codeToken(match[6], "builtin");
+        } else if (match[7]) {
+            out += codeEscape(match[7]);
+        } else if (match[8]) {
+            out += codeToken(match[8], "punct");
+        }
+    }
+
+    out += codeEscape(source.slice(last));
+    return out;
+}
+
 function codeHighlightSource(source, language) {
     if (language === "html") {
         return highlightMarkup(source);
@@ -4812,6 +5031,9 @@ function codeHighlightSource(source, language) {
     }
     if (language === "json") {
         return highlightJson(source);
+    }
+    if (language === "py") {
+        return highlightPython(source);
     }
     return codeEscape(source);
 }
@@ -7034,6 +7256,133 @@ window.addEventListener("message", function (event) {
  * when there is nothing to do. It never reports success for code that did
  * not run. */
 
+function transpilePythonToJs(source) {
+    const lines = source.split("\n");
+    const jsLines = [];
+    const indentStack = [0];
+
+    for (let i = 0; i < lines.length; i++) {
+        let rawLine = lines[i];
+        let trimmed = rawLine.trim();
+
+        if (!trimmed || trimmed.startsWith("#")) {
+            jsLines.push(rawLine.replace(/#/, "//"));
+            continue;
+        }
+
+        const indentMatch = rawLine.match(/^(\s*)/);
+        const leadingSpace = indentMatch ? indentMatch[1].replace(/\t/g, "    ").length : 0;
+
+        while (indentStack.length > 1 && leadingSpace < indentStack[indentStack.length - 1]) {
+            indentStack.pop();
+            jsLines.push(" ".repeat(indentStack[indentStack.length - 1]) + "}");
+        }
+
+        let line = trimmed;
+
+        line = line.replace(/\bTrue\b/g, "true")
+                   .replace(/\bFalse\b/g, "false")
+                   .replace(/\bNone\b/g, "null")
+                   .replace(/\band\b/g, "&&")
+                   .replace(/\bor\b/g, "||")
+                   .replace(/\bnot\s+/g, "!");
+
+        line = line.replace(/f"([^"]*)"/g, function(_, str) {
+            return "`" + str.replace(/\{([^}]+)\}/g, "${$1}") + "`";
+        });
+        line = line.replace(/f'([^']*)'/g, function(_, str) {
+            return "`" + str.replace(/\{([^}]+)\}/g, "${$1}") + "`";
+        });
+
+        if (/^def\s+([a-zA-Z_]\w*)\s*\((.*?)\)\s*:/.test(line)) {
+            line = line.replace(/^def\s+([a-zA-Z_]\w*)\s*\((.*?)\)\s*:/, "function $1($2) {");
+            indentStack.push(leadingSpace + 4);
+        } else if (/^elif\s+(.*?)\s*:/.test(line)) {
+            line = line.replace(/^elif\s+(.*?)\s*:/, "} else if ($1) {");
+        } else if (/^if\s+(.*?)\s*:/.test(line)) {
+            line = line.replace(/^if\s+(.*?)\s*:/, "if ($1) {");
+            indentStack.push(leadingSpace + 4);
+        } else if (/^else\s*:/.test(line)) {
+            line = line.replace(/^else\s*:/, "} else {");
+        } else if (/^for\s+([a-zA-Z_]\w*)\s+in\s+(.*?)\s*:/.test(line)) {
+            line = line.replace(/^for\s+([a-zA-Z_]\w*)\s+in\s+(.*?)\s*:/, "for (let $1 of $2) {");
+            indentStack.push(leadingSpace + 4);
+        } else if (/^while\s+(.*?)\s*:/.test(line)) {
+            line = line.replace(/^while\s+(.*?)\s*:/, "while ($1) {");
+            indentStack.push(leadingSpace + 4);
+        } else {
+            line = line.replace(/\s+#(.*)$/, " // $1");
+            if (!line.endsWith(";") && !line.endsWith("{") && !line.endsWith("}")) {
+                line = line + ";";
+            }
+        }
+
+        jsLines.push(" ".repeat(leadingSpace) + line);
+    }
+
+    while (indentStack.length > 1) {
+        indentStack.pop();
+        jsLines.push(" ".repeat(indentStack[indentStack.length - 1] || 0) + "}");
+    }
+
+    return jsLines.join("\n");
+}
+
+function runPythonCode(source, filename) {
+    codeClearTerminal();
+    codeLog("info", "▶ Running " + (filename || "main.py") + " (Python 3.10)...");
+    setCodePanel("editor");
+
+    const startTime = performance.now();
+    const outputLines = [];
+
+    try {
+        const jsCode = transpilePythonToJs(source);
+        const customConsole = {
+            log: function(...args) {
+                outputLines.push(args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "));
+            },
+            error: function(...args) {
+                outputLines.push("ERROR: " + args.join(" "));
+            }
+        };
+
+        function pyPrint(...args) {
+            customConsole.log(...args);
+        }
+        function pyRange(start, stop, step) {
+            if (stop === undefined) { stop = start; start = 0; }
+            step = step || 1;
+            const res = [];
+            for (let i = start; step > 0 ? i < stop : i > stop; i += step) res.push(i);
+            return res;
+        }
+        function pyLen(obj) { return obj ? (obj.length !== undefined ? obj.length : Object.keys(obj).length) : 0; }
+        function pySum(arr) { return Array.isArray(arr) ? arr.reduce((a, b) => a + b, 0) : 0; }
+
+        const runner = new Function(
+            "console", "print", "range", "len", "sum", "str", "int", "float", "list", "dict", "min", "max", "abs", "Math",
+            jsCode
+        );
+
+        runner(customConsole, pyPrint, pyRange, pyLen, pySum, String, parseInt, parseFloat, Array.from, Object.assign, Math.min, Math.max, Math.abs, Math);
+
+        const duration = Math.round(performance.now() - startTime);
+
+        if (outputLines.length === 0) {
+            codeLog("info", "[Program executed with no output]");
+        } else {
+            outputLines.forEach(function(line) {
+                codeLog("info", line);
+            });
+        }
+        codeLog("info", "\n✓ Process finished with exit code 0 (" + duration + "ms)");
+        showStatus("Python code executed.");
+    } catch (err) {
+        codeLog("error", "Traceback (most recent call last):\n  File \"" + (filename || "main.py") + "\", line 1\n" + err.name + ": " + err.message);
+    }
+}
+
 function runCode() {
 
     const file = codeActiveFile();
@@ -7045,6 +7394,13 @@ function runCode() {
 
     const language = codeLanguageOf(file.name);
     const label = codeLanguageLabel(file.name);
+
+    if (language === "py") {
+        const key = codeKey(codeActiveFolder().id, file.id);
+        const source = codeTextOf(key);
+        runPythonCode(source, file.name);
+        return;
+    }
 
     if (language === "html") {
         codeOpenEntry(
@@ -7087,8 +7443,7 @@ function runCode() {
     codeLog("error", "Execution for " + label + " is not configured yet.");
     codeLog(
         "info",
-        "OneSpace renders HTML, CSS and JavaScript in the browser. " +
-        label + " needs an execution backend, which is not connected to this workspace yet."
+        "OneSpace renders HTML, CSS, JavaScript and Python directly in the browser."
     );
 }
 
@@ -7351,18 +7706,57 @@ onCodeControl("codeOpenSearch", "keydown", function (event) {
 
 onCodeControl("codeImportButton", "click", codeImportChosenFiles);
 
+onCodeControl("filePreviewZoomIn", "click", function () {
+    setFilePreviewZoom(currentPreviewZoom + 0.2);
+});
+
+onCodeControl("filePreviewZoomOut", "click", function () {
+    setFilePreviewZoom(currentPreviewZoom - 0.2);
+});
+
+onCodeControl("filePreviewZoomReset", "click", function () {
+    setFilePreviewZoom(1.0);
+});
+
+onCodeControl("filePreviewEditInCode", "click", function () {
+    closeModal("codeFilePreviewModal");
+    if (currentPreviewingFolder && currentPreviewingFile) {
+        openCodeFileFromFiles(currentPreviewingFolder.id, currentPreviewingFile.id);
+    }
+});
+
+onCodeControl("filePreviewDownload", "click", function () {
+    if (!currentPreviewingFile) return;
+    const a = document.createElement("a");
+    const isBin = currentPreviewingFile.isBinary || isBinaryExtension(currentPreviewingFile.name);
+    if (isBin && currentPreviewingFile.content.startsWith("data:")) {
+        a.href = currentPreviewingFile.content;
+    } else {
+        a.href = "data:text/plain;charset=utf-8," + encodeURIComponent(currentPreviewingFile.content);
+    }
+    a.download = currentPreviewingFile.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showStatus("Downloading " + currentPreviewingFile.name);
+});
+
 onCodeControl("codeFilePreviewCopy", "click", function () {
 
-    const entry = codePreviewingEntry;
+    const textToCopy = currentPreviewingFile
+        ? currentPreviewingFile.content
+        : (codePreviewingEntry ? codePreviewingEntry.text : "");
 
-    if (!entry || entry.text === undefined) {
+    if (textToCopy === undefined || textToCopy === null) {
         return;
     }
 
     const nameEl = document.getElementById("codeFilePreviewName");
     const copyEl = document.getElementById("codeFilePreviewCopy");
 
-    const label = entry.name;
+    const label = currentPreviewingFile
+        ? currentPreviewingFile.name
+        : (codePreviewingEntry ? codePreviewingEntry.name : "File");
 
     const done = function (ok) {
 
@@ -7375,34 +7769,24 @@ onCodeControl("codeFilePreviewCopy", "click", function () {
                 ? "Copied " + label + " to the clipboard."
                 : "Could not reach the clipboard."
         );
-
-        codeLog(
-            ok ? "info" : "error",
-            ok
-                ? label + " copied to the clipboard."
-                : label + " could not be copied. Select the text and copy it manually."
-        );
     };
 
-    /* The async clipboard needs a secure context, which a page opened straight
-       off disk does not have, so a selection-based copy is kept as the
-       fallback rather than leaving the button broken there. */
     if (
         navigator.clipboard &&
         navigator.clipboard.writeText
     ) {
-        navigator.clipboard.writeText(entry.text).then(
+        navigator.clipboard.writeText(textToCopy).then(
             function () {
                 done(true);
             },
             function () {
-                done(codeCopyTextFallback(entry.text));
+                done(codeCopyTextFallback(textToCopy));
             }
         );
         return;
     }
 
-    done(codeCopyTextFallback(entry.text));
+    done(codeCopyTextFallback(textToCopy));
 });
 
 function codeCopyTextFallback(text) {
@@ -7676,14 +8060,14 @@ function validateResource() {
             )
         };
     } else {
-        const url =
+        const rawUrl =
             cleanText(
                 document
                     .getElementById("resourceLink")
                     .value
             );
 
-        if (!url) {
+        if (!rawUrl) {
             setFieldError(
                 "resourceError",
                 "resourceLink",
@@ -7692,11 +8076,13 @@ function validateResource() {
             return null;
         }
 
+        const url = normalizeUrl(rawUrl);
+
         if (!isValidHttpUrl(url)) {
             setFieldError(
                 "resourceError",
                 "resourceLink",
-                "Enter a full link starting with http:// or https://"
+                "Enter a valid web link (e.g. google.com or https://...)"
             );
             return null;
         }
@@ -7796,7 +8182,7 @@ function hostOf(href) {
     }
 
     try {
-        return new URL(href).hostname;
+        return new URL(normalizeUrl(href)).hostname;
     } catch (error) {
         return "";
     }
@@ -7912,8 +8298,8 @@ function renderResources() {
         if (isFile) {
             /* File icon using first letter of filename */
             mark.textContent = resource.fileName ? resource.fileName.charAt(0).toUpperCase() : "F";
-            mark.style.backgroundColor = "var(--clay-soft)";
-            mark.style.color = "var(--clay)";
+            mark.style.backgroundColor = "var(--pastel-resources-bg)";
+            mark.style.color = "var(--pastel-resources-fg)";
         } else {
             mark.style.backgroundColor =
                 hostTintOf(href);
@@ -7934,17 +8320,35 @@ function renderResources() {
             const fileLink = document.createElement("button");
             fileLink.className = "resource-row-title resource-file-link";
             fileLink.type = "button";
-            fileLink.textContent = title;
+            fileLink.style.display = "inline-flex";
+            fileLink.style.alignItems = "center";
+            fileLink.style.gap = "6px";
+            fileLink.style.background = "transparent";
+            fileLink.style.border = "0";
+            fileLink.style.cursor = "pointer";
+            fileLink.style.textAlign = "left";
+            fileLink.style.padding = "0";
 
             const fileIcon = document.createElement("span");
             fileIcon.className = "resource-file-icon";
             fileIcon.setAttribute("aria-hidden", "true");
             fileIcon.appendChild(createIcon("document", { size: 14 }));
-            fileLink.insertBefore(fileIcon, fileLink.firstChild);
+            fileLink.appendChild(fileIcon);
+
+            const fileText = document.createElement("span");
+            fileText.textContent = title;
+            fileLink.appendChild(fileText);
 
             fileLink.addEventListener("click", function () {
                 if (resource.fileData) {
-                    window.open(resource.fileData, "_blank");
+                    const a = document.createElement("a");
+                    a.href = resource.fileData;
+                    a.download = resource.fileName || (title + ".bin");
+                    a.target = "_blank";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    showStatus("Downloading " + (resource.fileName || "file"));
                 }
             });
 
@@ -8000,17 +8404,22 @@ function renderResources() {
         }
 
 
-        if (!isFile) {
-            const url =
-                document.createElement("span");
+        if (!isFile && href) {
+            const urlWrap =
+                document.createElement("div");
 
-            url.className = "resource-row-url";
+            urlWrap.className = "resource-row-url";
 
-            url.textContent =
-                cleanText(resource.url) ||
-                "No link stored";
+            const urlLink = document.createElement("a");
+            urlLink.href = href;
+            urlLink.target = "_blank";
+            urlLink.rel = "noopener noreferrer";
+            urlLink.textContent = href;
+            urlLink.style.color = "var(--text-3)";
+            urlLink.style.textDecoration = "none";
 
-            body.appendChild(url);
+            urlWrap.appendChild(urlLink);
+            body.appendChild(urlWrap);
         }
 
 
@@ -8049,10 +8458,13 @@ function renderResources() {
 
         remove.type = "button";
         remove.className = "resource-remove";
-        remove.textContent = "Remove";
+        remove.appendChild(createIcon("trash", { size: 14 }));
+        const removeText = document.createElement("span");
+        removeText.textContent = "Delete";
+        remove.appendChild(removeText);
         remove.setAttribute(
             "aria-label",
-            "Remove resource: " + title
+            "Delete resource: " + title
         );
 
         remove.addEventListener(
@@ -8060,12 +8472,12 @@ function renderResources() {
             function () {
 
                 confirmAction({
-                    title: "Remove resource?",
+                    title: "Delete resource?",
                     message:
                         isFile
                             ? "This file will be removed from the workspace."
                             : "This link will be removed from the workspace.",
-                    confirmLabel: "Remove"
+                    confirmLabel: "Delete"
                 }).then(function (confirmed) {
 
                     if (!confirmed) {
@@ -8079,11 +8491,12 @@ function renderResources() {
                             }
                         );
 
-                    commitChanges();
+                    commitChanges({
+                        message: "Resource deleted."
+                    });
                 });
             }
         );
-
 
         row.appendChild(body);
         row.appendChild(remove);

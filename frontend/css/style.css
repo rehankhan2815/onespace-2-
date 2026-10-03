@@ -1,90 +1,91 @@
-/* DESIGN TOKENS
- *
- * One warm, muted layer for the whole product. Every rule below refers to
- * these rather than to raw hex, so the palette can be re-tuned in one place
- * and nothing drifts into a second, colder system. The direction is a desk
- * lamp rather than a screen: warm off-white ground, cream surfaces, deep warm
- * charcoal ink, soft warm gray rules, and a single earthy teal-green accent.
- *
- * Accent discipline: green is a scarce resource. It marks where you are and
- * what is actionable, and nothing else. Clay, sand and slate exist only to
- * separate neighbouring kinds of content, never to add colour to the page.
- */
+/* ==========================================================================
+   ONESPACE — NCERT HUB THEME (style.css)
+   ==========================================================================
+   A modern, clean aesthetic matching the NCERT Hub design:
+   - Ground: #f3f7fc
+   - Pure white surfaces with 14px radius and soft shadows
+   - Inter typography for clean, bold navy headings (#0f172a)
+   - Primary Royal Blue accent (#1558b0) for buttons and actions
+   - Soft-blue pill on active sidebar items
+   - Pastel icon circles (Tasks blue, Files green, Notes purple, Resources orange, Code teal)
+   - Clean outline secondary buttons & solid blue primary buttons
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
 
-    /* GROUND AND SURFACES
-     * Four steps. The gap between --bg and --surface is deliberately small:
-     * a page should read as one continuous sheet of paper, with surfaces
-     * lifted from it rather than dropped on top of it. */
-    --bg: #faf7f2;
-    --surface: #fffdfa;
-    --surface-2: #f5f0e7;
-    --surface-3: #ece4d6;
-    --rail: #f2ece1;
-    /* Reserved for code and the terminal. The only cool surface in the
-       product, because it is the only place with a different job. */
-    --surface-code: #1f1c19;
-    --surface-code-2: #292521;
+    /* GROUND AND SURFACES */
+    --bg: #f3f7fc;
+    --bg-subtle: #eff6ff;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --surface-3: #edf2f7;
+    --rail: #ffffff;
+    --surface-code: #0f172a;
+    --surface-code-2: #1e293b;
 
-    /* INK — warm charcoal, never pure black */
-    --text-strong: #1c1713;
-    --text: #2a2520;
-    --text-2: #544c44;
-    /* The two quietest text steps are muted by tone rather than by fading
-       into the background: both stay above 4.5:1 on every surface they sit
-       on, and the hierarchy between them is carried by size as well. */
-    --text-3: #6b6158;
-    --text-4: #736960;
+    /* INK — Bold navy to cool slate */
+    --text-strong: #0f172a;
+    --text-navy: #0f172a;
+    --text: #1e293b;
+    --text-2: #334155;
+    --text-3: #64748b;
+    --text-4: #94a3b8;
 
-    /* RULES — soft warm gray. Two are enough; a third is noise. */
-    --line: #e8e0d3;
-    --line-2: #d8ccb8;
-    --line-3: #c6b8a3;
+    /* RULES & BORDERS */
+    --line: #e2e8f0;
+    --line-2: #cbd5e1;
+    --line-3: #94a3b8;
 
-    /* ACCENT — muted eucalyptus. Reserved for position and action. */
-    --accent: #4a7c6f;
-    --accent-2: #3a655a;
-    --accent-3: #2d4f46;
-    --accent-soft: #e8efeb;
-    --accent-soft-2: #dbe7e1;
-    --accent-line: #bcd4ca;
+    /* PRIMARY BLUE ACCENTS */
+    --accent: #1558b0;
+    --accent-2: #10478f;
+    --accent-3: #0b3266;
+    --accent-soft: #e0edff;
+    --accent-soft-2: #cfe2ff;
+    --accent-line: #b9d5fc;
 
-    /* DESTRUCTIVE — restrained clay red, never fire-engine */
-    --danger: #a2443a;
-    --danger-2: #8a3a31;
-    --danger-soft: #f8ece9;
-    --danger-line: #e2c6c0;
+    /* DESTRUCTIVE */
+    --danger: #ef4444;
+    --danger-2: #dc2626;
+    --danger-soft: #fef2f2;
+    --danger-line: #fecaca;
 
-    /* SUPPORTING ACCENTS
-     * Content categories only. Never navigation, never buttons. Each is
-     * paired with a soft ground so it can tint an icon or a dot without
-     * shouting. */
-    --clay: #a2674a;
-    --clay-soft: #f6ece4;
-    --sand: #93762c;
-    --sand-soft: #f6f0dd;
-    --slate: #5b7385;
-    --slate-soft: #eaeff3;
+    /* PASTEL ICON CIRCLE PALETTE */
+    --pastel-tasks-bg: #e0edff;
+    --pastel-tasks-fg: #1558b0;
+    --pastel-files-bg: #dcfce7;
+    --pastel-files-fg: #16a34a;
+    --pastel-notes-bg: #f3e8ff;
+    --pastel-notes-fg: #9333ea;
+    --pastel-resources-bg: #ffedd5;
+    --pastel-resources-fg: #ea580c;
+    --pastel-code-bg: #ccfbf1;
+    --pastel-code-fg: #0d9488;
+    --pastel-overview-bg: #e0f2fe;
+    --pastel-overview-fg: #0284c7;
 
-    /* SEMANTIC — terminal and status text only */
-    --ok: #4a7a52;
-    --warn: #9a6b1f;
-    --err: #a2443a;
-    --info: #4a6d86;
+    /* SUPPORTING ACCENTS */
+    --clay: #ea580c;
+    --clay-soft: #ffedd5;
+    --sand: #d97706;
+    --sand-soft: #fef3c7;
+    --slate: #475569;
+    --slate-soft: #f1f5f9;
 
-    /* TYPE
-     * Two families, no downloads. The sans carries the interface; the serif
-     * appears only where a name is being introduced, which is what gives the
-     * product its editorial edge without turning it into a document. */
-    --font: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
-            "Times New Roman", serif;
-    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto,
-               "Helvetica Neue", Arial, sans-serif;
+    /* SEMANTIC */
+    --ok: #16a34a;
+    --warn: #d97706;
+    --err: #ef4444;
+    --info: #1558b0;
+
+    /* TYPE */
+    --font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
 
-    /* A shallow scale with real jumps. Display is the only size that shouts,
-     * and it is used once per screen. */
+    /* TYPE SCALE */
     --t-display: 30px;
     --t-title: 20px;
     --t-section: 16px;
@@ -92,8 +93,7 @@
     --t-meta: 13px;
     --t-micro: 11.5px;
 
-    /* SPACING — one rhythm, used everywhere. A 4px base keeps optical
-       alignment honest across cards, gutters and section gaps. */
+    /* SPACING */
     --s-1: 4px;
     --s-2: 8px;
     --s-3: 12px;
@@ -104,28 +104,29 @@
     --s-10: 40px;
     --s-12: 48px;
 
-    /* MOTION — short and few, so nothing announces itself.
-       120-220ms covers every state change in the product. */
+    /* MOTION */
     --t-fast: 130ms;
     --t-base: 190ms;
     --ease: cubic-bezier(.2, .6, .3, 1);
     --ease-out: cubic-bezier(.16, .84, .44, 1);
 
-    /* RADIUS — modest, never pill-shaped by default */
-    --r-sm: 6px;
-    --r-md: 9px;
-    --r-lg: 13px;
-    --r-xl: 18px;
+    /* RADIUS — 14px card standard */
+    --r-xs: 6px;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 14px;
+    --r-xl: 20px;
+    --r-full: 9999px;
 
-    /* SHADOWS — two layers each, a contact shadow plus a lift. Flat
-       elevation rather than a single soft blob. */
-    --sh-1: 0 1px 2px rgba(62, 49, 34, .05);
-    --sh-2: 0 1px 2px rgba(62, 49, 34, .05),
-            0 3px 8px rgba(62, 49, 34, .05);
-    --sh-3: 0 1px 2px rgba(62, 49, 34, .06),
-            0 8px 20px rgba(62, 49, 34, .09);
-    --sh-4: 0 2px 4px rgba(62, 49, 34, .07),
-            0 16px 40px rgba(62, 49, 34, .14);
+    /* SHADOWS — Soft, elevated card shadows */
+    --sh-1: 0 1px 3px rgba(15, 23, 42, 0.05);
+    --sh-2: 0 4px 12px rgba(15, 23, 42, 0.05);
+    --sh-3: 0 10px 25px rgba(15, 23, 42, 0.08);
+    --sh-4: 0 18px 40px rgba(15, 23, 42, 0.12);
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.08);
+    --shadow-float: 0 8px 24px rgba(21, 88, 176, 0.28);
 
     /* LAYOUT */
     --sidebar-w: 244px;
@@ -5427,3 +5428,1364 @@ button.files-crumb:hover {
         transform: none;
     }
 }
+
+/* ==========================================================================
+   NCERT HUB THEME OVERRIDES & COMPONENT ENHANCEMENTS
+   ========================================================================== */
+
+/* 1. GLOBAL BASE & TYPOGRAPHY */
+html, body {
+    background-color: var(--bg) !important;
+    color: var(--text) !important;
+    font-family: var(--font-ui) !important;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-ui) !important;
+    color: var(--text-navy) !important;
+    letter-spacing: -0.02em !important;
+    font-weight: 700 !important;
+}
+
+a {
+    color: var(--accent) !important;
+}
+
+/* 2. BUTTONS & CONTROLS */
+.primary-button,
+.modal-submit {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--accent) !important;
+    border-radius: var(--r-md) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 6px rgba(21, 88, 176, 0.25) !important;
+    transition: all 0.18s ease-in-out !important;
+}
+
+.primary-button:hover,
+.modal-submit:hover {
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(21, 88, 176, 0.35) !important;
+}
+
+.modal-cancel,
+.quiet-button {
+    background: var(--surface) !important;
+    color: var(--text-2) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-md) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 500 !important;
+    transition: all 0.18s ease-in-out !important;
+}
+
+.modal-cancel:hover,
+.quiet-button:hover {
+    background: var(--surface-2) !important;
+    color: var(--text-strong) !important;
+    border-color: var(--line-2) !important;
+}
+
+.modal-submit-danger {
+    background: var(--danger) !important;
+    border-color: var(--danger) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25) !important;
+}
+
+.modal-submit-danger:hover {
+    background: var(--danger-2) !important;
+    border-color: var(--danger-2) !important;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea,
+select {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-sm) !important;
+    color: var(--text-strong) !important;
+    font-family: var(--font-ui) !important;
+    transition: all 0.15s ease-in-out !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(21, 88, 176, 0.15) !important;
+}
+
+/* 3. AUTH & WELCOME CARDS */
+.auth-page,
+.welcome-page {
+    background: var(--bg) !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.auth-card,
+.welcome-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-md) !important;
+    padding: 40px !important;
+    max-width: 440px !important;
+    width: 100% !important;
+}
+
+.auth-brand h1,
+.welcome-logo {
+    color: var(--accent) !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.03em !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.auth-card h2,
+#welcomeTitle {
+    color: var(--text-navy) !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    margin-top: 16px !important;
+    margin-bottom: 20px !important;
+}
+
+/* 4. DASHBOARD PAGE */
+.home-topbar {
+    background: var(--surface) !important;
+    border-bottom: 1px solid var(--line) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 14px 32px !important;
+}
+
+.home-brand {
+    font-family: var(--font-ui) !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    color: var(--text-navy) !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.home-brand-mark {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: var(--r-sm) !important;
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--accent) !important;
+    display: inline-grid;
+    place-items: center;
+}
+
+.home-user {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 6px 14px !important;
+    border-radius: var(--r-full) !important;
+    border: 1px solid var(--accent-line) !important;
+}
+
+/* Light-blue hero greeting */
+.home-intro {
+    background: linear-gradient(135deg, #e8f2fe 0%, #f0f6ff 100%) !important;
+    border: 1px solid var(--accent-line) !important;
+    border-radius: 16px !important;
+    padding: 34px 38px !important;
+    margin-bottom: 32px !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.home-kicker {
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+    font-size: 12.5px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin-bottom: 6px !important;
+}
+
+#welcomeMessage {
+    color: var(--text-navy) !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.025em !important;
+    margin-bottom: 6px !important;
+}
+
+.home-sub {
+    color: var(--text-2) !important;
+    font-size: 15px !important;
+}
+
+/* Workspaces Card Grid */
+.workspace-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+    gap: 20px !important;
+}
+
+.workspace-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 22px !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.workspace-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-md) !important;
+    border-color: var(--accent-line) !important;
+}
+
+.workspace-card-featured {
+    border-color: var(--accent-line) !important;
+    box-shadow: 0 4px 16px rgba(21, 88, 176, 0.08) !important;
+}
+
+.workspace-card-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--pastel-tasks-fg) !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    display: grid !important;
+    place-items: center !important;
+}
+
+.workspace-card-name {
+    color: var(--text-navy) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 17px !important;
+    font-weight: 600 !important;
+}
+
+.workspace-card-description {
+    color: var(--text-3) !important;
+    font-size: 13.5px !important;
+}
+
+.workspace-card-meta {
+    color: var(--text-3) !important;
+    font-size: 12.5px !important;
+}
+
+.workspace-card-kicker {
+    color: var(--accent) !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+}
+
+.workspace-card-step {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+    border-radius: var(--r-full) !important;
+    border: 1px solid var(--accent-line) !important;
+    font-weight: 600 !important;
+}
+
+.workspace-card-delete {
+    border-radius: 50% !important;
+    transition: all 0.15s ease !important;
+}
+
+.workspace-card-delete:hover {
+    background: var(--danger-soft) !important;
+    color: var(--danger) !important;
+}
+
+/* "Start your first workspace" empty card */
+.home-empty {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 56px 36px !important;
+    text-align: center !important;
+}
+
+.home-empty-mark {
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 50% !important;
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--pastel-tasks-fg) !important;
+    display: grid !important;
+    place-items: center !important;
+    margin: 0 auto 18px !important;
+}
+
+.home-empty h2 {
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+    color: var(--text-navy) !important;
+}
+
+.home-empty p {
+    color: var(--text-3) !important;
+    max-width: 44ch;
+    margin: 0 auto 20px !important;
+}
+
+.home-create {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    box-shadow: var(--shadow-float) !important;
+    border: 0 !important;
+    transition: transform 0.2s ease, background-color 0.15s ease !important;
+}
+
+.home-create:hover {
+    background: var(--accent-2) !important;
+    transform: scale(1.06) !important;
+}
+
+/* 5. WORKSPACE SHELL & SIDEBAR */
+.workspace-app {
+    background: var(--bg) !important;
+}
+
+.workspace-sidebar {
+    background: var(--surface) !important;
+    border-right: 1px solid var(--line) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.workspace-brand-word {
+    color: var(--text-navy) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 700 !important;
+    font-size: 19px !important;
+}
+
+.workspace-brand-mark {
+    color: var(--accent) !important;
+    background: var(--pastel-tasks-bg) !important;
+    border-radius: var(--r-sm) !important;
+    padding: 5px;
+    display: grid;
+    place-items: center;
+}
+
+.current-workspace {
+    background: var(--bg-subtle) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-md) !important;
+    padding: 10px 14px !important;
+}
+
+#activeWorkspaceName {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+}
+
+/* Sidebar navigation items */
+.sidebar-item {
+    border-radius: var(--r-full) !important;
+    color: var(--text-2) !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    padding: 10px 16px !important;
+    margin-bottom: 4px !important;
+    border: 0 !important;
+    transition: all 0.15s ease-in-out !important;
+}
+
+.sidebar-item:hover {
+    background: var(--surface-3) !important;
+    color: var(--text-strong) !important;
+}
+
+/* Active sidebar item: soft-blue pill without left border bar */
+.sidebar-item.active {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+    border-radius: var(--r-full) !important;
+    box-shadow: none !important;
+    border-left: none !important;
+}
+
+.sidebar-item.active::before {
+    display: none !important;
+}
+
+.sidebar-item.active .sidebar-item-mark {
+    color: var(--accent) !important;
+}
+
+/* Sidebar pastel icon circles */
+.sidebar-item[data-section="overview"] .sidebar-item-mark {
+    color: var(--pastel-overview-fg) !important;
+}
+
+.sidebar-item[data-section="tasks"] .sidebar-item-mark {
+    color: var(--pastel-tasks-fg) !important;
+}
+
+.sidebar-item[data-section="files"] .sidebar-item-mark {
+    color: var(--pastel-files-fg) !important;
+}
+
+.sidebar-item[data-section="notes"] .sidebar-item-mark {
+    color: var(--pastel-notes-fg) !important;
+}
+
+.sidebar-item[data-section="resources"] .sidebar-item-mark {
+    color: var(--pastel-resources-fg) !important;
+}
+
+.sidebar-item[data-section="code"] .sidebar-item-mark {
+    color: var(--pastel-code-fg) !important;
+}
+
+/* Workspace tab bar */
+.workspace-tabbar {
+    background: var(--surface) !important;
+    border-bottom: 1px solid var(--line) !important;
+}
+
+.workspace-tab {
+    background: transparent !important;
+    border: 0 !important;
+    color: var(--text-3) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 500 !important;
+    border-radius: var(--r-sm) var(--r-sm) 0 0 !important;
+}
+
+.workspace-tab.active {
+    background: var(--bg-subtle) !important;
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+    border-bottom: 2px solid var(--accent) !important;
+}
+
+/* Workspace section header & count pill */
+.workspace-header {
+    border-bottom: 1px solid var(--line) !important;
+    padding-bottom: 18px !important;
+    margin-bottom: 24px !important;
+}
+
+#workspaceTitle {
+    color: var(--text-navy) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 26px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+}
+
+#workspaceDescription {
+    color: var(--text-3) !important;
+    font-size: 14.5px !important;
+    margin-top: 4px !important;
+}
+
+.workspace-header-meta-item {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 5px 14px !important;
+    border-radius: var(--r-full) !important;
+    border: 1px solid var(--accent-line) !important;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Floating Action Button (+) */
+.quick-create-button {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    width: 52px !important;
+    height: 52px !important;
+    box-shadow: var(--shadow-float) !important;
+    border: 0 !important;
+    transition: transform 0.2s ease, background-color 0.15s ease !important;
+}
+
+.quick-create-button:hover {
+    background: var(--accent-2) !important;
+    transform: scale(1.06) !important;
+}
+
+/* Add menu popup: white rounded card with soft-blue hover */
+.quick-create-menu {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--shadow-lg) !important;
+    padding: 8px !important;
+    min-width: 220px !important;
+}
+
+.quick-create-menu button {
+    border-radius: var(--r-md) !important;
+    padding: 8px 12px !important;
+    color: var(--text-strong) !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    transition: background-color 0.15s ease !important;
+}
+
+.quick-create-menu button[hidden],
+.quick-create-menu [hidden],
+[hidden] {
+    display: none !important;
+}
+
+.quick-create-menu button:hover {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+}
+
+.quick-create-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    display: grid !important;
+    place-items: center !important;
+    flex: 0 0 32px !important;
+}
+
+[data-icon="task"] .quick-create-icon,
+.quick-create-icon[data-icon="task"] {
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--pastel-tasks-fg) !important;
+}
+
+[data-icon="folder"] .quick-create-icon,
+[data-icon="file"] .quick-create-icon,
+.quick-create-icon[data-icon="folder"],
+.quick-create-icon[data-icon="file"] {
+    background: var(--pastel-files-bg) !important;
+    color: var(--pastel-files-fg) !important;
+}
+
+[data-icon="note"] .quick-create-icon,
+.quick-create-icon[data-icon="note"] {
+    background: var(--pastel-notes-bg) !important;
+    color: var(--pastel-notes-fg) !important;
+}
+
+[data-icon="resources"] .quick-create-icon,
+.quick-create-icon[data-icon="resources"] {
+    background: var(--pastel-resources-bg) !important;
+    color: var(--pastel-resources-fg) !important;
+}
+
+/* 6. OVERVIEW SECTION */
+/* "Where you left off" single row card */
+.overview-continue {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    padding: 20px 24px !important;
+    margin-bottom: 24px !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.overview-continue-kicker {
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+    font-size: 12.5px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px !important;
+}
+
+.overview-continue-main {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+}
+
+.overview-continue-line {
+    font-size: 15px !important;
+    color: var(--text) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+}
+
+.overview-continue-label {
+    color: var(--text-navy) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+}
+
+.overview-continue-when {
+    color: var(--text-3) !important;
+    font-size: 13px !important;
+}
+
+.overview-continue-go {
+    background: var(--accent) !important;
+    border: 1px solid var(--accent) !important;
+    color: #ffffff !important;
+    border-radius: var(--r-md) !important;
+    padding: 8px 18px !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 2px 6px rgba(21, 88, 176, 0.25) !important;
+    transition: all 0.15s ease !important;
+}
+
+.overview-continue-go:hover {
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* "Recent activity" card list */
+.activity-heading {
+    color: var(--text-navy) !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    margin-bottom: 14px !important;
+}
+
+.activity-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    margin-bottom: 8px !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    width: 100% !important;
+    text-align: left !important;
+    transition: all 0.15s ease !important;
+}
+
+.activity-row:hover {
+    background: var(--surface-2) !important;
+    border-color: var(--accent-line) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06) !important;
+}
+
+.activity-mark {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    flex: 0 0 28px !important;
+    display: grid !important;
+    place-items: center !important;
+}
+
+.activity-row[data-type="task"] .activity-mark {
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--pastel-tasks-fg) !important;
+}
+
+.activity-row[data-type="folder"] .activity-mark,
+.activity-row[data-type="file"] .activity-mark {
+    background: var(--pastel-files-bg) !important;
+    color: var(--pastel-files-fg) !important;
+}
+
+.activity-row[data-type="note"] .activity-mark {
+    background: var(--pastel-notes-bg) !important;
+    color: var(--pastel-notes-fg) !important;
+}
+
+.activity-row[data-type="resource"] .activity-mark {
+    background: var(--pastel-resources-bg) !important;
+    color: var(--pastel-resources-fg) !important;
+}
+
+.activity-row[data-type="code"] .activity-mark {
+    background: var(--pastel-code-bg) !important;
+    color: var(--pastel-code-fg) !important;
+}
+
+.activity-verb {
+    color: var(--text-3) !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+}
+
+.activity-label {
+    color: var(--text-navy) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.activity-time {
+    color: var(--text-3) !important;
+    font-size: 13px !important;
+    margin-left: auto !important;
+    flex: 0 0 auto !important;
+}
+
+/* 7. TASKS, FILES, NOTES, RESOURCES UNIFIED LAYOUT & FIXES */
+/* Fix duplicated title/subtitle on Tasks */
+#section-tasks .section-header {
+    display: none !important;
+}
+
+/* Fix doubled divider on Files */
+#section-files .section-header {
+    display: none !important;
+}
+
+.files-breadcrumb {
+    border-bottom: none !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 0 !important;
+}
+
+/* Clean section header on Notes and Resources (workspace-header already provides title/subtitle/count pill) */
+#section-notes .section-header {
+    display: none !important;
+}
+
+#section-resources .section-header {
+    display: none !important;
+}
+
+/* Shared Empty State Across All Sections */
+.section-empty {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 48px 32px !important;
+    text-align: center !important;
+}
+
+.section-empty-mark {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 50% !important;
+    display: grid !important;
+    place-items: center !important;
+    margin: 0 auto 16px !important;
+}
+
+#section-tasks .section-empty-mark {
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--pastel-tasks-fg) !important;
+}
+
+#section-files .section-empty-mark {
+    background: var(--pastel-files-bg) !important;
+    color: var(--pastel-files-fg) !important;
+}
+
+#section-notes .section-empty-mark {
+    background: var(--pastel-notes-bg) !important;
+    color: var(--pastel-notes-fg) !important;
+}
+
+#section-resources .section-empty-mark {
+    background: var(--pastel-resources-bg) !important;
+    color: var(--pastel-resources-fg) !important;
+}
+
+.section-empty h3 {
+    color: var(--text-navy) !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    margin-bottom: 6px !important;
+}
+
+.section-empty p {
+    color: var(--text-3) !important;
+    font-size: 14px !important;
+}
+
+.section-empty-hint {
+    color: var(--accent) !important;
+    font-weight: 500 !important;
+    margin-top: 10px !important;
+}
+
+/* Tasks Kanban columns */
+.task-column {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 20px !important;
+}
+
+.task-column-header h3 {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: var(--text-navy) !important;
+}
+
+.task-column-count {
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--pastel-tasks-fg) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    padding: 2px 8px !important;
+    border-radius: var(--r-full) !important;
+}
+
+.task-item {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 10px !important;
+    padding: 14px !important;
+    margin-bottom: 10px !important;
+    transition: all 0.15s ease !important;
+}
+
+.task-item:hover {
+    background: #ffffff !important;
+    border-color: var(--accent-line) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.task-check {
+    border: 2px solid var(--line-2) !important;
+    border-radius: 50% !important;
+    width: 22px !important;
+    height: 22px !important;
+    transition: all 0.15s ease !important;
+}
+
+.task-item.is-complete .task-check {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: #ffffff !important;
+}
+
+.task-item-title {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+    font-size: 14.5px !important;
+}
+
+/* Files & Folders */
+.folder-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 18px 22px !important;
+    transition: all 0.18s ease !important;
+}
+
+.folder-card:hover {
+    border-color: var(--pastel-files-fg) !important;
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-1px) !important;
+}
+
+.folder-card-icon {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    background: var(--pastel-files-bg) !important;
+    color: var(--pastel-files-fg) !important;
+    display: grid !important;
+    place-items: center !important;
+}
+
+.folder-card-name {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+}
+
+.file-row {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 10px !important;
+    padding: 12px 18px !important;
+    margin-bottom: 8px !important;
+    transition: all 0.15s ease !important;
+}
+
+.file-row:hover {
+    background: var(--surface-2) !important;
+    border-color: var(--pastel-files-fg) !important;
+}
+
+.file-badge {
+    border-radius: var(--r-full) !important;
+    background: var(--pastel-files-bg) !important;
+    color: var(--pastel-files-fg) !important;
+    border: 1px solid #bbf7d0 !important;
+    padding: 3px 8px !important;
+}
+
+/* Notes */
+.note-card {
+    border-radius: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+    border: 1px solid var(--line) !important;
+    padding: 20px !important;
+    transition: all 0.18s ease !important;
+}
+
+.note-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.note-card-title {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+}
+
+/* Resources */
+.resource-row {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 18px 22px !important;
+    transition: all 0.18s ease !important;
+}
+
+.resource-row:hover {
+    border-color: var(--pastel-resources-fg) !important;
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-1px) !important;
+}
+
+.resource-mark {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    background: var(--pastel-resources-bg) !important;
+    color: var(--pastel-resources-fg) !important;
+    display: grid !important;
+    place-items: center !important;
+    font-weight: 700 !important;
+}
+
+.resource-row-title a,
+.resource-row-name {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+}
+
+/* 8. CODE PAGE — Clean outline and blue buttons */
+.section-button {
+    background: var(--surface) !important;
+    color: var(--text-2) !important;
+    border: 1px solid var(--line-2) !important;
+    border-radius: var(--r-sm) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 500 !important;
+    font-size: 13.5px !important;
+    padding: 8px 14px !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.15s ease-in-out !important;
+}
+
+.section-button:hover {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+    border-color: var(--accent-line) !important;
+    transform: translateY(-1px) !important;
+}
+
+.section-button-primary,
+#codeRunButton {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--accent) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 6px rgba(21, 88, 176, 0.25) !important;
+}
+
+.section-button-primary:hover,
+#codeRunButton:hover {
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+    box-shadow: 0 4px 10px rgba(21, 88, 176, 0.35) !important;
+}
+
+.code-panel-switcher button {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--text-3) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 500 !important;
+    padding: 6px 12px !important;
+}
+
+.code-panel-switcher button.is-active {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+    border-color: var(--accent-line) !important;
+    font-weight: 600 !important;
+}
+
+.code-shell {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.code-terminal {
+    border-radius: 0 0 14px 14px !important;
+}
+
+/* 9. MODALS */
+.modal-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.modal-card h2 {
+    color: var(--text-navy) !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+}
+
+/* 10. UNIFIED DELETE BUTTONS (TASKS, FOLDERS, FILES, NOTES, RESOURCES) */
+.note-delete {
+    opacity: 0.8 !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+    border-radius: 6px !important;
+    width: 28px !important;
+    height: 28px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--text-2) !important;
+    border: 0 !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+}
+
+.note-card:hover .note-delete,
+.note-delete:hover {
+    opacity: 1 !important;
+    background: var(--danger-soft) !important;
+    color: var(--danger) !important;
+    transform: scale(1.08) !important;
+}
+
+.task-delete {
+    background: transparent !important;
+    border: 0 !important;
+    color: var(--text-4) !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    transition: all 0.15s ease !important;
+}
+
+.task-item:hover .task-delete,
+.task-delete:hover {
+    color: var(--danger) !important;
+    background: var(--danger-soft) !important;
+}
+
+.folder-delete,
+.file-delete {
+    background: transparent !important;
+    border: 0 !important;
+    color: var(--text-4) !important;
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    transition: all 0.15s ease !important;
+}
+
+.folder-card:hover .folder-delete,
+.folder-delete:hover,
+.file-row:hover .file-delete,
+.file-delete:hover {
+    color: var(--danger) !important;
+    background: var(--danger-soft) !important;
+    transform: scale(1.05) !important;
+}
+
+.resource-remove {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-sm) !important;
+    color: var(--text-3) !important;
+    padding: 6px 12px !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+}
+
+.resource-row:hover .resource-remove,
+.resource-remove:hover {
+    color: var(--danger) !important;
+    background: var(--danger-soft) !important;
+    border-color: var(--danger-line) !important;
+}
+
+/* 11. PYTHON COMPILER & CODE IDE ENHANCEMENTS */
+.code-shell {
+    background: #1e1e1e !important;
+    border: 1px solid #333333 !important;
+    color: #d4d4d4 !important;
+}
+
+.code-editor-shell {
+    background: #1e1e1e !important;
+}
+
+.code-editor-gutter {
+    background: #1e1e1e !important;
+    color: #6e7681 !important;
+    border-right: 1px solid #333333 !important;
+}
+
+.code-editor-textarea {
+    color: #d4d4d4 !important;
+    background: transparent !important;
+    caret-color: #569cd6 !important;
+}
+
+.code-editor-highlight {
+    background: #1e1e1e !important;
+    color: #d4d4d4 !important;
+}
+
+/* Syntax Tokens */
+.code-tok-keyword {
+    color: #c586c0 !important;
+    font-weight: 600 !important;
+}
+
+.code-tok-builtin {
+    color: #dcdcaa !important;
+    font-weight: 500 !important;
+}
+
+.code-tok-string {
+    color: #ce9178 !important;
+}
+
+.code-tok-number {
+    color: #b5cea8 !important;
+}
+
+.code-tok-comment {
+    color: #6a9955 !important;
+    font-style: italic !important;
+}
+
+.code-tok-tag {
+    color: #569cd6 !important;
+}
+
+.code-tok-attr {
+    color: #9cdcfe !important;
+}
+
+.code-tok-punct {
+    color: #d4d4d4 !important;
+}
+
+.code-terminal {
+    background: #0d1117 !important;
+    border-top: 1px solid #30363d !important;
+    color: #e6edf3 !important;
+    font-family: var(--font-mono) !important;
+}
+
+.code-terminal-bar {
+    background: #161b22 !important;
+    border-bottom: 1px solid #30363d !important;
+    color: #8b949e !important;
+}
+
+.code-terminal-line-info {
+    color: #58a6ff !important;
+}
+
+.code-terminal-line-warn {
+    color: #d29922 !important;
+}
+
+.code-terminal-line-error {
+    color: #f85149 !important;
+}
+
+/* 12. FILE PREVIEW & ZOOMING CONTROLS */
+.file-preview-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid var(--line) !important;
+    flex-wrap: wrap !important;
+}
+
+.file-preview-zoom-bar {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: var(--surface-3) !important;
+    padding: 4px 8px !important;
+    border-radius: var(--r-md) !important;
+    border: 1px solid var(--line) !important;
+}
+
+.zoom-btn {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--text-strong) !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+}
+
+.zoom-btn:hover {
+    background: var(--accent-soft) !important;
+    color: var(--accent) !important;
+    border-color: var(--accent-line) !important;
+}
+
+.zoom-level-badge {
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    color: var(--text-2) !important;
+    min-width: 48px !important;
+    text-align: center !important;
+    padding: 2px 4px !important;
+}
+
+.zoom-reset-btn {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--text-2) !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+}
+
+.zoom-reset-btn:hover {
+    background: var(--surface-2) !important;
+    color: var(--text-strong) !important;
+}
+
+.file-preview-image-wrap {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 24px !important;
+    background: #0f172a !important;
+    border-radius: var(--r-md) !important;
+    min-height: 280px !important;
+    max-height: 65vh !important;
+    overflow: auto !important;
+}
+
+.file-preview-image {
+    max-width: 100% !important;
+    max-height: 55vh !important;
+    object-fit: contain !important;
+    border-radius: 6px !important;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.file-preview-pre {
+    background: #1e1e1e !important;
+    color: #d4d4d4 !important;
+    border-radius: var(--r-md) !important;
+    padding: 16px 20px !important;
+    max-height: 60vh !important;
+    overflow: auto !important;
+    border: 1px solid #333333 !important;
+    font-family: var(--font-mono) !important;
+}
+
+.file-preview-actions {
+    display: flex !important;
+    gap: 10px !important;
+    justify-content: flex-end !important;
+    margin-top: 20px !important;
+    flex-wrap: wrap !important;
+}
+
+
