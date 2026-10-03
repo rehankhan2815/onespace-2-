@@ -6590,41 +6590,194 @@ select:focus {
 }
 
 /* 11. PYTHON COMPILER & CODE IDE ENHANCEMENTS */
-.code-shell {
-    background: #1e1e1e !important;
-    border: 1px solid #333333 !important;
-    color: #d4d4d4 !important;
+.code-python-shell {
+    display: grid !important;
+    grid-template-columns: 210px minmax(0, 1fr) minmax(320px, 38%) !important;
+    gap: 1px !important;
+    background: #30363d !important;
+    border: 1px solid #30363d !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    min-height: 600px !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25) !important;
 }
 
-.code-editor-shell {
-    background: #1e1e1e !important;
+.code-python-shell .code-explorer {
+    background: #181c24 !important;
+    border-right: 1px solid #30363d !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-.code-editor-gutter {
+.code-python-shell .code-explorer-bar {
+    background: #161b22 !important;
+    border-bottom: 1px solid #30363d !important;
+    color: #c9d1d9 !important;
+    padding: 11px 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.code-python-shell .code-explorer-bar h3 {
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: .06em !important;
+    color: #8b949e !important;
+    margin: 0 !important;
+}
+
+.code-explorer-quick-add {
+    background: #21262d !important;
+    color: #58a6ff !important;
+    border: 1px solid #30363d !important;
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 5px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+}
+
+.code-explorer-quick-add:hover {
+    background: #30363d !important;
+    color: #79c0ff !important;
+}
+
+.code-python-shell .code-explorer-folder {
+    color: #c9d1d9 !important;
+    font-weight: 600 !important;
+    padding: 7px 10px !important;
+}
+
+.code-python-shell .code-explorer-file {
+    color: #8b949e !important;
+    padding: 7px 10px 7px 24px !important;
+    border-radius: 6px !important;
+    transition: all 0.12s ease !important;
+}
+
+.code-python-shell .code-explorer-file:hover {
+    background: #21262d !important;
+    color: #e6edf3 !important;
+}
+
+.code-python-shell .code-explorer-file.active {
+    background: #1f2937 !important;
+    color: #58a6ff !important;
+    font-weight: 600 !important;
+}
+
+.code-python-shell .code-editor-pane {
+    background: #1e1e1e !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    position: relative !important;
+}
+
+.code-python-shell .code-editor-tabs {
+    background: #161b22 !important;
+    border-bottom: 1px solid #30363d !important;
+    display: flex !important;
+    overflow-x: auto !important;
+    min-height: 38px !important;
+}
+
+.code-python-shell .code-editor-tab {
+    background: #161b22 !important;
+    color: #8b949e !important;
+    border-right: 1px solid #30363d !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border-top: 2px solid transparent !important;
+    transition: all 0.12s ease !important;
+}
+
+.code-python-shell .code-editor-tab:hover {
+    background: #1c2128 !important;
+    color: #c9d1d9 !important;
+}
+
+.code-python-shell .code-editor-tab.active {
+    background: #1e1e1e !important;
+    color: #58a6ff !important;
+    border-top: 2px solid #58a6ff !important;
+    font-weight: 600 !important;
+}
+
+.code-python-shell .code-editor-surface {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    background: #1e1e1e !important;
+    position: relative !important;
+    overflow: hidden !important;
+    min-height: 480px !important;
+}
+
+.code-python-shell .code-gutter {
     background: #1e1e1e !important;
     color: #6e7681 !important;
-    border-right: 1px solid #333333 !important;
+    border-right: 1px solid #2d2d2d !important;
+    width: 48px !important;
+    padding: 14px 10px 14px 0 !important;
+    text-align: right !important;
+    font-family: Consolas, "SF Mono", Menlo, monospace !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
 }
 
-.code-editor-textarea {
-    color: #d4d4d4 !important;
+.code-python-shell .code-editor-scroll {
+    flex: 1 1 auto !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.code-python-shell .code-editor-input {
+    color: transparent !important;
+    caret-color: #58a6ff !important;
     background: transparent !important;
-    caret-color: #569cd6 !important;
+    font-family: Consolas, "SF Mono", Menlo, monospace !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    padding: 14px 16px !important;
 }
 
-.code-editor-highlight {
-    background: #1e1e1e !important;
+.code-python-shell .code-highlight-code {
+    font-family: Consolas, "SF Mono", Menlo, monospace !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    padding: 14px 16px !important;
     color: #d4d4d4 !important;
 }
 
-/* Syntax Tokens */
+.code-python-shell .code-editor-empty {
+    background: #1e1e1e !important;
+    color: #8b949e !important;
+}
+
+.code-python-shell .code-editor-empty h3 {
+    color: #c9d1d9 !important;
+}
+
+/* Syntax Tokens (VS Code Dark Theme) */
 .code-tok-keyword {
     color: #c586c0 !important;
     font-weight: 600 !important;
 }
 
 .code-tok-builtin {
-    color: #dcdcaa !important;
+    color: #4ec9b0 !important;
     font-weight: 500 !important;
 }
 
@@ -6641,53 +6794,211 @@ select:focus {
     font-style: italic !important;
 }
 
-.code-tok-tag {
-    color: #569cd6 !important;
-}
-
-.code-tok-attr {
-    color: #9cdcfe !important;
-}
-
 .code-tok-punct {
     color: #d4d4d4 !important;
 }
 
-.code-terminal {
+/* 3. TERMINAL PANE */
+.code-terminal-pane {
     background: #0d1117 !important;
-    border-top: 1px solid #30363d !important;
-    color: #e6edf3 !important;
-    font-family: var(--font-mono) !important;
+    border-left: 1px solid #30363d !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    height: 100% !important;
 }
 
-.code-terminal-bar {
+.code-terminal-pane .code-terminal-bar {
     background: #161b22 !important;
     border-bottom: 1px solid #30363d !important;
-    color: #8b949e !important;
+    padding: 10px 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-shrink: 0 !important;
 }
 
-.code-terminal-line-info {
+.code-terminal-heading {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.code-terminal-title-text {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: .06em !important;
+    color: #c9d1d9 !important;
+}
+
+.py-engine-badge {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 2px 8px !important;
+    border-radius: 12px !important;
+    background: rgba(63, 185, 80, 0.15) !important;
+    color: #3fb950 !important;
+    border: 1px solid rgba(63, 185, 80, 0.3) !important;
+}
+
+.py-engine-badge.is-running {
+    background: rgba(210, 153, 34, 0.15) !important;
+    color: #d29922 !important;
+    border-color: rgba(210, 153, 34, 0.3) !important;
+}
+
+.code-terminal-pane .code-terminal-clear {
+    background: #21262d !important;
+    color: #c9d1d9 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 6px !important;
+    padding: 3px 10px !important;
+    font-size: 11.5px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+}
+
+.code-terminal-pane .code-terminal-clear:hover {
+    background: #30363d !important;
+    color: #ffffff !important;
+}
+
+.code-terminal-pane .code-terminal-body {
+    flex: 1 1 auto !important;
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+    padding: 14px 16px !important;
+    font-family: Consolas, "SF Mono", Menlo, monospace !important;
+    font-size: 12.5px !important;
+    line-height: 1.6 !important;
+    overflow-y: auto !important;
+    height: 100% !important;
+    min-height: 220px !important;
+}
+
+.code-run-action-btn {
+    background: #238636 !important;
+    color: #ffffff !important;
+    border: 1px solid #2ea043 !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    padding: 7px 18px !important;
+    border-radius: var(--r-md) !important;
+    box-shadow: 0 2px 8px rgba(35, 134, 54, 0.35) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.15s ease !important;
+}
+
+.code-run-action-btn:hover {
+    background: #2ea043 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(46, 160, 67, 0.45) !important;
+}
+
+.code-log-line {
+    margin: 0 0 4px 0 !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    font-family: Consolas, "SF Mono", Menlo, monospace !important;
+}
+
+.code-log-info {
     color: #58a6ff !important;
 }
 
-.code-terminal-line-warn {
-    color: #d29922 !important;
+.code-log-stdout {
+    color: #e6edf3 !important;
 }
 
-.code-terminal-line-error {
+.code-log-success {
+    color: #3fb950 !important;
+    font-weight: 600 !important;
+}
+
+.code-log-error {
     color: #f85149 !important;
 }
 
-/* 12. FILE PREVIEW & ZOOMING CONTROLS */
+.code-log-warn {
+    color: #d29922 !important;
+}
+
+@media (max-width: 1050px) {
+    .code-python-shell {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+    .code-python-shell .code-explorer,
+    .code-python-shell .code-editor-pane,
+    .code-python-shell .code-terminal-pane {
+        display: none !important;
+    }
+    .code-python-shell[data-panel="explorer"] .code-explorer {
+        display: flex !important;
+    }
+    .code-python-shell[data-panel="editor"] .code-editor-pane {
+        display: flex !important;
+    }
+    .code-python-shell[data-panel="terminal"] .code-terminal-pane {
+        display: flex !important;
+    }
+    .code-panel-switcher {
+        display: flex !important;
+    }
+}
+
+/* 12. FILE PREVIEW MODAL (FULLSCREEN & CORNER CONTROLS) */
+#codeFilePreviewModal.modal {
+    padding: 16px !important;
+    background: rgba(10, 15, 26, 0.75) !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+#codeFilePreviewModal .file-preview-modal-card {
+    width: 96vw !important;
+    max-width: 1560px !important;
+    height: 94vh !important;
+    max-height: 94vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 18px 24px !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35) !important;
+    overflow: hidden !important;
+}
+
 .file-preview-header {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
     gap: 16px !important;
-    margin-bottom: 16px !important;
-    padding-bottom: 12px !important;
+    padding-bottom: 14px !important;
     border-bottom: 1px solid var(--line) !important;
-    flex-wrap: wrap !important;
+    flex-shrink: 0 !important;
+}
+
+.file-preview-title-group h2 {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--text-strong) !important;
+    margin: 0 !important;
+}
+
+.file-preview-title-group .code-file-preview-meta {
+    font-size: 12px !important;
+    color: var(--text-3) !important;
+    margin: 2px 0 0 0 !important;
+}
+
+.file-preview-corner-tools {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-left: auto !important;
 }
 
 .file-preview-zoom-bar {
@@ -6698,6 +7009,10 @@ select:focus {
     padding: 4px 8px !important;
     border-radius: var(--r-md) !important;
     border: 1px solid var(--line) !important;
+}
+
+.file-preview-zoom-bar[hidden] {
+    display: none !important;
 }
 
 .zoom-btn {
@@ -6748,44 +7063,107 @@ select:focus {
     color: var(--text-strong) !important;
 }
 
+.file-preview-download-btn {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--accent) !important;
+    border-radius: var(--r-md) !important;
+    padding: 6px 14px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 6px rgba(21, 88, 176, 0.25) !important;
+    transition: all 0.15s ease !important;
+}
+
+.file-preview-download-btn:hover {
+    background: var(--accent-2) !important;
+    transform: translateY(-1px) !important;
+}
+
+.file-preview-close-btn {
+    background: var(--surface-3) !important;
+    border: 1px solid var(--line) !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    color: var(--text-2) !important;
+    transition: all 0.15s ease !important;
+}
+
+.file-preview-close-btn:hover {
+    background: var(--danger-soft) !important;
+    color: var(--danger) !important;
+    border-color: var(--danger-line) !important;
+}
+
+#codeFilePreviewModal .code-file-preview-body {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 14px 0 0 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    overflow: hidden !important;
+}
+
 .file-preview-image-wrap {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     padding: 24px !important;
-    background: #0f172a !important;
-    border-radius: var(--r-md) !important;
-    min-height: 280px !important;
-    max-height: 65vh !important;
+    background: #090d16 !important;
+    border-radius: 12px !important;
     overflow: auto !important;
 }
 
 .file-preview-image {
-    max-width: 100% !important;
-    max-height: 55vh !important;
+    max-width: 96% !important;
+    max-height: 82vh !important;
+    width: auto !important;
+    height: auto !important;
     object-fit: contain !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6) !important;
     transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    display: block !important;
+    margin: auto !important;
 }
 
 .file-preview-pre {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
     background: #1e1e1e !important;
     color: #d4d4d4 !important;
-    border-radius: var(--r-md) !important;
-    padding: 16px 20px !important;
-    max-height: 60vh !important;
+    border-radius: 12px !important;
+    padding: 20px 24px !important;
     overflow: auto !important;
     border: 1px solid #333333 !important;
     font-family: var(--font-mono) !important;
+    margin: 0 !important;
 }
 
-.file-preview-actions {
-    display: flex !important;
-    gap: 10px !important;
-    justify-content: flex-end !important;
-    margin-top: 20px !important;
-    flex-wrap: wrap !important;
-}
 
 

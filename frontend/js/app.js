@@ -4466,6 +4466,11 @@ function previewWorkspaceFile(folder, file) {
     const ext = codeExtensionOf(file.name);
     const isImage = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico"].indexOf(ext) !== -1;
 
+    const zoomBar = document.getElementById("filePreviewZoomBar");
+    if (zoomBar) {
+        zoomBar.hidden = !isImage;
+    }
+
     if (isImage && (file.content.startsWith("data:image/") || file.content.startsWith("<svg") || isBinary)) {
         if (imgWrap) imgWrap.hidden = false;
         if (imgEl) {
@@ -4474,14 +4479,12 @@ function previewWorkspaceFile(folder, file) {
                 : file.content;
         }
         if (preEl) preEl.hidden = true;
-        if (copyEl) copyEl.disabled = true;
     } else {
         if (imgWrap) imgWrap.hidden = true;
         if (preEl) preEl.hidden = false;
         if (codeEl) {
             codeEl.innerHTML = codeHighlightSource(file.content + "\n", language);
         }
-        if (copyEl) copyEl.disabled = false;
     }
 
     openModal("codeFilePreviewModal");
@@ -4561,10 +4564,19 @@ const CODE_LANGUAGES = {
     js: { label: "JavaScript", runnable: true },
     json: { label: "JSON", runnable: false },
     md: { label: "Markdown", runnable: false },
-    py: { label: "Python", runnable: false },
+    py: { label: "Python", runnable: true },
     java: { label: "Java", runnable: false },
     c: { label: "C", runnable: false },
-    cpp: { label: "C++", runnable: false }
+    cpp: { label: "C++", runnable: false },
+    png: { label: "PNG Image", runnable: false },
+    jpg: { label: "JPEG Image", runnable: false },
+    jpeg: { label: "JPEG Image", runnable: false },
+    gif: { label: "GIF Image", runnable: false },
+    webp: { label: "WebP Image", runnable: false },
+    svg: { label: "SVG Vector", runnable: false },
+    bmp: { label: "Bitmap Image", runnable: false },
+    ico: { label: "Icon", runnable: false },
+    pdf: { label: "PDF Document", runnable: false }
 };
 
 const CODE_EXTENSIONS = {
@@ -4573,10 +4585,19 @@ const CODE_EXTENSIONS = {
     js: "js", mjs: "js", cjs: "js",
     json: "json",
     md: "md", markdown: "md",
-    py: "py",
+    py: "py", python: "py",
     java: "java",
     c: "c", h: "c",
-    cpp: "cpp", cc: "cpp", cxx: "cpp", hpp: "cpp"
+    cpp: "cpp", cc: "cpp", cxx: "cpp", hpp: "cpp",
+    png: "png",
+    jpg: "jpg",
+    jpeg: "jpeg",
+    gif: "gif",
+    webp: "webp",
+    svg: "svg",
+    bmp: "bmp",
+    ico: "ico",
+    pdf: "pdf"
 };
 
 const CODE_STARTERS = {
@@ -4585,7 +4606,7 @@ const CODE_STARTERS = {
     js: "console.log(\"Hello from OneSpace\");\n",
     json: "{\n    \"name\": \"project\"\n}\n",
     md: "# Notes\n\n",
-    py: "print(\"hello\")\n",
+    py: "# Python 3 Online Compiler in OneSpace\n\ndef main():\n    print(\"Welcome to Python 3 Online Compiler!\")\n    print(\"=\" * 38)\n    \n    # Example: List comprehension & basic math\n    numbers = [1, 2, 3, 4, 5]\n    squares = [x**2 for x in numbers]\n    print(f\"Numbers: {numbers}\")\n    print(f\"Squares: {squares}\")\n    print(f\"Sum:     {sum(squares)}\")\n    print(\"\\nReady to write your own Python code!\")\n\nif __name__ == \"__main__\":\n    main()\n",
     java: "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello\");\n    }\n}\n",
     c: "#include <stdio.h>\n\nint main(void) {\n    printf(\"Hello\\n\");\n    return 0;\n}\n",
     cpp: "#include <iostream>\n\nint main() {\n    std::cout << \"Hello\" << std::endl;\n    return 0;\n}\n"
@@ -5327,6 +5348,16 @@ if (codeEditor) {
             ) {
                 event.preventDefault();
                 saveCodeFile();
+                return;
+            }
+
+            if (
+                event.key === "Enter" &&
+                (event.ctrlKey || event.metaKey)
+            ) {
+                event.preventDefault();
+                runCode();
+                return;
             }
 
         }
@@ -5532,12 +5563,14 @@ function codeRenderExplorer() {
         heading.appendChild(add);
         group.appendChild(heading);
 
-        const files = folder.files || [];
+        const files = (folder.files || []).filter(function (file) {
+            return file.name.toLowerCase().endsWith(".py");
+        });
 
         if (!files.length) {
             const none = document.createElement("p");
             none.className = "code-explorer-file code-explorer-file-empty";
-            none.textContent = "Empty folder";
+            none.textContent = "No .py files";
             group.appendChild(none);
         }
 
@@ -5867,6 +5900,10 @@ function codeRenderWorkspaceFiles() {
     codeFolders().forEach(function (folder) {
 
         (folder.files || []).forEach(function (file) {
+
+            if (!file.name.toLowerCase().endsWith(".py")) {
+                return;
+            }
 
             total += 1;
 
@@ -6535,7 +6572,7 @@ function openCodeFile(folderId) {
 
 function validateCodeFile() {
 
-    const name = cleanText(
+    let name = cleanText(
         document.getElementById("codeFileName").value
     );
 
@@ -6561,17 +6598,17 @@ function validateCodeFile() {
         return null;
     }
 
-    if (!codeExtensionOf(name)) {
-        setFieldError(
-            "codeFileError",
-            "codeFileName",
-            "Include an extension, such as .html or .js."
-        );
-        return null;
+    if (!name.toLowerCase().endsWith(".py")) {
+        const ext = codeExtensionOf(name);
+        if (!ext) {
+            name = name + ".py";
+        } else {
+            name = name.replace(new RegExp("\\." + ext + "$", "i"), ".py");
+        }
     }
 
     if ((folder.files || []).some(function (file) {
-        return file.name === name;
+        return file.name.toLowerCase() === name.toLowerCase();
     })) {
         setFieldError(
             "codeFileError",
@@ -7328,58 +7365,143 @@ function transpilePythonToJs(source) {
     return jsLines.join("\n");
 }
 
-function runPythonCode(source, filename) {
+let pyodideInstance = null;
+let pyodideLoadingPromise = null;
+
+async function getPyodideInstance() {
+    if (pyodideInstance) return pyodideInstance;
+    if (pyodideLoadingPromise) return pyodideLoadingPromise;
+
+    if (typeof loadPyodide === "function") {
+        const badge = document.getElementById("pyEngineStatus");
+        if (badge) {
+            badge.textContent = "● Loading Pyodide...";
+            badge.className = "py-engine-badge is-running";
+        }
+        pyodideLoadingPromise = loadPyodide({
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.2/full/"
+        }).then(function(py) {
+            pyodideInstance = py;
+            const b = document.getElementById("pyEngineStatus");
+            if (b) {
+                b.textContent = "● Python 3.10";
+                b.className = "py-engine-badge";
+            }
+            return py;
+        }).catch(function(err) {
+            console.warn("Pyodide CDN fallback:", err);
+            const b = document.getElementById("pyEngineStatus");
+            if (b) {
+                b.textContent = "● Python 3";
+                b.className = "py-engine-badge";
+            }
+            return null;
+        });
+        return pyodideLoadingPromise;
+    }
+    return null;
+}
+
+function runPythonFallback(source, filename) {
+    const outputLines = [];
+    const jsCode = transpilePythonToJs(source);
+    const customConsole = {
+        log: function(...args) {
+            outputLines.push(args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "));
+        },
+        error: function(...args) {
+            outputLines.push("ERROR: " + args.join(" "));
+        }
+    };
+
+    function pyPrint(...args) {
+        customConsole.log(...args);
+    }
+    function pyRange(start, stop, step) {
+        if (stop === undefined) { stop = start; start = 0; }
+        step = step || 1;
+        const res = [];
+        for (let i = start; step > 0 ? i < stop : i > stop; i += step) res.push(i);
+        return res;
+    }
+    function pyLen(obj) { return obj ? (obj.length !== undefined ? obj.length : Object.keys(obj).length) : 0; }
+    function pySum(arr) { return Array.isArray(arr) ? arr.reduce((a, b) => a + b, 0) : 0; }
+
+    const runner = new Function(
+        "console", "print", "range", "len", "sum", "str", "int", "float", "list", "dict", "min", "max", "abs", "Math",
+        jsCode
+    );
+
+    runner(customConsole, pyPrint, pyRange, pyLen, pySum, String, parseInt, parseFloat, Array.from, Object.assign, Math.min, Math.max, Math.abs, Math);
+
+    if (outputLines.length === 0) {
+        codeLog("info", "[Program executed with no output]");
+    } else {
+        outputLines.forEach(function(line) {
+            codeLog("stdout", line);
+        });
+    }
+}
+
+async function runPythonCode(source, filename) {
     codeClearTerminal();
-    codeLog("info", "▶ Running " + (filename || "main.py") + " (Python 3.10)...");
+    const fname = filename || "main.py";
+    codeLog("info", "▶ Running " + fname + " (Python 3.10)...");
     setCodePanel("editor");
 
+    const badge = document.getElementById("pyEngineStatus");
+    if (badge) {
+        badge.textContent = "● Running...";
+        badge.className = "py-engine-badge is-running";
+    }
+
     const startTime = performance.now();
-    const outputLines = [];
 
     try {
-        const jsCode = transpilePythonToJs(source);
-        const customConsole = {
-            log: function(...args) {
-                outputLines.push(args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "));
-            },
-            error: function(...args) {
-                outputLines.push("ERROR: " + args.join(" "));
+        let ranWithPyodide = false;
+        if (typeof loadPyodide === "function") {
+            const py = await getPyodideInstance();
+            if (py) {
+                py.setStdout({
+                    batched: function (str) {
+                        if (str) {
+                            str.split("\n").forEach(function (line) {
+                                if (line) codeLog("stdout", line);
+                            });
+                        }
+                    }
+                });
+                py.setStderr({
+                    batched: function (str) {
+                        if (str) {
+                            str.split("\n").forEach(function (line) {
+                                if (line) codeLog("error", line);
+                            });
+                        }
+                    }
+                });
+
+                await py.runPythonAsync(source);
+                ranWithPyodide = true;
             }
-        };
-
-        function pyPrint(...args) {
-            customConsole.log(...args);
         }
-        function pyRange(start, stop, step) {
-            if (stop === undefined) { stop = start; start = 0; }
-            step = step || 1;
-            const res = [];
-            for (let i = start; step > 0 ? i < stop : i > stop; i += step) res.push(i);
-            return res;
+
+        if (!ranWithPyodide) {
+            runPythonFallback(source, fname);
         }
-        function pyLen(obj) { return obj ? (obj.length !== undefined ? obj.length : Object.keys(obj).length) : 0; }
-        function pySum(arr) { return Array.isArray(arr) ? arr.reduce((a, b) => a + b, 0) : 0; }
-
-        const runner = new Function(
-            "console", "print", "range", "len", "sum", "str", "int", "float", "list", "dict", "min", "max", "abs", "Math",
-            jsCode
-        );
-
-        runner(customConsole, pyPrint, pyRange, pyLen, pySum, String, parseInt, parseFloat, Array.from, Object.assign, Math.min, Math.max, Math.abs, Math);
 
         const duration = Math.round(performance.now() - startTime);
-
-        if (outputLines.length === 0) {
-            codeLog("info", "[Program executed with no output]");
-        } else {
-            outputLines.forEach(function(line) {
-                codeLog("info", line);
-            });
-        }
-        codeLog("info", "\n✓ Process finished with exit code 0 (" + duration + "ms)");
-        showStatus("Python code executed.");
+        codeLog("success", "\n✓ Process finished with exit code 0 (" + duration + "ms)");
+        showStatus("Python script executed.");
     } catch (err) {
-        codeLog("error", "Traceback (most recent call last):\n  File \"" + (filename || "main.py") + "\", line 1\n" + err.name + ": " + err.message);
+        const duration = Math.round(performance.now() - startTime);
+        codeLog("error", "Traceback (most recent call last):\n" + String(err.message || err));
+        codeLog("error", "\n✖ Process finished with error (" + duration + "ms)");
+    } finally {
+        if (badge) {
+            badge.textContent = "● Python 3.10";
+            badge.className = "py-engine-badge";
+        }
     }
 }
 
@@ -7477,10 +7599,6 @@ function setCodePanel(panel) {
             }
         );
     }
-
-    if (panel === "preview" && !codePreviewBuilt) {
-        buildCodePreview(false);
-    }
 }
 
 if (codePanelSwitcher) {
@@ -7503,18 +7621,57 @@ if (codePanelSwitcher) {
 
 /* RENDER */
 
+function ensurePythonStarterFile() {
+    const folders = codeFolders();
+    let hasPy = false;
+
+    for (let i = 0; i < folders.length; i++) {
+        const found = (folders[i].files || []).some(function (f) {
+            return f.name.toLowerCase().endsWith(".py");
+        });
+        if (found) {
+            hasPy = true;
+            break;
+        }
+    }
+
+    if (!hasPy) {
+        let targetFolder = folders[0];
+        if (!targetFolder) {
+            targetFolder = makeFolderRecord("scripts");
+            currentWorkspace.folders = [targetFolder];
+        }
+        if (!Array.isArray(targetFolder.files)) {
+            targetFolder.files = [];
+        }
+        const starter = makeCodeFileRecord("main.py", CODE_STARTERS.py);
+        targetFolder.files.push(starter);
+        codeOpenEntry(targetFolder.id, starter.id);
+        commitChanges({ only: "code" });
+    } else if (!codeActiveKey) {
+        for (let i = 0; i < folders.length; i++) {
+            const found = (folders[i].files || []).find(function (f) {
+                return f.name.toLowerCase().endsWith(".py");
+            });
+            if (found) {
+                codeOpenEntry(folders[i].id, found.id);
+                break;
+            }
+        }
+    }
+}
+
 function renderCode() {
 
     if (!codeShell) {
         return;
     }
 
+    ensurePythonStarterFile();
+
     const codeSectionDesc = document.getElementById("codeSectionDesc");
     if (codeSectionDesc) {
-        const hasFiles = codeFolders().some(function (folder) {
-            return (folder.files || []).length > 0;
-        });
-        codeSectionDesc.hidden = hasFiles;
+        codeSectionDesc.hidden = false;
     }
 
     /* Drop open files whose folder or file no longer exists, so a deleted
@@ -7535,7 +7692,6 @@ function renderCode() {
             : null;
     }
 
-    renderCodePreviewState();
     codeRenderExplorer();
     codeRenderEditorTabs();
     codeSyncEditor();
@@ -7663,13 +7819,12 @@ onCodeControl("codeSaveButton", "click", saveCodeFile);
 
 onCodeControl("codeRunButton", "click", runCode);
 
-onCodeControl("codePreviewButton", "click", function () {
-    setCodePanel("preview");
-    buildCodePreview(true);
-});
+onCodeControl("codeTerminalClearButton", "click", codeClearTerminal);
 
-onCodeControl("codePreviewRefreshButton", "click", function () {
-    buildCodePreview(true);
+onCodeControl("codeTerminalInnerClear", "click", codeClearTerminal);
+
+onCodeControl("codeExplorerAddPy", "click", function () {
+    openCodeFile();
 });
 
 onCodeControl("codeNewFileButton", "click", openCodeFile);
