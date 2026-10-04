@@ -2118,6 +2118,12 @@ function showSection(section, isSilent) {
     );
 
 
+    /* Update code shell height when Code section becomes active */
+    if (section === "code") {
+        updateCodeShellHeight();
+    }
+
+
     let activeLabel = section;
 
     document
@@ -2664,6 +2670,17 @@ function closeModal(id) {
         setFieldError(pair[0], pair[1], "");
     });
 
+    if (id === "taskModal") {
+        const taskForm = document.getElementById("taskForm");
+        const taskModalTitle = document.getElementById("taskModalTitle");
+        const taskSubmit = taskForm.querySelector(".modal-submit");
+
+        delete taskForm.dataset.editingTaskId;
+        taskForm.reset();
+        taskModalTitle.textContent = "Create Task";
+        taskSubmit.textContent = "Create Task";
+    }
+
     const trigger = modalTriggers[id];
 
     delete modalTriggers[id];
@@ -3123,6 +3140,26 @@ taskForm.addEventListener(
             return;
         }
 
+        const editingTaskId = taskForm.dataset.editingTaskId;
+
+        if (editingTaskId) {
+            const task = currentWorkspace.tasks.find(function (t) {
+                return String(t.id) === editingTaskId;
+            });
+
+            if (task) {
+                task.name = values.name;
+                task.description = values.description;
+            }
+
+            delete taskForm.dataset.editingTaskId;
+            closeModal("taskModal");
+            commitChanges({
+                message: "Task updated."
+            });
+            return;
+        }
+
         const task = {
 
             id: Date.now(),
@@ -3165,20 +3202,67 @@ function createTaskListEmpty(message) {
 
 function createTaskItem(task) {
 
-    const item =
+    const row =
         document.createElement("div");
 
-    item.className = "task-item";
-
-    item.dataset.id = String(task.id);
+    row.className = "task-row";
+    row.setAttribute("role", "listitem");
+    row.dataset.id = String(task.id);
 
     const isComplete =
         task.status === "completed";
 
     if (isComplete) {
-        item.classList.add("is-complete");
+        row.classList.add("is-complete");
     }
 
+
+    /* Task name cell */
+    const nameCell =
+        document.createElement("div");
+    nameCell.className = "task-cell task-cell-name";
+
+    const name =
+        document.createElement("span");
+    name.className = "task-name";
+    name.textContent = cleanText(task.name) || "Untitled task";
+    name.setAttribute("tabindex", "0");
+    name.setAttribute("role", "button");
+    name.setAttribute("aria-label", "View details for: " + cleanText(task.name));
+
+    name.addEventListener("click", function (event) {
+        event.stopPropagation();
+        openTaskDetails(task);
+    });
+
+    name.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            event.stopPropagation();
+            openTaskDetails(task);
+        }
+    });
+
+    nameCell.appendChild(name);
+
+
+    /* Description cell */
+    const descCell =
+        document.createElement("div");
+    descCell.className = "task-cell task-cell-description";
+
+    const description =
+        document.createElement("span");
+    description.className = "task-description";
+    description.textContent = cleanText(task.description) || "";
+
+    descCell.appendChild(description);
+
+
+    /* Status cell with checkbox */
+    const statusCell =
+        document.createElement("div");
+    statusCell.className = "task-cell task-cell-status";
 
     const check =
         document.createElement("button");
@@ -3198,19 +3282,15 @@ function createTaskItem(task) {
 
     check.textContent = "";
 
-    /* The tick is drawn rather than typed, so a completed task reads the
-       same way in whatever font the machine happens to have. */
     const tick =
         document.createElement("span");
 
     tick.className = "task-check-tick";
-
     tick.setAttribute("aria-hidden", "true");
-
     tick.appendChild(
         createIcon(
             "check",
-            { size: 12, weight: "2.4" }
+            { size: 11, weight: "2.4" }
         )
     );
 
@@ -3218,7 +3298,8 @@ function createTaskItem(task) {
 
     check.addEventListener(
         "click",
-        function () {
+        function (event) {
+            event.stopPropagation();
 
             task.status =
                 isComplete ? "todo" : "completed";
@@ -3233,71 +3314,10 @@ function createTaskItem(task) {
         }
     );
 
-
-    const main =
-        document.createElement("div");
-
-    main.className = "task-item-main";
+    statusCell.appendChild(check);
 
 
-    const title =
-        document.createElement("p");
-
-    title.className = "task-item-title";
-    title.textContent =
-        cleanText(task.name) || "Untitled task";
-
-    main.appendChild(title);
-
-
-    if (cleanText(task.description)) {
-
-        const description =
-            document.createElement("p");
-
-        description.className =
-            "task-item-description";
-
-        description.textContent =
-            cleanText(task.description);
-
-        main.appendChild(description);
-    }
-
-
-    /* When the task was written down. Useful context, and only shown when
-       there is a real date to show. */
-    const created = taskDateLabel(task.createdAt);
-
-    if (created) {
-
-        const stamp =
-            document.createElement("span");
-
-        stamp.className = "task-item-time";
-
-        const clock =
-            document.createElement("span");
-
-        clock.className = "task-item-time-icon";
-
-        clock.setAttribute("aria-hidden", "true");
-
-        clock.appendChild(
-            createIcon("clock", { size: 12 })
-        );
-
-        const clockWord =
-            document.createElement("span");
-
-        clockWord.textContent = created;
-
-        stamp.appendChild(clock);
-        stamp.appendChild(clockWord);
-
-        main.appendChild(stamp);
-    }
-
+    /* Delete button in status cell */
     const taskDelete = document.createElement("button");
     taskDelete.type = "button";
     taskDelete.className = "task-delete";
@@ -3305,7 +3325,7 @@ function createTaskItem(task) {
         "aria-label",
         "Delete task: " + (cleanText(task.name) || "Untitled task")
     );
-    taskDelete.appendChild(createIcon("trash", { size: 14 }));
+    taskDelete.appendChild(createIcon("trash", { size: 13 }));
     taskDelete.addEventListener("click", function (event) {
         event.stopPropagation();
         confirmAction({
@@ -3323,11 +3343,36 @@ function createTaskItem(task) {
         });
     });
 
-    item.appendChild(check);
-    item.appendChild(main);
-    item.appendChild(taskDelete);
+    statusCell.appendChild(taskDelete);
 
-    return item;
+
+    row.appendChild(nameCell);
+    row.appendChild(descCell);
+    row.appendChild(statusCell);
+
+    return row;
+}
+
+
+function openTaskDetails(task) {
+    const taskModal = document.getElementById("taskModal");
+    const taskForm = document.getElementById("taskForm");
+    const taskNameInput = document.getElementById("taskName");
+    const taskDescriptionInput = document.getElementById("taskDescription");
+    const taskModalTitle = document.getElementById("taskModalTitle");
+    const taskSubmit = taskForm.querySelector(".modal-submit");
+
+    clearFormErrors(taskForm, MODAL_ERRORS.taskModal);
+
+    taskModalTitle.textContent = "Task Details";
+    taskSubmit.textContent = "Save Changes";
+
+    taskNameInput.value = cleanText(task.name);
+    taskDescriptionInput.value = cleanText(task.description);
+
+    taskForm.dataset.editingTaskId = String(task.id);
+
+    openModal("taskModal");
 }
 
 
@@ -3365,27 +3410,13 @@ function taskDateLabel(value) {
 
 function renderTasks() {
 
-    const todo =
-        document.getElementById(
-            "todoTasks"
-        );
+    const taskList =
+        document.getElementById("taskList");
 
-    const completed =
-        document.getElementById(
-            "completedTasks"
-        );
+    const tasksSectionDesc = document.getElementById("tasksSectionDesc");
+    const taskTableContainer = document.querySelector(".task-table-container");
 
-    const todoCount =
-        document.getElementById(
-            "todoTaskCount"
-        );
-
-    const completedCount =
-        document.getElementById(
-            "completedTaskCount"
-        );
-
-    if (!todo || !completed) {
+    if (!taskList) {
         return;
     }
 
@@ -3400,47 +3431,26 @@ function renderTasks() {
         return task.status === "completed";
     });
 
-
-    if (todoCount) {
-        todoCount.textContent = String(open.length);
-    }
-
-    if (completedCount) {
-        completedCount.textContent = String(done.length);
-    }
+    const total = tasks.length;
+    const openCount = open.length;
+    const doneCount = done.length;
 
 
-    todo.innerHTML = "";
-    completed.innerHTML = "";
-
-
-    const isEmpty = tasks.length === 0;
-
-    const tasksSectionDesc = document.getElementById("tasksSectionDesc");
     if (tasksSectionDesc) {
-        tasksSectionDesc.hidden = !isEmpty;
+        tasksSectionDesc.hidden = total > 0;
     }
 
-    /* Two columns both reading "No tasks yet." tells the user nothing about
-       what to do next. Once the workspace genuinely has no tasks, the
-       columns step aside for one explained empty state. */
-    const columns =
-        todo.closest(".task-columns");
-
-    if (columns) {
-        columns.hidden = isEmpty;
+    if (taskTableContainer) {
+        taskTableContainer.hidden = total === 0;
     }
 
     const empty =
-        document.getElementById(
-            "tasksEmpty"
-        );
+        document.getElementById("tasksEmpty");
 
     if (empty) {
         empty.innerHTML = "";
 
-        if (isEmpty) {
-
+        if (total === 0) {
             empty.appendChild(
                 createSectionEmpty(
                     "No tasks yet",
@@ -3454,35 +3464,16 @@ function renderTasks() {
         }
     }
 
-    if (isEmpty) {
+    if (total === 0) {
         return;
     }
 
-    if (open.length === 0) {
+    taskList.innerHTML = "";
 
-        todo.appendChild(
-            createTaskListEmpty(
-                "Nothing left to do."
-            )
-        );
-    }
+    const allTasks = [...open, ...done];
 
-    if (done.length === 0) {
-
-        completed.appendChild(
-            createTaskListEmpty(
-                "Nothing completed yet."
-            )
-        );
-    }
-
-
-    open.forEach(function (task) {
-        todo.appendChild(createTaskItem(task));
-    });
-
-    done.forEach(function (task) {
-        completed.appendChild(createTaskItem(task));
+    allTasks.forEach(function (task) {
+        taskList.appendChild(createTaskItem(task));
     });
 }
 
@@ -4528,9 +4519,14 @@ const codePreviewFrame = document.getElementById("codePreviewFrame");
 const codePreviewPlaceholder = document.getElementById("codePreviewPlaceholder");
 const codePreviewEntry = document.getElementById("codePreviewEntry");
 const codeTerminalBody = document.getElementById("codeTerminalBody");
-const codeTerminal = document.getElementById("codeTerminal");
 const codePanelSwitcher = document.getElementById("codePanelSwitcher");
 const codeFileForm = document.getElementById("codeFileForm");
+const codeFullscreenButton = document.getElementById("codeFullscreenButtonToolbar");
+const codeRunButton = document.getElementById("codeRunButtonToolbar");
+
+/* Fullscreen state */
+let codeFullscreen = false;
+let codeFullscreenPrevPanel = null;
 
 /* Open files are a view of the project, not a property of it, so they live
    in memory and are rebuilt from workspace data on every render. Drafts hold
@@ -5088,23 +5084,6 @@ function codeClearTerminal() {
     }
 }
 
-function setCodeTerminalOpen(isOpen) {
-    const toggle = document.getElementById("codeTerminalToggle");
-
-    if (codeTerminal) {
-        codeTerminal.classList.toggle("is-open", isOpen);
-    }
-
-    if (toggle) {
-        toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-
-        const caret = toggle.querySelector(".code-terminal-caret");
-        if (caret) {
-            caret.textContent = isOpen ? "\u25be" : "\u25b8";
-        }
-    }
-}
-
 
 /* EDITOR
  *
@@ -5541,19 +5520,47 @@ function codeRenderExplorer() {
 
         const name = document.createElement("p");
         name.className = "code-explorer-folder";
-        name.textContent = folder.name;
+        
+        /* Folder icon using createIcon */
+        const folderIcon = document.createElement("span");
+        folderIcon.className = "code-explorer-folder-icon";
+        folderIcon.setAttribute("aria-hidden", "true");
+        folderIcon.appendChild(createIcon("folder", { size: 14 }));
+        name.appendChild(folderIcon);
+        
+        name.appendChild(document.createTextNode(folder.name));
+
+        /* Chevron for expand/collapse */
+        const chevron = document.createElement("span");
+        chevron.className = "code-explorer-chevron";
+        chevron.setAttribute("aria-hidden", "true");
+        chevron.appendChild(createIcon("chevronRight", { size: 12 }));
+        name.appendChild(chevron);
+
+        /* Make folder name clickable for expand/collapse */
+        name.style.cursor = "pointer";
+        name.addEventListener("click", function (e) {
+            if (e.target === chevron || e.target.closest('.code-explorer-chevron')) {
+                return;
+            }
+            group.classList.toggle("collapsed");
+        });
+        chevron.addEventListener("click", function (e) {
+            e.stopPropagation();
+            group.classList.toggle("collapsed");
+        });
 
         /* Adding a file from inside a folder should not require choosing that
            folder again afterwards. */
         const add = document.createElement("button");
         add.type = "button";
         add.className = "code-explorer-add";
-        add.textContent = "+";
         add.title = "Add a file to " + folder.name;
         add.setAttribute(
             "aria-label",
             "Add a file to " + folder.name
         );
+        add.appendChild(createIcon("plus", { size: 14 }));
 
         add.addEventListener("click", function () {
             openCodeFile(folder.id);
@@ -5586,6 +5593,13 @@ function codeRenderExplorer() {
                 button.classList.add("active");
                 button.setAttribute("aria-current", "true");
             }
+
+            /* File icon */
+            const fileIcon = document.createElement("span");
+            fileIcon.className = "code-explorer-file-icon";
+            fileIcon.setAttribute("aria-hidden", "true");
+            fileIcon.appendChild(createIcon("document", { size: 14 }));
+            button.appendChild(fileIcon);
 
             const name = document.createElement("span");
             name.className = "code-explorer-file-name";
@@ -7619,6 +7633,128 @@ if (codePanelSwitcher) {
 }
 
 
+/* HEIGHT MANAGEMENT */
+function updateCodeShellHeight() {
+    if (!codeShell) return;
+
+    /* Calculate available height: viewport minus header, tabbar, section header, and padding */
+    const tabbar = document.querySelector(".workspace-tabbar");
+    const header = document.querySelector(".workspace-header");
+    const sectionHeader = document.querySelector("#section-code .section-header");
+    const main = document.querySelector(".workspace-main");
+
+    if (!main) return;
+
+    const tabbarHeight = tabbar ? tabbar.offsetHeight : 0;
+    const headerHeight = header ? header.offsetHeight : 0;
+    const sectionHeaderHeight = sectionHeader ? sectionHeader.offsetHeight : 0;
+
+    /* Get main padding bottom */
+    const mainStyles = window.getComputedStyle(main);
+    const mainPaddingBottom = parseFloat(mainStyles.paddingBottom) || 0;
+
+    const availableHeight = window.innerHeight - tabbarHeight - headerHeight - sectionHeaderHeight - mainPaddingBottom - 8;
+
+    if (codeFullscreen) {
+        codeShell.style.height = "100vh";
+        codeShell.style.maxHeight = "100vh";
+    } else {
+        codeShell.style.height = Math.max(400, availableHeight) + "px";
+        codeShell.style.maxHeight = "none";
+    }
+}
+
+/* Update height on window resize */
+window.addEventListener("resize", function () {
+    if (activeSection === "code" && !codeFullscreen) {
+        updateCodeShellHeight();
+    }
+});
+
+
+/* FULLSCREEN */
+function toggleCodeFullscreen() {
+    if (!codeShell) return;
+
+    codeFullscreen = !codeFullscreen;
+
+    if (codeFullscreen) {
+        /* Enter fullscreen */
+        codeFullscreenPrevPanel = codePanel;
+        codeShell.classList.add("is-fullscreen");
+        document.body.style.overflow = "hidden";
+
+        /* Switch to editor panel for fullscreen editing */
+        if (codePanel !== "editor") {
+            setCodePanel("editor");
+        }
+
+        /* Update button icon */
+        updateFullscreenButton(true);
+
+        /* Force layout recalculation */
+        requestAnimationFrame(() => {
+            if (codeEditor) {
+                codeEditor.dispatchEvent(new Event("input"));
+            }
+        });
+    } else {
+        /* Exit fullscreen */
+        codeShell.classList.remove("is-fullscreen");
+        document.body.style.overflow = "";
+
+        /* Restore previous panel if it was different */
+        if (codeFullscreenPrevPanel && codeFullscreenPrevPanel !== codePanel) {
+            setCodePanel(codeFullscreenPrevPanel);
+        }
+
+        updateFullscreenButton(false);
+
+        /* Restore proper height */
+        updateCodeShellHeight();
+
+        /* Force layout recalculation */
+        requestAnimationFrame(() => {
+            if (codeEditor) {
+                codeEditor.dispatchEvent(new Event("input"));
+            }
+        });
+    }
+}
+
+function updateFullscreenButton(isFullscreen) {
+    if (!codeFullscreenButton) return;
+
+    const svg = codeFullscreenButton.querySelector("svg");
+
+    if (isFullscreen) {
+        codeFullscreenButton.title = "Exit fullscreen (F11)";
+        codeFullscreenButton.setAttribute("aria-label", "Exit fullscreen");
+        if (svg) {
+            svg.innerHTML = '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h3a2 2 0 0 1 2 2v3m0 10v3a2 2 0 0 1-2 2h-3M3 18h3a2 2 0 0 0 2-2v-3"></path>';
+        }
+    } else {
+        codeFullscreenButton.title = "Fullscreen (F11)";
+        codeFullscreenButton.setAttribute("aria-label", "Fullscreen");
+        if (svg) {
+            svg.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"></path>';
+        }
+    }
+}
+
+/* Handle F11 and ESC for fullscreen */
+document.addEventListener("keydown", function (event) {
+    if (event.key === "F11") {
+        event.preventDefault();
+        toggleCodeFullscreen();
+    }
+
+    if (event.key === "Escape" && codeFullscreen) {
+        toggleCodeFullscreen();
+    }
+});
+
+
 /* RENDER */
 
 function ensurePythonStarterFile() {
@@ -7696,6 +7832,11 @@ function renderCode() {
     codeRenderEditorTabs();
     codeSyncEditor();
     setCodePanel(codePanel);
+
+    /* Ensure proper height after render */
+    if (activeSection === "code" && !codeFullscreen) {
+        updateCodeShellHeight();
+    }
 }
 
 
@@ -7706,13 +7847,15 @@ function renderCode() {
  * its unsaved text into the wrong project. */
 
 function resetCodeState() {
-codeOpenFiles = [];
-codeDrafts = {};
-codeActiveKey = null;
-codeTargetFolderId = null;
-codePreviewBuilt = false;
+    codeOpenFiles = [];
+    codeDrafts = {};
+    codeActiveKey = null;
+    codeTargetFolderId = null;
+    codePreviewBuilt = false;
     codeActiveToken = null;
     codePanel = "editor";
+    codeFullscreen = false;
+    codeFullscreenPrevPanel = null;
     codeClearTerminal();
 
     if (codePreviewFrame) {
@@ -7721,6 +7864,21 @@ codePreviewBuilt = false;
 
     if (codePreviewEntry) {
         codePreviewEntry.textContent = "";
+    }
+
+    /* Exit fullscreen if active */
+    if (codeShell) {
+        codeShell.classList.remove("is-fullscreen");
+        document.body.style.overflow = "";
+        const sidebar = document.getElementById("workspaceSidebar");
+        const tabbar = document.querySelector(".workspace-tabbar");
+        const header = document.querySelector(".workspace-header");
+        const quickCreate = document.querySelector(".quick-create");
+        if (sidebar) sidebar.style.display = "";
+        if (tabbar) tabbar.style.display = "";
+        if (header) header.style.display = "";
+        if (quickCreate) quickCreate.style.display = "";
+        updateFullscreenButton(false);
     }
 }
 
@@ -7759,10 +7917,17 @@ function requestSectionChange(sectionId) {
         }).then(function (ok) {
             if (ok) {
                 codeDrafts = {};
+                if (codeFullscreen) {
+                    toggleCodeFullscreen();
+                }
                 showSection(sectionId);
             }
         });
         return;
+    }
+
+    if (activeSection === "code" && codeFullscreen) {
+        toggleCodeFullscreen();
     }
 
     showSection(sectionId);
@@ -7781,6 +7946,9 @@ function requestWorkspaceChange(workspaceId) {
     }
 
     if (sameId(workspaceId, activeWorkspaceId) || !hasUnsavedCode()) {
+        if (codeFullscreen) {
+            toggleCodeFullscreen();
+        }
         switchTo();
         return;
     }
@@ -7792,6 +7960,9 @@ function requestWorkspaceChange(workspaceId) {
     }).then(function (ok) {
         if (ok) {
             codeDrafts = {};
+            if (codeFullscreen) {
+                toggleCodeFullscreen();
+            }
             switchTo();
         }
     });
@@ -7819,9 +7990,9 @@ onCodeControl("codeSaveButton", "click", saveCodeFile);
 
 onCodeControl("codeRunButton", "click", runCode);
 
-onCodeControl("codeTerminalClearButton", "click", codeClearTerminal);
+onCodeControl("codeFullscreenButtonToolbar", "click", toggleCodeFullscreen);
 
-onCodeControl("codeTerminalInnerClear", "click", codeClearTerminal);
+onCodeControl("codeOutputClearButton", "click", codeClearTerminal);
 
 onCodeControl("codeExplorerAddPy", "click", function () {
     openCodeFile();
@@ -8066,18 +8237,6 @@ onCodeControl("codePickFilesButton", "click", function () {
     );
 
 })();
-
-onCodeControl("codeTerminalToggle", "click", function () {
-
-    const isOpen = Boolean(
-        codeTerminal &&
-        codeTerminal.classList.contains("is-open")
-    );
-
-    setCodeTerminalOpen(!isOpen);
-});
-
-onCodeControl("codeTerminalClearButton", "click", codeClearTerminal);
 
 
 /* RESOURCES */

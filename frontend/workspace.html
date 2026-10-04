@@ -214,42 +214,17 @@
 
             </div>
 
-            <div class="task-columns">
-
-                <div class="task-column">
-
-                    <div class="task-column-header">
-                        <h3>To do</h3>
-                        <span
-                            id="todoTaskCount"
-                            class="task-column-count"
-                        ></span>
-                    </div>
-
-                    <div
-                        id="todoTasks"
-                        class="task-list"
-                    ></div>
-
+            <div class="task-table-container">
+                <div class="task-table-header" role="row" aria-hidden="true">
+                    <div class="task-table-cell task-cell-name">Task</div>
+                    <div class="task-table-cell task-cell-description">Description</div>
+                    <div class="task-table-cell task-cell-status">Status</div>
                 </div>
-
-                <div class="task-column">
-
-                    <div class="task-column-header">
-                        <h3>Completed</h3>
-                        <span
-                            id="completedTaskCount"
-                            class="task-column-count"
-                        ></span>
-                    </div>
-
-                    <div
-                        id="completedTasks"
-                        class="task-list"
-                    ></div>
-
-                </div>
-
+                <div
+                    id="taskList"
+                    class="task-list"
+                    role="list"
+                ></div>
             </div>
 
             <div id="tasksEmpty"></div>
@@ -337,37 +312,10 @@
             <div class="section-header">
 
                 <div>
-                    <h2>Python Online Compiler</h2>
-                    <p id="codeSectionDesc">Write and execute Python 3 scripts in real-time with instant terminal output.</p>
+                    <h2>Code</h2>
                 </div>
 
                 <div class="code-header-actions">
-
-                    <div
-                        id="codePanelSwitcher"
-                        class="code-panel-switcher"
-                        role="group"
-                        aria-label="Code panel"
-                    >
-                        <button
-                            type="button"
-                            data-code-panel="explorer"
-                        >
-                            Files
-                        </button>
-                        <button
-                            type="button"
-                            data-code-panel="editor"
-                        >
-                            Editor
-                        </button>
-                        <button
-                            type="button"
-                            data-code-panel="terminal"
-                        >
-                            Terminal
-                        </button>
-                    </div>
 
                     <button
                         id="codeNewFileButton"
@@ -398,24 +346,12 @@
                     </button>
 
                     <button
-                        id="codeTerminalClearButton"
+                        id="codeOutputClearButton"
                         class="section-button"
                         type="button"
                         title="Clear console output"
                     >
                         Clear
-                    </button>
-
-                    <button
-                        id="codeRunButton"
-                        class="section-button section-button-primary code-run-action-btn"
-                        type="button"
-                        title="Run Python script (Ctrl+Enter)"
-                    >
-                        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" style="margin-right:5px;vertical-align:text-bottom;">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                        <span>Run &#9654;</span>
                     </button>
 
                 </div>
@@ -425,10 +361,9 @@
             <div
                 id="codeShell"
                 class="code-shell code-python-shell"
-                data-panel="editor"
             >
 
-                <!-- 1. PYTHON FILE EXPLORER -->
+                <!-- FILE EXPLORER SIDEBAR -->
                 <aside
                     id="codeExplorer"
                     class="code-explorer"
@@ -451,87 +386,121 @@
                     ></div>
                 </aside>
 
-                <!-- 2. PYTHON CODE EDITOR -->
-                <div class="code-editor-pane">
+                <!-- MAIN EDITOR AREA -->
+                <div class="code-main-area">
 
-                    <div
-                        id="codeEditorTabs"
-                        class="code-editor-tabs"
-                        role="tablist"
-                        aria-label="Open files"
-                    ></div>
-
-                    <div class="code-editor-surface">
-
-                        <div
-                            id="codeGutter"
-                            class="code-gutter"
-                            aria-hidden="true"
-                        ><code
-                            id="codeGutterLines"
-                            class="code-gutter-lines"
-                        ></code></div>
-
-                        <div class="code-editor-scroll">
-
-                            <pre
-                                class="code-highlight"
-                                aria-hidden="true"
-                            ><code
-                                id="codeHighlight"
-                                class="code-highlight-code"
-                            ></code></pre>
-
-                            <textarea
-                                id="codeEditor"
-                                class="code-editor-input"
-                                spellcheck="false"
-                                autocomplete="off"
-                                autocapitalize="off"
-                                autocorrect="off"
-                                wrap="off"
-                                aria-label="Python code editor"
-                                placeholder="# Write Python code here..."
-                            ></textarea>
-
-                        </div>
-
-                    </div>
-
-                    <div
-                        id="codeEditorEmpty"
-                        class="code-editor-empty"
-                    ></div>
-
-                </div>
-
-                <!-- 3. REAL-TIME PYTHON TERMINAL / OUTPUT CONSOLE -->
-                <div class="code-terminal-pane" id="codeTerminalPane">
-
-                    <div class="code-terminal-bar">
-                        <div class="code-terminal-heading">
-                            <span class="code-terminal-title-text">Terminal Output</span>
-                            <span id="pyEngineStatus" class="py-engine-badge">● Python 3.10</span>
-                        </div>
-
-                        <div class="code-terminal-actions">
+                    <!-- EDITOR TOOLBAR -->
+                    <div class="code-editor-toolbar" id="codeEditorToolbar">
+                        <span id="codeCurrentFilename" class="code-editor-filename">No file open</span>
+                        <div class="code-editor-toolbar-actions">
                             <button
-                                id="codeTerminalInnerClear"
-                                class="code-terminal-clear"
+                                id="codeRunButtonToolbar"
+                                class="section-button section-button-primary"
                                 type="button"
-                                title="Clear output"
+                                title="Run Python script (Ctrl+Enter)"
                             >
-                                Clear
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="margin-right:4px;vertical-align:text-bottom;">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                <span>Run</span>
+                            </button>
+                            <button
+                                id="codeFullscreenButtonToolbar"
+                                class="section-button"
+                                type="button"
+                                title="Fullscreen (F11)"
+                                aria-label="Fullscreen"
+                            >
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                                </svg>
                             </button>
                         </div>
                     </div>
 
-                    <div
-                        id="codeTerminalBody"
-                        class="code-terminal-body"
-                        role="log"
-                        aria-label="Python output"
-                    ></div>
+                    <!-- EDITOR -->
+                    <div class="code-editor-pane">
+
+                        <div
+                            id="codeEditorTabs"
+                            class="code-editor-tabs"
+                            role="tablist"
+                            aria-label="Open files"
+                        ></div>
+
+                        <div class="code-editor-surface">
+
+                            <div
+                                id="codeGutter"
+                                class="code-gutter"
+                                aria-hidden="true"
+                            ><code
+                                id="codeGutterLines"
+                                class="code-gutter-lines"
+                            ></code></div>
+
+                            <div class="code-editor-scroll">
+
+                                <pre
+                                    class="code-highlight"
+                                    aria-hidden="true"
+                                ><code
+                                    id="codeHighlight"
+                                    class="code-highlight-code"
+                                ></code></pre>
+
+                                <textarea
+                                    id="codeEditor"
+                                    class="code-editor-input"
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocapitalize="off"
+                                    autocorrect="off"
+                                    wrap="off"
+                                    aria-label="Python code editor"
+                                    placeholder="# Write Python code here..."
+                                ></textarea>
+
+                            </div>
+
+                        </div>
+
+                        <div
+                            id="codeEditorEmpty"
+                            class="code-editor-empty"
+                        ></div>
+
+                    </div>
+
+                    <!-- OUTPUT PANEL -->
+                    <div class="code-output-pane" id="codeOutputPane">
+
+                        <div class="code-output-bar">
+                            <div class="code-output-heading">
+                                <span class="code-output-title-text">Output</span>
+                                <span id="pyEngineStatus" class="py-engine-badge">● Python 3.10</span>
+                            </div>
+
+                            <div class="code-output-actions">
+                                <button
+                                    id="codeOutputClearButton"
+                                    class="code-output-clear"
+                                    type="button"
+                                    title="Clear output"
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            id="codeOutputBody"
+                            class="code-output-body"
+                            role="log"
+                            aria-label="Python output"
+                        ></div>
+
+                    </div>
 
                 </div>
 
