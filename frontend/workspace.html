@@ -8,6 +8,7 @@
     >
     <title>OneSpace Workspace</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js" defer></script>
 </head>
 
 <body>
@@ -213,42 +214,17 @@
 
             </div>
 
-            <div class="task-columns">
-
-                <div class="task-column">
-
-                    <div class="task-column-header">
-                        <h3>To do</h3>
-                        <span
-                            id="todoTaskCount"
-                            class="task-column-count"
-                        ></span>
-                    </div>
-
-                    <div
-                        id="todoTasks"
-                        class="task-list"
-                    ></div>
-
+            <div class="task-table-container">
+                <div class="task-table-header" role="row" aria-hidden="true">
+                    <div class="task-table-cell task-cell-name">Task</div>
+                    <div class="task-table-cell task-cell-description">Description</div>
+                    <div class="task-table-cell task-cell-status">Status</div>
                 </div>
-
-                <div class="task-column">
-
-                    <div class="task-column-header">
-                        <h3>Completed</h3>
-                        <span
-                            id="completedTaskCount"
-                            class="task-column-count"
-                        ></span>
-                    </div>
-
-                    <div
-                        id="completedTasks"
-                        class="task-list"
-                    ></div>
-
-                </div>
-
+                <div
+                    id="taskList"
+                    class="task-list"
+                    role="list"
+                ></div>
             </div>
 
             <div id="tasksEmpty"></div>
@@ -337,43 +313,17 @@
 
                 <div>
                     <h2>Code</h2>
-                    <p id="codeSectionDesc">Write project files and see frontend results without leaving the workspace.</p>
                 </div>
 
                 <div class="code-header-actions">
-
-                    <div
-                        id="codePanelSwitcher"
-                        class="code-panel-switcher"
-                        role="group"
-                        aria-label="Code panel"
-                    >
-                        <button
-                            type="button"
-                            data-code-panel="explorer"
-                        >
-                            Files
-                        </button>
-                        <button
-                            type="button"
-                            data-code-panel="editor"
-                        >
-                            Editor
-                        </button>
-                        <button
-                            type="button"
-                            data-code-panel="preview"
-                        >
-                            Preview
-                        </button>
-                    </div>
 
                     <button
                         id="codeNewFileButton"
                         class="section-button"
                         type="button"
+                        title="New Python file (.py)"
                     >
-                        + File
+                        + .py File
                     </button>
 
                     <button
@@ -381,66 +331,53 @@
                         class="section-button"
                         type="button"
                         aria-haspopup="dialog"
-                        title="Open a file from this workspace or your computer"
+                        title="Open a Python file"
                     >
                         Open &#9662;
-                    </button>
-
-                    <button
-                        id="codeNewFolderButton"
-                        class="section-button"
-                        type="button"
-                    >
-                        + Folder
                     </button>
 
                     <button
                         id="codeSaveButton"
                         class="section-button"
                         type="button"
+                        title="Save changes (Ctrl+S)"
                     >
                         Save
                     </button>
 
                     <button
-                        id="codePreviewButton"
+                        id="codeOutputClearButton"
                         class="section-button"
                         type="button"
+                        title="Clear console output"
                     >
-                        Preview
-                    </button>
-
-                    <button
-                        id="codeRunButton"
-                        class="section-button section-button-primary"
-                        type="button"
-                    >
-                        Run &#9654;
+                        Clear
                     </button>
 
                 </div>
 
             </div>
 
-            <p class="section-note">
-                OneSpace runs HTML, CSS and JavaScript in the browser
-                preview. Other languages need an execution backend,
-                which is not connected yet.
-            </p>
-
             <div
                 id="codeShell"
-                class="code-shell"
-                data-panel="editor"
+                class="code-shell code-python-shell"
             >
 
+                <!-- FILE EXPLORER SIDEBAR -->
                 <aside
                     id="codeExplorer"
                     class="code-explorer"
-                    aria-label="Project files"
+                    aria-label="Python files"
                 >
                     <div class="code-explorer-bar">
-                        <h3>Project</h3>
+                        <h3>Python Files (.py)</h3>
+                        <button
+                            id="codeExplorerAddPy"
+                            class="code-explorer-quick-add"
+                            type="button"
+                            title="New Python file"
+                            aria-label="New Python file"
+                        >+</button>
                     </div>
 
                     <div
@@ -449,138 +386,123 @@
                     ></div>
                 </aside>
 
-                <div class="code-editor-pane">
+                <!-- MAIN EDITOR AREA -->
+                <div class="code-main-area">
 
-                    <div
-                        id="codeEditorTabs"
-                        class="code-editor-tabs"
-                        role="tablist"
-                        aria-label="Open files"
-                    ></div>
+                    <!-- EDITOR TOOLBAR -->
+                    <div class="code-editor-toolbar" id="codeEditorToolbar">
+                        <span id="codeCurrentFilename" class="code-editor-filename">No file open</span>
+                        <div class="code-editor-toolbar-actions">
+                            <button
+                                id="codeRunButtonToolbar"
+                                class="section-button section-button-primary"
+                                type="button"
+                                title="Run Python script (Ctrl+Enter)"
+                            >
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="margin-right:4px;vertical-align:text-bottom;">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                <span>Run</span>
+                            </button>
+                            <button
+                                id="codeFullscreenButtonToolbar"
+                                class="section-button"
+                                type="button"
+                                title="Fullscreen (F11)"
+                                aria-label="Fullscreen"
+                            >
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
-                    <div class="code-editor-surface">
+                    <!-- EDITOR -->
+                    <div class="code-editor-pane">
 
                         <div
-                            id="codeGutter"
-                            class="code-gutter"
-                            aria-hidden="true"
-                        ><code
-                            id="codeGutterLines"
-                            class="code-gutter-lines"
-                        ></code></div>
+                            id="codeEditorTabs"
+                            class="code-editor-tabs"
+                            role="tablist"
+                            aria-label="Open files"
+                        ></div>
 
-                        <div class="code-editor-scroll">
+                        <div class="code-editor-surface">
 
-                            <pre
-                                class="code-highlight"
+                            <div
+                                id="codeGutter"
+                                class="code-gutter"
                                 aria-hidden="true"
                             ><code
-                                id="codeHighlight"
-                                class="code-highlight-code"
-                            ></code></pre>
+                                id="codeGutterLines"
+                                class="code-gutter-lines"
+                            ></code></div>
 
-                            <textarea
-                                id="codeEditor"
-                                class="code-editor-input"
-                                spellcheck="false"
-                                autocomplete="off"
-                                autocapitalize="off"
-                                autocorrect="off"
-                                wrap="off"
-                                aria-label="Code editor"
-                            ></textarea>
+                            <div class="code-editor-scroll">
 
-                        </div>
+                                <pre
+                                    class="code-highlight"
+                                    aria-hidden="true"
+                                ><code
+                                    id="codeHighlight"
+                                    class="code-highlight-code"
+                                ></code></pre>
 
-                    </div>
+                                <textarea
+                                    id="codeEditor"
+                                    class="code-editor-input"
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocapitalize="off"
+                                    autocorrect="off"
+                                    wrap="off"
+                                    aria-label="Python code editor"
+                                    placeholder="# Write Python code here..."
+                                ></textarea>
 
-                    <div
-                        id="codeEditorEmpty"
-                        class="code-editor-empty"
-                    ></div>
-
-                </div>
-
-                <div class="code-preview-pane">
-
-                    <div class="code-preview-bar">
-
-                        <h3>Preview</h3>
-
-                        <div class="code-preview-bar-actions">
-
-                            <span
-                                id="codePreviewEntry"
-                                class="code-preview-entry"
-                            ></span>
-
-                            <button
-                                id="codePreviewRefreshButton"
-                                type="button"
-                            >
-                                Refresh
-                            </button>
+                            </div>
 
                         </div>
 
+                        <div
+                            id="codeEditorEmpty"
+                            class="code-editor-empty"
+                        ></div>
+
                     </div>
 
-                    <iframe
-                        id="codePreviewFrame"
-                        class="code-preview-frame"
-                        title="Frontend preview"
-                        sandbox="allow-scripts"
-                        referrerpolicy="no-referrer"
-                    ></iframe>
+                    <!-- OUTPUT PANEL -->
+                    <div class="code-output-pane" id="codeOutputPane">
 
-                    <div
-                        id="codePreviewPlaceholder"
-                        class="code-preview-placeholder"
-                    ></div>
+                        <div class="code-output-bar">
+                            <div class="code-output-heading">
+                                <span class="code-output-title-text">Output</span>
+                                <span id="pyEngineStatus" class="py-engine-badge">● Python 3.10</span>
+                            </div>
 
-                </div>
+                            <div class="code-output-actions">
+                                <button
+                                    id="codeOutputClearButton"
+                                    class="code-output-clear"
+                                    type="button"
+                                    title="Clear output"
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
 
-            </div>
+                        <div
+                            id="codeOutputBody"
+                            class="code-output-body"
+                            role="log"
+                            aria-label="Python output"
+                        ></div>
 
-            <div
-                id="codeTerminal"
-                class="code-terminal is-open"
-            >
-
-                <div class="code-terminal-bar">
-
-                    <button
-                        id="codeTerminalToggle"
-                        class="code-terminal-toggle"
-                        type="button"
-                        aria-expanded="true"
-                        aria-controls="codeTerminalBody"
-                    >
-                        <span
-                            class="code-terminal-caret"
-                            aria-hidden="true"
-                        >
-                            &#9662;
-                        </span>
-                        Output
-                    </button>
-
-                    <button
-                        id="codeTerminalClearButton"
-                        class="code-terminal-clear"
-                        type="button"
-                    >
-                        Clear
-                    </button>
+                    </div>
 
                 </div>
-
-                <div
-                    id="codeTerminalBody"
-                    class="code-terminal-body"
-                    role="log"
-                    aria-label="Code output"
-                ></div>
 
             </div>
 
@@ -1247,6 +1169,7 @@
                 id="codeLocalInput"
                 class="visually-hidden"
                 type="file"
+                accept=".py"
                 multiple
                 tabindex="-1"
                 aria-hidden="true"
@@ -1312,52 +1235,103 @@
     aria-labelledby="codeFilePreviewName"
 >
 
-    <div class="modal-card modal-card-wide">
+    <div class="modal-card modal-card-wide file-preview-modal-card">
 
-        <button
-            type="button"
-            class="modal-close"
-            data-close="codeFilePreviewModal"
-            aria-label="Close"
-        >
-        </button>
+        <div class="file-preview-header">
+            <div class="file-preview-title-group">
+                <h2 id="codeFilePreviewName">File</h2>
+                <p
+                    id="codeFilePreviewMeta"
+                    class="code-file-preview-meta"
+                >
+                </p>
+            </div>
 
-        <h2 id="codeFilePreviewName">File</h2>
+            <!-- CORNER TOOLS: ZOOM, DOWNLOAD & CLOSE -->
+            <div class="file-preview-corner-tools">
+                <!-- ZOOM CONTROLS (FOR IMAGES/FILES) -->
+                <div id="filePreviewZoomBar" class="file-preview-zoom-bar" role="toolbar" aria-label="Zoom controls">
+                    <button
+                        id="filePreviewZoomOut"
+                        class="zoom-btn"
+                        type="button"
+                        title="Zoom Out"
+                        aria-label="Zoom Out"
+                    >
+                        &minus;
+                    </button>
+                    <span
+                        id="filePreviewZoomLevel"
+                        class="zoom-level-badge"
+                    >100%</span>
+                    <button
+                        id="filePreviewZoomIn"
+                        class="zoom-btn"
+                        type="button"
+                        title="Zoom In"
+                        aria-label="Zoom In"
+                    >
+                        +
+                    </button>
+                    <button
+                        id="filePreviewZoomReset"
+                        class="zoom-reset-btn"
+                        type="button"
+                        title="Reset Zoom"
+                    >
+                        Reset
+                    </button>
+                </div>
 
-        <p
-            id="codeFilePreviewMeta"
-            class="code-file-preview-meta"
-        >
-        </p>
+                <!-- DOWNLOAD BUTTON IN CORNER -->
+                <button
+                    id="filePreviewDownload"
+                    class="file-preview-download-btn"
+                    type="button"
+                    title="Download file"
+                >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Download</span>
+                </button>
 
-        <pre
+                <!-- CLOSE BUTTON IN CORNER -->
+                <button
+                    type="button"
+                    class="file-preview-close-btn"
+                    data-close="codeFilePreviewModal"
+                    aria-label="Close"
+                    title="Close"
+                >
+                    &times;
+                </button>
+            </div>
+        </div>
+
+        <div
             id="codeFilePreviewBody"
             class="code-file-preview-body"
             tabindex="0"
             aria-label="File contents"
-        ><code
-            id="codeFilePreviewCode"
-            class="code-file-preview-code"
-        ></code></pre>
+        >
+            <div id="filePreviewImageWrap" class="file-preview-image-wrap" hidden>
+                <img
+                    id="filePreviewImage"
+                    class="file-preview-image"
+                    alt="File preview"
+                >
+            </div>
 
-        <div class="form-actions">
-
-            <button
-                id="codeFilePreviewCopy"
-                class="modal-cancel"
-                type="button"
-            >
-                Copy
-            </button>
-
-            <button
-                type="button"
-                class="modal-submit"
-                data-close="codeFilePreviewModal"
-            >
-                Close
-            </button>
-
+            <pre
+                id="codeFilePreviewPre"
+                class="file-preview-pre"
+            ><code
+                id="codeFilePreviewCode"
+                class="code-file-preview-code"
+            ></code></pre>
         </div>
 
     </div>
@@ -1385,7 +1359,7 @@
         >
         </button>
 
-        <h2 id="codeFileModalTitle">New File</h2>
+        <h2 id="codeFileModalTitle">New Python File</h2>
 
         <form id="codeFileForm" novalidate>
 
@@ -1398,7 +1372,7 @@
             <input
                 id="codeFileName"
                 type="text"
-                placeholder="index.html"
+                placeholder="main.py"
                 autocomplete="off"
                 aria-describedby="codeFileError"
             >
@@ -1407,25 +1381,24 @@
                 id="codeFileHelp"
                 class="field-help"
             >
-                Include the extension. The extension decides how
-                the file is highlighted and whether it can be
-                previewed.
+                Python script file (.py). If you omit the extension, .py will be added automatically.
             </p>
 
             <div class="code-file-upload">
-                <label for="codeFileUpload">Or choose a file from your device</label>
+                <label for="codeFileUpload">Or choose a Python file from your device (.py)</label>
                 <div class="code-file-upload-target">
                     <button
                         id="codeFilePickButton"
                         class="quiet-button"
                         type="button"
                     >
-                        Choose file&#8230;
+                        Choose .py file&#8230;
                     </button>
                     <input
                         id="codeFileUpload"
                         class="visually-hidden"
                         type="file"
+                        accept=".py"
                         tabindex="-1"
                         aria-hidden="true"
                     >

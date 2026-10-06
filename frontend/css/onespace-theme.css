@@ -1,0 +1,1035 @@
+/* ==========================================================================
+   ONESPACE — NCERT HUB THEME (onespace-theme.css)
+   ==========================================================================
+   A modern, clean aesthetic featuring:
+   - Primary Royal Blue accent (#2563eb)
+   - Rounded corners & soft white card surfaces (#ffffff)
+   - Inter typography with system-ui fallbacks
+   - Pastel icon circles (indigo for Tasks, amber for Files, emerald for Notes, violet for Resources)
+   - Light-blue ground (#f4f8fe / #eff6ff)
+   - Deep navy headings (#0f172a / #1e293b)
+   - Clean outline / soft secondary buttons for Code IDE (no black buttons)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    /* TYPOGRAPHY */
+    --font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font: var(--font-ui);
+    --font-mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Consolas, Menlo, monospace;
+
+    /* GROUND & SURFACES */
+    --bg: #f4f8fe;
+    --bg-subtle: #eff6ff;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --surface-3: #f1f5f9;
+    --surface-pill: #e0edff;
+    --rail: #ffffff;
+
+    /* INKS */
+    --text-strong: #0f172a;
+    --text-navy: #0f172a;
+    --text: #334155;
+    --text-2: #475569;
+    --text-3: #64748b;
+    --text-4: #94a3b8;
+
+    /* BORDERS & DIVIDERS */
+    --line: #e2e8f0;
+    --line-2: #cbd5e1;
+    --line-3: #94a3b8;
+    --line-subtle: #f1f5f9;
+
+    /* PRIMARY BLUE ACCENTS */
+    --accent: #2563eb;
+    --accent-2: #1d4ed8;
+    --accent-3: #1e40af;
+    --accent-soft: #eff6ff;
+    --accent-soft-2: #e0edff;
+    --accent-line: #bfdbfe;
+
+    /* DESTRUCTIVE */
+    --danger: #ef4444;
+    --danger-2: #dc2626;
+    --danger-soft: #fef2f2;
+    --danger-line: #fecaca;
+
+    /* PASTEL ICON CIRCLE PALETTE */
+    --pastel-tasks-bg: #e0e7ff;
+    --pastel-tasks-fg: #2563eb;
+    --pastel-files-bg: #fef3c7;
+    --pastel-files-fg: #d97706;
+    --pastel-notes-bg: #d1fae5;
+    --pastel-notes-fg: #059669;
+    --pastel-resources-bg: #ede9fe;
+    --pastel-resources-fg: #7c3aed;
+    --pastel-overview-bg: #e0f2fe;
+    --pastel-overview-fg: #0284c7;
+    --pastel-code-bg: #dbeafe;
+    --pastel-code-fg: #1d4ed8;
+
+    /* ROUNDING */
+    --r-xs: 6px;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 20px;
+    --r-full: 9999px;
+
+    /* SHADOWS */
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.08);
+    --shadow-float: 0 8px 24px rgba(37, 99, 235, 0.28);
+}
+
+/* ==========================================================================
+   GLOBAL BASE
+   ========================================================================== */
+
+html, body {
+    background-color: var(--bg) !important;
+    color: var(--text) !important;
+    font-family: var(--font-ui) !important;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-ui) !important;
+    color: var(--text-navy) !important;
+    letter-spacing: -0.02em !important;
+}
+
+/* ==========================================================================
+   BUTTONS & INPUTS
+   ========================================================================== */
+
+.primary-button,
+.modal-submit {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--accent) !important;
+    border-radius: var(--r-md) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 600 !important;
+    transition: all 0.18s ease-in-out !important;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+}
+
+.primary-button:hover,
+.modal-submit:hover {
+    background: var(--accent-2) !important;
+    border-color: var(--accent-2) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+}
+
+.modal-cancel,
+.quiet-button {
+    background: var(--surface) !important;
+    color: var(--text-2) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-md) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 500 !important;
+    transition: all 0.18s ease-in-out !important;
+}
+
+.modal-cancel:hover,
+.quiet-button:hover {
+    background: var(--surface-2) !important;
+    color: var(--text-strong) !important;
+    border-color: var(--line-2) !important;
+}
+
+.modal-submit-danger {
+    background: var(--danger) !important;
+    border-color: var(--danger) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25) !important;
+}
+
+.modal-submit-danger:hover {
+    background: var(--danger-2) !important;
+    border-color: var(--danger-2) !important;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea,
+select {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-sm) !important;
+    color: var(--text-strong) !important;
+    font-family: var(--font-ui) !important;
+    transition: all 0.15s ease-in-out !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+/* ==========================================================================
+   AUTH & WELCOME PAGES
+   ========================================================================== */
+
+.auth-page,
+.welcome-page {
+    background: var(--bg) !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.auth-card,
+.welcome-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-lg) !important;
+    padding: 40px !important;
+    max-width: 440px !important;
+    width: 100% !important;
+}
+
+.auth-brand h1,
+.welcome-logo {
+    color: var(--accent) !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.03em !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.auth-card h2,
+#welcomeTitle {
+    color: var(--text-navy) !important;
+    font-size: 22px !important;
+    font-weight: 600 !important;
+    margin-top: 16px !important;
+    margin-bottom: 20px !important;
+}
+
+/* ==========================================================================
+   DASHBOARD
+   ========================================================================== */
+
+/* Topbar: crisp white */
+.home-topbar {
+    background: var(--surface) !important;
+    border-bottom: 1px solid var(--line) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 14px 28px !important;
+}
+
+.home-brand {
+    font-family: var(--font-ui) !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    color: var(--text-navy) !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.home-brand-mark {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: var(--r-sm) !important;
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--accent) !important;
+    display: inline-grid;
+    place-items: center;
+}
+
+.home-user {
+    background: var(--surface-pill) !important;
+    color: var(--accent-2) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 5px 14px !important;
+    border-radius: var(--r-full) !important;
+    border: 1px solid var(--accent-line) !important;
+}
+
+/* Hero Greeting: Light-blue hero banner */
+.home-intro {
+    background: linear-gradient(135deg, #e8f2fe 0%, #f0f6ff 100%) !important;
+    border: 1px solid var(--accent-line) !important;
+    border-radius: var(--r-xl) !important;
+    padding: 32px 36px !important;
+    margin-bottom: 32px !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.home-kicker {
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+    font-size: 12.5px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    margin-bottom: 6px !important;
+}
+
+#welcomeMessage {
+    color: var(--text-navy) !important;
+    font-size: 30px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.03em !important;
+    margin-bottom: 6px !important;
+}
+
+.home-sub {
+    color: var(--text-2) !important;
+    font-size: 15px !important;
+}
+
+/* Workspace Card Grid */
+.workspace-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+    gap: 20px !important;
+}
+
+.workspace-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.workspace-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-md) !important;
+    border-color: var(--accent-line) !important;
+}
+
+.workspace-card-featured {
+    border-color: var(--accent-line) !important;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.07) !important;
+}
+
+.workspace-card-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--accent) !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    display: grid !important;
+    place-items: center !important;
+}
+
+.workspace-card-name {
+    color: var(--text-navy) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 17px !important;
+    font-weight: 600 !important;
+}
+
+.workspace-card-description {
+    color: var(--text-3) !important;
+    font-size: 13.5px !important;
+}
+
+.workspace-card-meta {
+    color: var(--text-3) !important;
+    font-size: 12.5px !important;
+}
+
+.workspace-card-kicker {
+    color: var(--accent) !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+}
+
+.workspace-card-step {
+    background: var(--accent-soft) !important;
+    color: var(--accent-2) !important;
+    border-radius: var(--r-full) !important;
+    border: 1px solid var(--accent-line) !important;
+    font-weight: 500 !important;
+}
+
+.workspace-card-delete {
+    border-radius: 50% !important;
+    transition: all 0.15s ease !important;
+}
+
+.workspace-card-delete:hover {
+    background: var(--danger-soft) !important;
+    color: var(--danger) !important;
+}
+
+/* Empty State Card */
+.home-empty {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 56px 36px !important;
+    text-align: center;
+}
+
+.home-empty-mark {
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 50% !important;
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--accent) !important;
+    display: grid !important;
+    place-items: center !important;
+    margin: 0 auto 18px !important;
+}
+
+.home-empty h2 {
+    font-size: 22px !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+}
+
+.home-empty p {
+    color: var(--text-3) !important;
+    max-width: 44ch;
+    margin: 0 auto 20px !important;
+}
+
+.home-create {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    box-shadow: var(--shadow-float) !important;
+    border: 0 !important;
+    transition: transform 0.2s ease, background-color 0.15s ease !important;
+}
+
+.home-create:hover {
+    background: var(--accent-2) !important;
+    transform: scale(1.06) !important;
+}
+
+/* ==========================================================================
+   WORKSPACE SHELL
+   ========================================================================== */
+
+.workspace-app {
+    background: var(--bg) !important;
+}
+
+/* Sidebar: Crisp white with border */
+.workspace-sidebar {
+    background: var(--surface) !important;
+    border-right: 1px solid var(--line) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.workspace-brand-word {
+    color: var(--text-navy) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 700 !important;
+    font-size: 19px !important;
+}
+
+.workspace-brand-mark {
+    color: var(--accent) !important;
+    background: var(--pastel-tasks-bg) !important;
+    border-radius: var(--r-sm) !important;
+    padding: 5px;
+    display: grid;
+    place-items: center;
+}
+
+.current-workspace {
+    background: var(--bg-subtle) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-md) !important;
+    padding: 10px 14px !important;
+}
+
+#activeWorkspaceName {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+}
+
+/* Navigation items & Active Soft-Blue Pill */
+.sidebar-item {
+    border-radius: var(--r-full) !important;
+    color: var(--text-2) !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    padding: 10px 16px !important;
+    margin-bottom: 3px !important;
+    transition: all 0.15s ease-in-out !important;
+}
+
+.sidebar-item:hover {
+    background: var(--surface-3) !important;
+    color: var(--text-strong) !important;
+}
+
+/* Soft-Blue Active Pill */
+.sidebar-item.active {
+    background: var(--surface-pill) !important;
+    color: var(--accent-2) !important;
+    font-weight: 600 !important;
+    box-shadow: inset 0 0 0 1px var(--accent-line) !important;
+}
+
+.sidebar-item.active .sidebar-item-mark {
+    color: var(--accent) !important;
+}
+
+/* Pastel Icon Circles for Sidebar Items */
+.sidebar-item[data-section="overview"] .sidebar-item-mark {
+    color: var(--pastel-overview-fg) !important;
+}
+
+.sidebar-item[data-section="tasks"] .sidebar-item-mark {
+    color: var(--pastel-tasks-fg) !important;
+}
+
+.sidebar-item[data-section="files"] .sidebar-item-mark {
+    color: var(--pastel-files-fg) !important;
+}
+
+.sidebar-item[data-section="notes"] .sidebar-item-mark {
+    color: var(--pastel-notes-fg) !important;
+}
+
+.sidebar-item[data-section="resources"] .sidebar-item-mark {
+    color: var(--pastel-resources-fg) !important;
+}
+
+.sidebar-item[data-section="code"] .sidebar-item-mark {
+    color: var(--pastel-code-fg) !important;
+}
+
+/* Workspace Tab Bar */
+.workspace-tabbar {
+    background: var(--surface) !important;
+    border-bottom: 1px solid var(--line) !important;
+}
+
+.workspace-tab {
+    background: transparent !important;
+    border: 0 !important;
+    color: var(--text-3) !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 500 !important;
+    border-radius: var(--r-sm) var(--r-sm) 0 0 !important;
+}
+
+.workspace-tab.active {
+    background: var(--bg-subtle) !important;
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+    border-bottom: 2px solid var(--accent) !important;
+}
+
+/* Workspace Header & Count Pills */
+.workspace-header {
+    border-bottom: 1px solid var(--line) !important;
+    padding-bottom: 18px !important;
+    margin-bottom: 24px !important;
+}
+
+#workspaceTitle {
+    color: var(--text-navy) !important;
+    font-family: var(--font-ui) !important;
+    font-size: 26px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+}
+
+#workspaceDescription {
+    color: var(--text-3) !important;
+    font-size: 14.5px !important;
+    margin-top: 4px !important;
+}
+
+/* Header count pill */
+.workspace-header-meta-item {
+    background: var(--surface-pill) !important;
+    color: var(--accent-2) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 5px 14px !important;
+    border-radius: var(--r-full) !important;
+    border: 1px solid var(--accent-line) !important;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Floating Action Button (+) */
+.quick-create-button {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    width: 52px !important;
+    height: 52px !important;
+    box-shadow: var(--shadow-float) !important;
+    border: 0 !important;
+    transition: transform 0.2s ease, background-color 0.15s ease !important;
+}
+
+.quick-create-button:hover {
+    background: var(--accent-2) !important;
+    transform: scale(1.06) !important;
+}
+
+/* White Popup Menu */
+.quick-create-menu {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-lg) !important;
+    box-shadow: var(--shadow-lg) !important;
+    padding: 10px !important;
+    min-width: 220px !important;
+}
+
+.quick-create-menu button {
+    border-radius: var(--r-md) !important;
+    padding: 10px 14px !important;
+    color: var(--text-strong) !important;
+    font-weight: 500 !important;
+    transition: background-color 0.15s ease !important;
+}
+
+.quick-create-menu button:hover {
+    background: var(--bg-subtle) !important;
+}
+
+/* Pastel Icon Circles in Quick Menu */
+.quick-create-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    display: grid !important;
+    place-items: center !important;
+}
+
+[data-icon="task"] .quick-create-icon,
+.quick-create-icon[data-icon="task"] {
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--pastel-tasks-fg) !important;
+}
+
+[data-icon="note"] .quick-create-icon,
+.quick-create-icon[data-icon="note"] {
+    background: var(--pastel-notes-bg) !important;
+    color: var(--pastel-notes-fg) !important;
+}
+
+[data-icon="folder"] .quick-create-icon,
+[data-icon="file"] .quick-create-icon,
+.quick-create-icon[data-icon="folder"],
+.quick-create-icon[data-icon="file"] {
+    background: var(--pastel-files-bg) !important;
+    color: var(--pastel-files-fg) !important;
+}
+
+[data-icon="resources"] .quick-create-icon,
+.quick-create-icon[data-icon="resources"] {
+    background: var(--pastel-resources-bg) !important;
+    color: var(--pastel-resources-fg) !important;
+}
+
+/* ==========================================================================
+   MODULES (TASKS, FILES, NOTES, RESOURCES)
+   Unified layout, soft white cards, pastel icon colors
+   ========================================================================== */
+
+/* Shared Empty State Across All Sections */
+.section-empty {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 50px 32px !important;
+    text-align: center;
+}
+
+.section-empty-mark {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    display: grid !important;
+    place-items: center !important;
+    margin: 0 auto 16px !important;
+}
+
+/* Pastel Icon Empty State Tints */
+#section-tasks .section-empty-mark {
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--pastel-tasks-fg) !important;
+}
+
+#section-files .section-empty-mark {
+    background: var(--pastel-files-bg) !important;
+    color: var(--pastel-files-fg) !important;
+}
+
+#section-notes .section-empty-mark {
+    background: var(--pastel-notes-bg) !important;
+    color: var(--pastel-notes-fg) !important;
+}
+
+#section-resources .section-empty-mark {
+    background: var(--pastel-resources-bg) !important;
+    color: var(--pastel-resources-fg) !important;
+}
+
+.section-empty h3 {
+    color: var(--text-navy) !important;
+    font-size: 19px !important;
+    font-weight: 600 !important;
+    margin-bottom: 6px !important;
+}
+
+.section-empty p {
+    color: var(--text-3) !important;
+    font-size: 14px !important;
+}
+
+.section-empty-hint {
+    color: var(--accent) !important;
+    font-weight: 500 !important;
+    margin-top: 10px !important;
+}
+
+/* 1. TASKS */
+.task-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.task-column {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 20px !important;
+}
+
+.task-column-header h3 {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: var(--text-navy) !important;
+}
+
+.task-column-count {
+    background: var(--pastel-tasks-bg) !important;
+    color: var(--pastel-tasks-fg) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    padding: 3px 9px !important;
+    border-radius: var(--r-full) !important;
+}
+
+.task-item {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-md) !important;
+    padding: 14px !important;
+    margin-bottom: 10px !important;
+    transition: all 0.15s ease !important;
+}
+
+.task-item:hover {
+    background: var(--surface) !important;
+    border-color: var(--accent-line) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.task-check {
+    border: 2px solid var(--line-2) !important;
+    border-radius: 50% !important;
+    width: 22px !important;
+    height: 22px !important;
+    transition: all 0.15s ease !important;
+}
+
+.task-item.is-complete .task-check {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: #ffffff !important;
+}
+
+.task-item-title {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+    font-size: 14.5px !important;
+}
+
+/* 2. FILES (Fix doubled divider & add pastel amber icons) */
+.files-breadcrumb {
+    border-bottom: none !important;
+    margin-bottom: 18px !important;
+    padding-bottom: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.files-crumb {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-md) !important;
+    color: var(--text) !important;
+    font-weight: 500 !important;
+    font-size: 13.5px !important;
+    padding: 6px 14px !important;
+}
+
+.folders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.folder-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 16px 20px !important;
+    transition: all 0.18s ease !important;
+}
+
+.folder-card:hover {
+    border-color: var(--pastel-files-fg) !important;
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-1px) !important;
+}
+
+.folder-card-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    background: var(--pastel-files-bg) !important;
+    color: var(--pastel-files-fg) !important;
+    display: grid !important;
+    place-items: center !important;
+}
+
+.folder-card-name {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+}
+
+.file-row {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-md) !important;
+    padding: 12px 18px !important;
+    margin-bottom: 8px !important;
+    transition: all 0.15s ease !important;
+}
+
+.file-row:hover {
+    background: var(--surface-2) !important;
+    border-color: var(--pastel-files-fg) !important;
+}
+
+.file-badge {
+    border-radius: var(--r-full) !important;
+    background: var(--pastel-files-bg) !important;
+    color: var(--pastel-files-fg) !important;
+    border: 1px solid #fde68a !important;
+    padding: 3px 8px !important;
+}
+
+/* 3. NOTES */
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.note-card {
+    border-radius: var(--r-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    border: 1px solid var(--line) !important;
+    padding: 20px !important;
+    transition: all 0.18s ease !important;
+}
+
+.note-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.note-card-title {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+}
+
+.note-delete {
+    border-radius: 50% !important;
+    width: 28px !important;
+    height: 28px !important;
+}
+
+/* 4. RESOURCES */
+.resources-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.resource-row {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-lg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 16px 20px !important;
+    transition: all 0.18s ease !important;
+}
+
+.resource-row:hover {
+    border-color: var(--pastel-resources-fg) !important;
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-1px) !important;
+}
+
+.resource-mark {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    background: var(--pastel-resources-bg) !important;
+    color: var(--pastel-resources-fg) !important;
+    display: grid !important;
+    place-items: center !important;
+    font-weight: 700 !important;
+}
+
+.resource-row-title a,
+.resource-row-name {
+    color: var(--text-navy) !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+}
+
+/* 5. OVERVIEW SECTION */
+.overview-continue {
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%) !important;
+    border: 1px solid var(--accent-line) !important;
+    border-radius: var(--r-xl) !important;
+    padding: 24px 28px !important;
+    margin-bottom: 24px !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.overview-continue-kicker {
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+    font-size: 12.5px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.overview-continue-label {
+    color: var(--text-navy) !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+}
+
+.overview-continue-go {
+    background: var(--surface) !important;
+    border: 1px solid var(--accent-line) !important;
+    color: var(--accent-2) !important;
+    border-radius: var(--r-md) !important;
+    padding: 8px 16px !important;
+    font-weight: 600 !important;
+    transition: all 0.15s ease !important;
+}
+
+.overview-continue-go:hover {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border-color: var(--accent) !important;
+}
+
+.activity-heading {
+    color: var(--text-navy) !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    margin-bottom: 14px !important;
+}
+
+.activity-row {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-md) !important;
+    padding: 12px 16px !important;
+    margin-bottom: 8px !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.15s ease !important;
+}
+
+.activity-row:hover {
+    background: var(--surface-2) !important;
+    border-color: var(--line-2) !important;
+}
+
+/* Activity Marks Pastel Dots */
+.activity-row[data-type="task"] .activity-mark {
+    background: var(--pastel-tasks-fg) !important;
+    box-shadow: 0 0 0 3px var(--pastel-tasks-bg) !important;
+}
+
+.activity-row[data-type="note"] .activity-mark {
+    background: var(--pastel-notes-fg) !important;
+    box-shadow: 0 0 0 3px var(--pastel-notes-bg) !important;
+}
+
+.activity-row[data-type="folder"] .activity-mark,
+.activity-row[data-type="file"] .activity-mark {
+    background: var(--pastel-files-fg) !important;
+    box-shadow: 0 0 0 3px var(--pastel-files-bg) !important;
+}
+
+.activity-row[data-type="resource"] .activity-mark {
+    background: var(--pastel-resources-fg) !important;
+    box-shadow: 0 0 0 3px var(--pastel-resources-bg) !important;
+}
+
+/* ==========================================================================
+   MODALS
+   ========================================================================== */
+
+.modal-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.modal-card h2 {
+    color: var(--text-navy) !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+}

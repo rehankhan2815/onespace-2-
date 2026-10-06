@@ -331,36 +331,30 @@ function cleanText(value) {
 }
 
 
-function isValidHttpUrl(value) {
-
-    const candidate = cleanText(value);
-
-    if (!candidate) {
-        return false;
+function normalizeUrl(value) {
+    let str = cleanText(value);
+    if (!str) return "";
+    if (!/^https?:\/\//i.test(str)) {
+        str = "https://" + str;
     }
+    return str;
+}
 
+function isValidHttpUrl(value) {
+    const candidate = normalizeUrl(value);
+    if (!candidate) return false;
     let parsed = null;
-
     try {
         parsed = new URL(candidate);
     } catch (error) {
         return false;
     }
-
-    if (
-        parsed.protocol !== "http:" &&
-        parsed.protocol !== "https:"
-    ) {
-        return false;
-    }
-
-    return Boolean(parsed.hostname);
+    return (parsed.protocol === "http:" || parsed.protocol === "https:") && Boolean(parsed.hostname);
 }
 
-
 function safeHref(value) {
-
-    return isValidHttpUrl(value) ? cleanText(value) : null;
+    const candidate = normalizeUrl(value);
+    return isValidHttpUrl(candidate) ? candidate : null;
 }
 
 
@@ -2124,6 +2118,12 @@ function showSection(section, isSilent) {
     );
 
 
+    /* Update code shell height when Code section becomes active */
+    if (section === "code") {
+        updateCodeShellHeight();
+    }
+
+
     let activeLabel = section;
 
     document
@@ -2670,6 +2670,17 @@ function closeModal(id) {
         setFieldError(pair[0], pair[1], "");
     });
 
+    if (id === "taskModal") {
+        const taskForm = document.getElementById("taskForm");
+        const taskModalTitle = document.getElementById("taskModalTitle");
+        const taskSubmit = taskForm.querySelector(".modal-submit");
+
+        delete taskForm.dataset.editingTaskId;
+        taskForm.reset();
+        taskModalTitle.textContent = "Create Task";
+        taskSubmit.textContent = "Create Task";
+    }
+
     const trigger = modalTriggers[id];
 
     delete modalTriggers[id];
@@ -3129,6 +3140,26 @@ taskForm.addEventListener(
             return;
         }
 
+        const editingTaskId = taskForm.dataset.editingTaskId;
+
+        if (editingTaskId) {
+            const task = currentWorkspace.tasks.find(function (t) {
+                return String(t.id) === editingTaskId;
+            });
+
+            if (task) {
+                task.name = values.name;
+                task.description = values.description;
+            }
+
+            delete taskForm.dataset.editingTaskId;
+            closeModal("taskModal");
+            commitChanges({
+                message: "Task updated."
+            });
+            return;
+        }
+
         const task = {
 
             id: Date.now(),
@@ -3171,20 +3202,67 @@ function createTaskListEmpty(message) {
 
 function createTaskItem(task) {
 
-    const item =
+    const row =
         document.createElement("div");
 
-    item.className = "task-item";
-
-    item.dataset.id = String(task.id);
+    row.className = "task-row";
+    row.setAttribute("role", "listitem");
+    row.dataset.id = String(task.id);
 
     const isComplete =
         task.status === "completed";
 
     if (isComplete) {
-        item.classList.add("is-complete");
+        row.classList.add("is-complete");
     }
 
+
+    /* Task name cell */
+    const nameCell =
+        document.createElement("div");
+    nameCell.className = "task-cell task-cell-name";
+
+    const name =
+        document.createElement("span");
+    name.className = "task-name";
+    name.textContent = cleanText(task.name) || "Untitled task";
+    name.setAttribute("tabindex", "0");
+    name.setAttribute("role", "button");
+    name.setAttribute("aria-label", "View details for: " + cleanText(task.name));
+
+    name.addEventListener("click", function (event) {
+        event.stopPropagation();
+        openTaskDetails(task);
+    });
+
+    name.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            event.stopPropagation();
+            openTaskDetails(task);
+        }
+    });
+
+    nameCell.appendChild(name);
+
+
+    /* Description cell */
+    const descCell =
+        document.createElement("div");
+    descCell.className = "task-cell task-cell-description";
+
+    const description =
+        document.createElement("span");
+    description.className = "task-description";
+    description.textContent = cleanText(task.description) || "";
+
+    descCell.appendChild(description);
+
+
+    /* Status cell with checkbox */
+    const statusCell =
+        document.createElement("div");
+    statusCell.className = "task-cell task-cell-status";
 
     const check =
         document.createElement("button");
@@ -3204,19 +3282,15 @@ function createTaskItem(task) {
 
     check.textContent = "";
 
-    /* The tick is drawn rather than typed, so a completed task reads the
-       same way in whatever font the machine happens to have. */
     const tick =
         document.createElement("span");
 
     tick.className = "task-check-tick";
-
     tick.setAttribute("aria-hidden", "true");
-
     tick.appendChild(
         createIcon(
             "check",
-            { size: 12, weight: "2.4" }
+            { size: 11, weight: "2.4" }
         )
     );
 
@@ -3224,7 +3298,8 @@ function createTaskItem(task) {
 
     check.addEventListener(
         "click",
-        function () {
+        function (event) {
+            event.stopPropagation();
 
             task.status =
                 isComplete ? "todo" : "completed";
@@ -3239,76 +3314,65 @@ function createTaskItem(task) {
         }
     );
 
-
-    const main =
-        document.createElement("div");
-
-    main.className = "task-item-main";
+    statusCell.appendChild(check);
 
 
-    const title =
-        document.createElement("p");
+    /* Delete button in status cell */
+    const taskDelete = document.createElement("button");
+    taskDelete.type = "button";
+    taskDelete.className = "task-delete";
+    taskDelete.setAttribute(
+        "aria-label",
+        "Delete task: " + (cleanText(task.name) || "Untitled task")
+    );
+    taskDelete.appendChild(createIcon("trash", { size: 13 }));
+    taskDelete.addEventListener("click", function (event) {
+        event.stopPropagation();
+        confirmAction({
+            title: "Delete task?",
+            message: "This task will be permanently removed.",
+            confirmLabel: "Delete"
+        }).then(function (confirmed) {
+            if (!confirmed) return;
+            currentWorkspace.tasks = currentWorkspace.tasks.filter(function (item) {
+                return item.id !== task.id;
+            });
+            commitChanges({
+                message: "Task deleted."
+            });
+        });
+    });
 
-    title.className = "task-item-title";
-    title.textContent =
-        cleanText(task.name) || "Untitled task";
-
-    main.appendChild(title);
-
-
-    if (cleanText(task.description)) {
-
-        const description =
-            document.createElement("p");
-
-        description.className =
-            "task-item-description";
-
-        description.textContent =
-            cleanText(task.description);
-
-        main.appendChild(description);
-    }
-
-
-    /* When the task was written down. Useful context, and only shown when
-       there is a real date to show. */
-    const created = taskDateLabel(task.createdAt);
-
-    if (created) {
-
-        const stamp =
-            document.createElement("span");
-
-        stamp.className = "task-item-time";
-
-        const clock =
-            document.createElement("span");
-
-        clock.className = "task-item-time-icon";
-
-        clock.setAttribute("aria-hidden", "true");
-
-        clock.appendChild(
-            createIcon("clock", { size: 12 })
-        );
-
-        const clockWord =
-            document.createElement("span");
-
-        clockWord.textContent = created;
-
-        stamp.appendChild(clock);
-        stamp.appendChild(clockWord);
-
-        main.appendChild(stamp);
-    }
+    statusCell.appendChild(taskDelete);
 
 
-    item.appendChild(check);
-    item.appendChild(main);
+    row.appendChild(nameCell);
+    row.appendChild(descCell);
+    row.appendChild(statusCell);
 
-    return item;
+    return row;
+}
+
+
+function openTaskDetails(task) {
+    const taskModal = document.getElementById("taskModal");
+    const taskForm = document.getElementById("taskForm");
+    const taskNameInput = document.getElementById("taskName");
+    const taskDescriptionInput = document.getElementById("taskDescription");
+    const taskModalTitle = document.getElementById("taskModalTitle");
+    const taskSubmit = taskForm.querySelector(".modal-submit");
+
+    clearFormErrors(taskForm, MODAL_ERRORS.taskModal);
+
+    taskModalTitle.textContent = "Task Details";
+    taskSubmit.textContent = "Save Changes";
+
+    taskNameInput.value = cleanText(task.name);
+    taskDescriptionInput.value = cleanText(task.description);
+
+    taskForm.dataset.editingTaskId = String(task.id);
+
+    openModal("taskModal");
 }
 
 
@@ -3346,27 +3410,13 @@ function taskDateLabel(value) {
 
 function renderTasks() {
 
-    const todo =
-        document.getElementById(
-            "todoTasks"
-        );
+    const taskList =
+        document.getElementById("taskList");
 
-    const completed =
-        document.getElementById(
-            "completedTasks"
-        );
+    const tasksSectionDesc = document.getElementById("tasksSectionDesc");
+    const taskTableContainer = document.querySelector(".task-table-container");
 
-    const todoCount =
-        document.getElementById(
-            "todoTaskCount"
-        );
-
-    const completedCount =
-        document.getElementById(
-            "completedTaskCount"
-        );
-
-    if (!todo || !completed) {
+    if (!taskList) {
         return;
     }
 
@@ -3381,47 +3431,26 @@ function renderTasks() {
         return task.status === "completed";
     });
 
-
-    if (todoCount) {
-        todoCount.textContent = String(open.length);
-    }
-
-    if (completedCount) {
-        completedCount.textContent = String(done.length);
-    }
+    const total = tasks.length;
+    const openCount = open.length;
+    const doneCount = done.length;
 
 
-    todo.innerHTML = "";
-    completed.innerHTML = "";
-
-
-    const isEmpty = tasks.length === 0;
-
-    const tasksSectionDesc = document.getElementById("tasksSectionDesc");
     if (tasksSectionDesc) {
-        tasksSectionDesc.hidden = !isEmpty;
+        tasksSectionDesc.hidden = total > 0;
     }
 
-    /* Two columns both reading "No tasks yet." tells the user nothing about
-       what to do next. Once the workspace genuinely has no tasks, the
-       columns step aside for one explained empty state. */
-    const columns =
-        todo.closest(".task-columns");
-
-    if (columns) {
-        columns.hidden = isEmpty;
+    if (taskTableContainer) {
+        taskTableContainer.hidden = total === 0;
     }
 
     const empty =
-        document.getElementById(
-            "tasksEmpty"
-        );
+        document.getElementById("tasksEmpty");
 
     if (empty) {
         empty.innerHTML = "";
 
-        if (isEmpty) {
-
+        if (total === 0) {
             empty.appendChild(
                 createSectionEmpty(
                     "No tasks yet",
@@ -3435,35 +3464,16 @@ function renderTasks() {
         }
     }
 
-    if (isEmpty) {
+    if (total === 0) {
         return;
     }
 
-    if (open.length === 0) {
+    taskList.innerHTML = "";
 
-        todo.appendChild(
-            createTaskListEmpty(
-                "Nothing left to do."
-            )
-        );
-    }
+    const allTasks = [...open, ...done];
 
-    if (done.length === 0) {
-
-        completed.appendChild(
-            createTaskListEmpty(
-                "Nothing completed yet."
-            )
-        );
-    }
-
-
-    open.forEach(function (task) {
-        todo.appendChild(createTaskItem(task));
-    });
-
-    done.forEach(function (task) {
-        completed.appendChild(createTaskItem(task));
+    allTasks.forEach(function (task) {
+        taskList.appendChild(createTaskItem(task));
     });
 }
 
@@ -4114,11 +4124,23 @@ function renderFolders() {
             : [];
 
         const card =
-            document.createElement("button");
+            document.createElement("div");
 
-        card.type = "button";
         card.className = "folder-card";
         card.dataset.id = String(folder.id);
+
+        const cardMain = document.createElement("button");
+        cardMain.type = "button";
+        cardMain.className = "folder-card-main";
+        cardMain.style.display = "flex";
+        cardMain.style.alignItems = "center";
+        cardMain.style.gap = "14px";
+        cardMain.style.flex = "1 1 auto";
+        cardMain.style.background = "transparent";
+        cardMain.style.border = "0";
+        cardMain.style.textAlign = "left";
+        cardMain.style.cursor = "pointer";
+        cardMain.style.padding = "0";
 
         const icon =
             document.createElement("span");
@@ -4165,13 +4187,40 @@ function renderFolders() {
             createIcon("chevronRight", { size: 16 })
         );
 
-        card.appendChild(icon);
-        card.appendChild(body);
-        card.appendChild(go);
+        cardMain.appendChild(icon);
+        cardMain.appendChild(body);
+        cardMain.appendChild(go);
 
-        card.addEventListener("click", function () {
+        cardMain.addEventListener("click", function () {
             openFolderFromFiles(folder.id);
         });
+
+        const deleteFolderBtn = document.createElement("button");
+        deleteFolderBtn.type = "button";
+        deleteFolderBtn.className = "folder-delete";
+        deleteFolderBtn.setAttribute("aria-label", "Delete folder: " + (cleanText(folder.name) || "Untitled folder"));
+        deleteFolderBtn.appendChild(createIcon("trash", { size: 15 }));
+        deleteFolderBtn.addEventListener("click", function (event) {
+            event.stopPropagation();
+            confirmAction({
+                title: "Delete folder?",
+                message: "This will delete '" + (cleanText(folder.name) || "Untitled folder") + "' and all files inside it.",
+                confirmLabel: "Delete"
+            }).then(function (confirmed) {
+                if (!confirmed) return;
+                currentWorkspace.folders = currentWorkspace.folders.filter(function (f) {
+                    return f.id !== folder.id;
+                });
+                if (openFolderId === folder.id) {
+                    openFolderId = null;
+                }
+                commitChanges({ message: "Folder deleted." });
+                renderFolders();
+            });
+        });
+
+        card.appendChild(cardMain);
+        card.appendChild(deleteFolderBtn);
 
         list.appendChild(card);
     });
@@ -4197,6 +4246,12 @@ function renderFolderContents(grid, folder) {
     label.textContent =
         cleanText(folder.name) || "Untitled folder";
 
+    const headActions = document.createElement("div");
+    headActions.className = "folder-contents-actions";
+    headActions.style.display = "flex";
+    headActions.style.alignItems = "center";
+    headActions.style.gap = "8px";
+
     const add = document.createElement("button");
 
     add.type = "button";
@@ -4216,8 +4271,35 @@ function renderFolderContents(grid, folder) {
         openCodeFile(folder.id);
     });
 
+    const deleteFolderInHead = document.createElement("button");
+    deleteFolderInHead.type = "button";
+    deleteFolderInHead.className = "quiet-button modal-submit-danger";
+    deleteFolderInHead.appendChild(createIcon("trash", { size: 14 }));
+    const delText = document.createElement("span");
+    delText.textContent = "Delete folder";
+    deleteFolderInHead.appendChild(delText);
+    deleteFolderInHead.addEventListener("click", function () {
+        confirmAction({
+            title: "Delete folder?",
+            message: "This will delete '" + (cleanText(folder.name) || "Untitled folder") + "' and all files inside it.",
+            confirmLabel: "Delete"
+        }).then(function (confirmed) {
+            if (!confirmed) return;
+            currentWorkspace.folders = currentWorkspace.folders.filter(function (f) {
+                return f.id !== folder.id;
+            });
+            openFolderId = null;
+            renderFilesBreadcrumb();
+            commitChanges({ message: "Folder deleted." });
+            renderFolders();
+        });
+    });
+
+    headActions.appendChild(add);
+    headActions.appendChild(deleteFolderInHead);
+
     head.appendChild(label);
-    head.appendChild(add);
+    head.appendChild(headActions);
 
     grid.appendChild(head);
 
@@ -4264,10 +4346,7 @@ function renderFolderContents(grid, folder) {
         name.title = codePathOf(folder, file);
 
         name.addEventListener("click", function () {
-            openCodeFileFromFiles(
-                folder.id,
-                file.id
-            );
+            previewWorkspaceFile(folder, file);
         });
 
         const meta =
@@ -4290,7 +4369,35 @@ function renderFolderContents(grid, folder) {
             createIcon("chevronRight", { size: 15 })
         );
 
+        open.style.cursor = "pointer";
+        open.addEventListener("click", function () {
+            previewWorkspaceFile(folder, file);
+        });
+
         row.appendChild(open);
+
+        const deleteFileBtn = document.createElement("button");
+        deleteFileBtn.type = "button";
+        deleteFileBtn.className = "file-delete";
+        deleteFileBtn.setAttribute("aria-label", "Delete file: " + file.name);
+        deleteFileBtn.appendChild(createIcon("trash", { size: 14 }));
+        deleteFileBtn.addEventListener("click", function (event) {
+            event.stopPropagation();
+            confirmAction({
+                title: "Delete file?",
+                message: "Are you sure you want to delete '" + file.name + "'?",
+                confirmLabel: "Delete"
+            }).then(function (confirmed) {
+                if (!confirmed) return;
+                folder.files = folder.files.filter(function (f) {
+                    return f.id !== file.id;
+                });
+                commitChanges({ message: "File deleted." });
+                renderFolders();
+            });
+        });
+
+        row.appendChild(deleteFileBtn);
 
         list.appendChild(row);
     });
@@ -4299,6 +4406,80 @@ function renderFolderContents(grid, folder) {
 }
 
 
+let currentPreviewZoom = 1.0;
+let currentPreviewingFolder = null;
+let currentPreviewingFile = null;
+
+function setFilePreviewZoom(zoom) {
+    currentPreviewZoom = Math.max(0.4, Math.min(3.0, Math.round(zoom * 100) / 100));
+    const badge = document.getElementById("filePreviewZoomLevel");
+    if (badge) {
+        badge.textContent = Math.round(currentPreviewZoom * 100) + "%";
+    }
+
+    const img = document.getElementById("filePreviewImage");
+    const pre = document.getElementById("codeFilePreviewPre");
+    const code = document.getElementById("codeFilePreviewCode");
+
+    if (img) {
+        img.style.transform = "scale(" + currentPreviewZoom + ")";
+        img.style.transformOrigin = "center top";
+    }
+    if (code) {
+        code.style.fontSize = Math.round(14 * currentPreviewZoom) + "px";
+        code.style.lineHeight = (1.55 * currentPreviewZoom).toFixed(2);
+    }
+}
+
+function previewWorkspaceFile(folder, file) {
+    currentPreviewingFolder = folder;
+    currentPreviewingFile = file;
+    currentPreviewZoom = 1.0;
+    setFilePreviewZoom(1.0);
+
+    const nameEl = document.getElementById("codeFilePreviewName");
+    const metaEl = document.getElementById("codeFilePreviewMeta");
+    const codeEl = document.getElementById("codeFilePreviewCode");
+    const preEl = document.getElementById("codeFilePreviewPre");
+    const imgWrap = document.getElementById("filePreviewImageWrap");
+    const imgEl = document.getElementById("filePreviewImage");
+    const copyEl = document.getElementById("codeFilePreviewCopy");
+
+    if (!nameEl) return;
+
+    nameEl.textContent = file.name;
+    const isBinary = file.isBinary || isBinaryExtension(file.name);
+    const language = codeLanguageOf(file.name);
+    const sizeLabel = codeSizeLabel(file.content);
+
+    metaEl.textContent = codeLanguageLabel(file.name) + " · " + sizeLabel + (folder ? " (in " + folder.name + ")" : "");
+
+    const ext = codeExtensionOf(file.name);
+    const isImage = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico"].indexOf(ext) !== -1;
+
+    const zoomBar = document.getElementById("filePreviewZoomBar");
+    if (zoomBar) {
+        zoomBar.hidden = !isImage;
+    }
+
+    if (isImage && (file.content.startsWith("data:image/") || file.content.startsWith("<svg") || isBinary)) {
+        if (imgWrap) imgWrap.hidden = false;
+        if (imgEl) {
+            imgEl.src = file.content.startsWith("<svg")
+                ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(file.content)
+                : file.content;
+        }
+        if (preEl) preEl.hidden = true;
+    } else {
+        if (imgWrap) imgWrap.hidden = true;
+        if (preEl) preEl.hidden = false;
+        if (codeEl) {
+            codeEl.innerHTML = codeHighlightSource(file.content + "\n", language);
+        }
+    }
+
+    openModal("codeFilePreviewModal");
+}
 
 function openCodeFileFromFiles(folderId, fileId) {
 
@@ -4338,9 +4519,14 @@ const codePreviewFrame = document.getElementById("codePreviewFrame");
 const codePreviewPlaceholder = document.getElementById("codePreviewPlaceholder");
 const codePreviewEntry = document.getElementById("codePreviewEntry");
 const codeTerminalBody = document.getElementById("codeTerminalBody");
-const codeTerminal = document.getElementById("codeTerminal");
 const codePanelSwitcher = document.getElementById("codePanelSwitcher");
 const codeFileForm = document.getElementById("codeFileForm");
+const codeFullscreenButton = document.getElementById("codeFullscreenButtonToolbar");
+const codeRunButton = document.getElementById("codeRunButtonToolbar");
+
+/* Fullscreen state */
+let codeFullscreen = false;
+let codeFullscreenPrevPanel = null;
 
 /* Open files are a view of the project, not a property of it, so they live
    in memory and are rebuilt from workspace data on every render. Drafts hold
@@ -4374,10 +4560,19 @@ const CODE_LANGUAGES = {
     js: { label: "JavaScript", runnable: true },
     json: { label: "JSON", runnable: false },
     md: { label: "Markdown", runnable: false },
-    py: { label: "Python", runnable: false },
+    py: { label: "Python", runnable: true },
     java: { label: "Java", runnable: false },
     c: { label: "C", runnable: false },
-    cpp: { label: "C++", runnable: false }
+    cpp: { label: "C++", runnable: false },
+    png: { label: "PNG Image", runnable: false },
+    jpg: { label: "JPEG Image", runnable: false },
+    jpeg: { label: "JPEG Image", runnable: false },
+    gif: { label: "GIF Image", runnable: false },
+    webp: { label: "WebP Image", runnable: false },
+    svg: { label: "SVG Vector", runnable: false },
+    bmp: { label: "Bitmap Image", runnable: false },
+    ico: { label: "Icon", runnable: false },
+    pdf: { label: "PDF Document", runnable: false }
 };
 
 const CODE_EXTENSIONS = {
@@ -4386,10 +4581,19 @@ const CODE_EXTENSIONS = {
     js: "js", mjs: "js", cjs: "js",
     json: "json",
     md: "md", markdown: "md",
-    py: "py",
+    py: "py", python: "py",
     java: "java",
     c: "c", h: "c",
-    cpp: "cpp", cc: "cpp", cxx: "cpp", hpp: "cpp"
+    cpp: "cpp", cc: "cpp", cxx: "cpp", hpp: "cpp",
+    png: "png",
+    jpg: "jpg",
+    jpeg: "jpeg",
+    gif: "gif",
+    webp: "webp",
+    svg: "svg",
+    bmp: "bmp",
+    ico: "ico",
+    pdf: "pdf"
 };
 
 const CODE_STARTERS = {
@@ -4398,7 +4602,7 @@ const CODE_STARTERS = {
     js: "console.log(\"Hello from OneSpace\");\n",
     json: "{\n    \"name\": \"project\"\n}\n",
     md: "# Notes\n\n",
-    py: "print(\"hello\")\n",
+    py: "# Python 3 Online Compiler in OneSpace\n\ndef main():\n    print(\"Welcome to Python 3 Online Compiler!\")\n    print(\"=\" * 38)\n    \n    # Example: List comprehension & basic math\n    numbers = [1, 2, 3, 4, 5]\n    squares = [x**2 for x in numbers]\n    print(f\"Numbers: {numbers}\")\n    print(f\"Squares: {squares}\")\n    print(f\"Sum:     {sum(squares)}\")\n    print(\"\\nReady to write your own Python code!\")\n\nif __name__ == \"__main__\":\n    main()\n",
     java: "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello\");\n    }\n}\n",
     c: "#include <stdio.h>\n\nint main(void) {\n    printf(\"Hello\\n\");\n    return 0;\n}\n",
     cpp: "#include <iostream>\n\nint main() {\n    std::cout << \"Hello\" << std::endl;\n    return 0;\n}\n"
@@ -4800,6 +5004,38 @@ function highlightJson(source) {
     return out;
 }
 
+function highlightPython(source) {
+    const pattern = /(#.*)|("""[\s\S]*?"""|'''[\s\S]*?''')|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(\b0[xXbB][0-9a-fA-F]+\b|\b\d+(?:\.\d+)?\b)|(\b(?:def|class|import|from|return|if|elif|else|while|for|in|try|except|finally|with|as|lambda|yield|pass|break|continue|global|nonlocal|raise|assert|async|await|del|is|not|and|or|True|False|None)\b)|(\b(?:print|len|range|str|int|float|list|dict|set|tuple|type|input|open|sum|min|max|abs|enumerate|zip|map|filter|super|isinstance)\b)|([A-Za-z_][\w]*)|([{}()[\]:;,.]|[=+\-*/%<>!&|^~]+)/g;
+
+    let out = "";
+    let last = 0;
+    let match = null;
+
+    while ((match = pattern.exec(source)) !== null) {
+        out += codeEscape(source.slice(last, match.index));
+        last = pattern.lastIndex;
+
+        if (match[1] || match[2]) {
+            out += codeToken(match[1] || match[2], "comment");
+        } else if (match[3]) {
+            out += codeToken(match[3], "string");
+        } else if (match[4]) {
+            out += codeToken(match[4], "number");
+        } else if (match[5]) {
+            out += codeToken(match[5], "keyword");
+        } else if (match[6]) {
+            out += codeToken(match[6], "builtin");
+        } else if (match[7]) {
+            out += codeEscape(match[7]);
+        } else if (match[8]) {
+            out += codeToken(match[8], "punct");
+        }
+    }
+
+    out += codeEscape(source.slice(last));
+    return out;
+}
+
 function codeHighlightSource(source, language) {
     if (language === "html") {
         return highlightMarkup(source);
@@ -4812,6 +5048,9 @@ function codeHighlightSource(source, language) {
     }
     if (language === "json") {
         return highlightJson(source);
+    }
+    if (language === "py") {
+        return highlightPython(source);
     }
     return codeEscape(source);
 }
@@ -4842,23 +5081,6 @@ function codeLogMany(level, messages) {
 function codeClearTerminal() {
     if (codeTerminalBody) {
         codeTerminalBody.innerHTML = "";
-    }
-}
-
-function setCodeTerminalOpen(isOpen) {
-    const toggle = document.getElementById("codeTerminalToggle");
-
-    if (codeTerminal) {
-        codeTerminal.classList.toggle("is-open", isOpen);
-    }
-
-    if (toggle) {
-        toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-
-        const caret = toggle.querySelector(".code-terminal-caret");
-        if (caret) {
-            caret.textContent = isOpen ? "\u25be" : "\u25b8";
-        }
     }
 }
 
@@ -5105,6 +5327,16 @@ if (codeEditor) {
             ) {
                 event.preventDefault();
                 saveCodeFile();
+                return;
+            }
+
+            if (
+                event.key === "Enter" &&
+                (event.ctrlKey || event.metaKey)
+            ) {
+                event.preventDefault();
+                runCode();
+                return;
             }
 
         }
@@ -5288,19 +5520,47 @@ function codeRenderExplorer() {
 
         const name = document.createElement("p");
         name.className = "code-explorer-folder";
-        name.textContent = folder.name;
+        
+        /* Folder icon using createIcon */
+        const folderIcon = document.createElement("span");
+        folderIcon.className = "code-explorer-folder-icon";
+        folderIcon.setAttribute("aria-hidden", "true");
+        folderIcon.appendChild(createIcon("folder", { size: 14 }));
+        name.appendChild(folderIcon);
+        
+        name.appendChild(document.createTextNode(folder.name));
+
+        /* Chevron for expand/collapse */
+        const chevron = document.createElement("span");
+        chevron.className = "code-explorer-chevron";
+        chevron.setAttribute("aria-hidden", "true");
+        chevron.appendChild(createIcon("chevronRight", { size: 12 }));
+        name.appendChild(chevron);
+
+        /* Make folder name clickable for expand/collapse */
+        name.style.cursor = "pointer";
+        name.addEventListener("click", function (e) {
+            if (e.target === chevron || e.target.closest('.code-explorer-chevron')) {
+                return;
+            }
+            group.classList.toggle("collapsed");
+        });
+        chevron.addEventListener("click", function (e) {
+            e.stopPropagation();
+            group.classList.toggle("collapsed");
+        });
 
         /* Adding a file from inside a folder should not require choosing that
            folder again afterwards. */
         const add = document.createElement("button");
         add.type = "button";
         add.className = "code-explorer-add";
-        add.textContent = "+";
         add.title = "Add a file to " + folder.name;
         add.setAttribute(
             "aria-label",
             "Add a file to " + folder.name
         );
+        add.appendChild(createIcon("plus", { size: 14 }));
 
         add.addEventListener("click", function () {
             openCodeFile(folder.id);
@@ -5310,12 +5570,14 @@ function codeRenderExplorer() {
         heading.appendChild(add);
         group.appendChild(heading);
 
-        const files = folder.files || [];
+        const files = (folder.files || []).filter(function (file) {
+            return file.name.toLowerCase().endsWith(".py");
+        });
 
         if (!files.length) {
             const none = document.createElement("p");
             none.className = "code-explorer-file code-explorer-file-empty";
-            none.textContent = "Empty folder";
+            none.textContent = "No .py files";
             group.appendChild(none);
         }
 
@@ -5331,6 +5593,13 @@ function codeRenderExplorer() {
                 button.classList.add("active");
                 button.setAttribute("aria-current", "true");
             }
+
+            /* File icon */
+            const fileIcon = document.createElement("span");
+            fileIcon.className = "code-explorer-file-icon";
+            fileIcon.setAttribute("aria-hidden", "true");
+            fileIcon.appendChild(createIcon("document", { size: 14 }));
+            button.appendChild(fileIcon);
 
             const name = document.createElement("span");
             name.className = "code-explorer-file-name";
@@ -5645,6 +5914,10 @@ function codeRenderWorkspaceFiles() {
     codeFolders().forEach(function (folder) {
 
         (folder.files || []).forEach(function (file) {
+
+            if (!file.name.toLowerCase().endsWith(".py")) {
+                return;
+            }
 
             total += 1;
 
@@ -6313,7 +6586,7 @@ function openCodeFile(folderId) {
 
 function validateCodeFile() {
 
-    const name = cleanText(
+    let name = cleanText(
         document.getElementById("codeFileName").value
     );
 
@@ -6339,17 +6612,17 @@ function validateCodeFile() {
         return null;
     }
 
-    if (!codeExtensionOf(name)) {
-        setFieldError(
-            "codeFileError",
-            "codeFileName",
-            "Include an extension, such as .html or .js."
-        );
-        return null;
+    if (!name.toLowerCase().endsWith(".py")) {
+        const ext = codeExtensionOf(name);
+        if (!ext) {
+            name = name + ".py";
+        } else {
+            name = name.replace(new RegExp("\\." + ext + "$", "i"), ".py");
+        }
     }
 
     if ((folder.files || []).some(function (file) {
-        return file.name === name;
+        return file.name.toLowerCase() === name.toLowerCase();
     })) {
         setFieldError(
             "codeFileError",
@@ -7034,6 +7307,218 @@ window.addEventListener("message", function (event) {
  * when there is nothing to do. It never reports success for code that did
  * not run. */
 
+function transpilePythonToJs(source) {
+    const lines = source.split("\n");
+    const jsLines = [];
+    const indentStack = [0];
+
+    for (let i = 0; i < lines.length; i++) {
+        let rawLine = lines[i];
+        let trimmed = rawLine.trim();
+
+        if (!trimmed || trimmed.startsWith("#")) {
+            jsLines.push(rawLine.replace(/#/, "//"));
+            continue;
+        }
+
+        const indentMatch = rawLine.match(/^(\s*)/);
+        const leadingSpace = indentMatch ? indentMatch[1].replace(/\t/g, "    ").length : 0;
+
+        while (indentStack.length > 1 && leadingSpace < indentStack[indentStack.length - 1]) {
+            indentStack.pop();
+            jsLines.push(" ".repeat(indentStack[indentStack.length - 1]) + "}");
+        }
+
+        let line = trimmed;
+
+        line = line.replace(/\bTrue\b/g, "true")
+                   .replace(/\bFalse\b/g, "false")
+                   .replace(/\bNone\b/g, "null")
+                   .replace(/\band\b/g, "&&")
+                   .replace(/\bor\b/g, "||")
+                   .replace(/\bnot\s+/g, "!");
+
+        line = line.replace(/f"([^"]*)"/g, function(_, str) {
+            return "`" + str.replace(/\{([^}]+)\}/g, "${$1}") + "`";
+        });
+        line = line.replace(/f'([^']*)'/g, function(_, str) {
+            return "`" + str.replace(/\{([^}]+)\}/g, "${$1}") + "`";
+        });
+
+        if (/^def\s+([a-zA-Z_]\w*)\s*\((.*?)\)\s*:/.test(line)) {
+            line = line.replace(/^def\s+([a-zA-Z_]\w*)\s*\((.*?)\)\s*:/, "function $1($2) {");
+            indentStack.push(leadingSpace + 4);
+        } else if (/^elif\s+(.*?)\s*:/.test(line)) {
+            line = line.replace(/^elif\s+(.*?)\s*:/, "} else if ($1) {");
+        } else if (/^if\s+(.*?)\s*:/.test(line)) {
+            line = line.replace(/^if\s+(.*?)\s*:/, "if ($1) {");
+            indentStack.push(leadingSpace + 4);
+        } else if (/^else\s*:/.test(line)) {
+            line = line.replace(/^else\s*:/, "} else {");
+        } else if (/^for\s+([a-zA-Z_]\w*)\s+in\s+(.*?)\s*:/.test(line)) {
+            line = line.replace(/^for\s+([a-zA-Z_]\w*)\s+in\s+(.*?)\s*:/, "for (let $1 of $2) {");
+            indentStack.push(leadingSpace + 4);
+        } else if (/^while\s+(.*?)\s*:/.test(line)) {
+            line = line.replace(/^while\s+(.*?)\s*:/, "while ($1) {");
+            indentStack.push(leadingSpace + 4);
+        } else {
+            line = line.replace(/\s+#(.*)$/, " // $1");
+            if (!line.endsWith(";") && !line.endsWith("{") && !line.endsWith("}")) {
+                line = line + ";";
+            }
+        }
+
+        jsLines.push(" ".repeat(leadingSpace) + line);
+    }
+
+    while (indentStack.length > 1) {
+        indentStack.pop();
+        jsLines.push(" ".repeat(indentStack[indentStack.length - 1] || 0) + "}");
+    }
+
+    return jsLines.join("\n");
+}
+
+let pyodideInstance = null;
+let pyodideLoadingPromise = null;
+
+async function getPyodideInstance() {
+    if (pyodideInstance) return pyodideInstance;
+    if (pyodideLoadingPromise) return pyodideLoadingPromise;
+
+    if (typeof loadPyodide === "function") {
+        const badge = document.getElementById("pyEngineStatus");
+        if (badge) {
+            badge.textContent = "● Loading Pyodide...";
+            badge.className = "py-engine-badge is-running";
+        }
+        pyodideLoadingPromise = loadPyodide({
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.2/full/"
+        }).then(function(py) {
+            pyodideInstance = py;
+            const b = document.getElementById("pyEngineStatus");
+            if (b) {
+                b.textContent = "● Python 3.10";
+                b.className = "py-engine-badge";
+            }
+            return py;
+        }).catch(function(err) {
+            console.warn("Pyodide CDN fallback:", err);
+            const b = document.getElementById("pyEngineStatus");
+            if (b) {
+                b.textContent = "● Python 3";
+                b.className = "py-engine-badge";
+            }
+            return null;
+        });
+        return pyodideLoadingPromise;
+    }
+    return null;
+}
+
+function runPythonFallback(source, filename) {
+    const outputLines = [];
+    const jsCode = transpilePythonToJs(source);
+    const customConsole = {
+        log: function(...args) {
+            outputLines.push(args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "));
+        },
+        error: function(...args) {
+            outputLines.push("ERROR: " + args.join(" "));
+        }
+    };
+
+    function pyPrint(...args) {
+        customConsole.log(...args);
+    }
+    function pyRange(start, stop, step) {
+        if (stop === undefined) { stop = start; start = 0; }
+        step = step || 1;
+        const res = [];
+        for (let i = start; step > 0 ? i < stop : i > stop; i += step) res.push(i);
+        return res;
+    }
+    function pyLen(obj) { return obj ? (obj.length !== undefined ? obj.length : Object.keys(obj).length) : 0; }
+    function pySum(arr) { return Array.isArray(arr) ? arr.reduce((a, b) => a + b, 0) : 0; }
+
+    const runner = new Function(
+        "console", "print", "range", "len", "sum", "str", "int", "float", "list", "dict", "min", "max", "abs", "Math",
+        jsCode
+    );
+
+    runner(customConsole, pyPrint, pyRange, pyLen, pySum, String, parseInt, parseFloat, Array.from, Object.assign, Math.min, Math.max, Math.abs, Math);
+
+    if (outputLines.length === 0) {
+        codeLog("info", "[Program executed with no output]");
+    } else {
+        outputLines.forEach(function(line) {
+            codeLog("stdout", line);
+        });
+    }
+}
+
+async function runPythonCode(source, filename) {
+    codeClearTerminal();
+    const fname = filename || "main.py";
+    codeLog("info", "▶ Running " + fname + " (Python 3.10)...");
+    setCodePanel("editor");
+
+    const badge = document.getElementById("pyEngineStatus");
+    if (badge) {
+        badge.textContent = "● Running...";
+        badge.className = "py-engine-badge is-running";
+    }
+
+    const startTime = performance.now();
+
+    try {
+        let ranWithPyodide = false;
+        if (typeof loadPyodide === "function") {
+            const py = await getPyodideInstance();
+            if (py) {
+                py.setStdout({
+                    batched: function (str) {
+                        if (str) {
+                            str.split("\n").forEach(function (line) {
+                                if (line) codeLog("stdout", line);
+                            });
+                        }
+                    }
+                });
+                py.setStderr({
+                    batched: function (str) {
+                        if (str) {
+                            str.split("\n").forEach(function (line) {
+                                if (line) codeLog("error", line);
+                            });
+                        }
+                    }
+                });
+
+                await py.runPythonAsync(source);
+                ranWithPyodide = true;
+            }
+        }
+
+        if (!ranWithPyodide) {
+            runPythonFallback(source, fname);
+        }
+
+        const duration = Math.round(performance.now() - startTime);
+        codeLog("success", "\n✓ Process finished with exit code 0 (" + duration + "ms)");
+        showStatus("Python script executed.");
+    } catch (err) {
+        const duration = Math.round(performance.now() - startTime);
+        codeLog("error", "Traceback (most recent call last):\n" + String(err.message || err));
+        codeLog("error", "\n✖ Process finished with error (" + duration + "ms)");
+    } finally {
+        if (badge) {
+            badge.textContent = "● Python 3.10";
+            badge.className = "py-engine-badge";
+        }
+    }
+}
+
 function runCode() {
 
     const file = codeActiveFile();
@@ -7045,6 +7530,13 @@ function runCode() {
 
     const language = codeLanguageOf(file.name);
     const label = codeLanguageLabel(file.name);
+
+    if (language === "py") {
+        const key = codeKey(codeActiveFolder().id, file.id);
+        const source = codeTextOf(key);
+        runPythonCode(source, file.name);
+        return;
+    }
 
     if (language === "html") {
         codeOpenEntry(
@@ -7087,8 +7579,7 @@ function runCode() {
     codeLog("error", "Execution for " + label + " is not configured yet.");
     codeLog(
         "info",
-        "OneSpace renders HTML, CSS and JavaScript in the browser. " +
-        label + " needs an execution backend, which is not connected to this workspace yet."
+        "OneSpace renders HTML, CSS, JavaScript and Python directly in the browser."
     );
 }
 
@@ -7122,10 +7613,6 @@ function setCodePanel(panel) {
             }
         );
     }
-
-    if (panel === "preview" && !codePreviewBuilt) {
-        buildCodePreview(false);
-    }
 }
 
 if (codePanelSwitcher) {
@@ -7146,7 +7633,169 @@ if (codePanelSwitcher) {
 }
 
 
+/* HEIGHT MANAGEMENT */
+function updateCodeShellHeight() {
+    if (!codeShell) return;
+
+    /* Calculate available height: viewport minus header, tabbar, section header, and padding */
+    const tabbar = document.querySelector(".workspace-tabbar");
+    const header = document.querySelector(".workspace-header");
+    const sectionHeader = document.querySelector("#section-code .section-header");
+    const main = document.querySelector(".workspace-main");
+
+    if (!main) return;
+
+    const tabbarHeight = tabbar ? tabbar.offsetHeight : 0;
+    const headerHeight = header ? header.offsetHeight : 0;
+    const sectionHeaderHeight = sectionHeader ? sectionHeader.offsetHeight : 0;
+
+    /* Get main padding bottom */
+    const mainStyles = window.getComputedStyle(main);
+    const mainPaddingBottom = parseFloat(mainStyles.paddingBottom) || 0;
+
+    const availableHeight = window.innerHeight - tabbarHeight - headerHeight - sectionHeaderHeight - mainPaddingBottom - 8;
+
+    if (codeFullscreen) {
+        codeShell.style.height = "100vh";
+        codeShell.style.maxHeight = "100vh";
+    } else {
+        codeShell.style.height = Math.max(400, availableHeight) + "px";
+        codeShell.style.maxHeight = "none";
+    }
+}
+
+/* Update height on window resize */
+window.addEventListener("resize", function () {
+    if (activeSection === "code" && !codeFullscreen) {
+        updateCodeShellHeight();
+    }
+});
+
+
+/* FULLSCREEN */
+function toggleCodeFullscreen() {
+    if (!codeShell) return;
+
+    codeFullscreen = !codeFullscreen;
+
+    if (codeFullscreen) {
+        /* Enter fullscreen */
+        codeFullscreenPrevPanel = codePanel;
+        codeShell.classList.add("is-fullscreen");
+        document.body.style.overflow = "hidden";
+
+        /* Switch to editor panel for fullscreen editing */
+        if (codePanel !== "editor") {
+            setCodePanel("editor");
+        }
+
+        /* Update button icon */
+        updateFullscreenButton(true);
+
+        /* Force layout recalculation */
+        requestAnimationFrame(() => {
+            if (codeEditor) {
+                codeEditor.dispatchEvent(new Event("input"));
+            }
+        });
+    } else {
+        /* Exit fullscreen */
+        codeShell.classList.remove("is-fullscreen");
+        document.body.style.overflow = "";
+
+        /* Restore previous panel if it was different */
+        if (codeFullscreenPrevPanel && codeFullscreenPrevPanel !== codePanel) {
+            setCodePanel(codeFullscreenPrevPanel);
+        }
+
+        updateFullscreenButton(false);
+
+        /* Restore proper height */
+        updateCodeShellHeight();
+
+        /* Force layout recalculation */
+        requestAnimationFrame(() => {
+            if (codeEditor) {
+                codeEditor.dispatchEvent(new Event("input"));
+            }
+        });
+    }
+}
+
+function updateFullscreenButton(isFullscreen) {
+    if (!codeFullscreenButton) return;
+
+    const svg = codeFullscreenButton.querySelector("svg");
+
+    if (isFullscreen) {
+        codeFullscreenButton.title = "Exit fullscreen (F11)";
+        codeFullscreenButton.setAttribute("aria-label", "Exit fullscreen");
+        if (svg) {
+            svg.innerHTML = '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h3a2 2 0 0 1 2 2v3m0 10v3a2 2 0 0 1-2 2h-3M3 18h3a2 2 0 0 0 2-2v-3"></path>';
+        }
+    } else {
+        codeFullscreenButton.title = "Fullscreen (F11)";
+        codeFullscreenButton.setAttribute("aria-label", "Fullscreen");
+        if (svg) {
+            svg.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"></path>';
+        }
+    }
+}
+
+/* Handle F11 and ESC for fullscreen */
+document.addEventListener("keydown", function (event) {
+    if (event.key === "F11") {
+        event.preventDefault();
+        toggleCodeFullscreen();
+    }
+
+    if (event.key === "Escape" && codeFullscreen) {
+        toggleCodeFullscreen();
+    }
+});
+
+
 /* RENDER */
+
+function ensurePythonStarterFile() {
+    const folders = codeFolders();
+    let hasPy = false;
+
+    for (let i = 0; i < folders.length; i++) {
+        const found = (folders[i].files || []).some(function (f) {
+            return f.name.toLowerCase().endsWith(".py");
+        });
+        if (found) {
+            hasPy = true;
+            break;
+        }
+    }
+
+    if (!hasPy) {
+        let targetFolder = folders[0];
+        if (!targetFolder) {
+            targetFolder = makeFolderRecord("scripts");
+            currentWorkspace.folders = [targetFolder];
+        }
+        if (!Array.isArray(targetFolder.files)) {
+            targetFolder.files = [];
+        }
+        const starter = makeCodeFileRecord("main.py", CODE_STARTERS.py);
+        targetFolder.files.push(starter);
+        codeOpenEntry(targetFolder.id, starter.id);
+        commitChanges({ only: "code" });
+    } else if (!codeActiveKey) {
+        for (let i = 0; i < folders.length; i++) {
+            const found = (folders[i].files || []).find(function (f) {
+                return f.name.toLowerCase().endsWith(".py");
+            });
+            if (found) {
+                codeOpenEntry(folders[i].id, found.id);
+                break;
+            }
+        }
+    }
+}
 
 function renderCode() {
 
@@ -7154,12 +7803,11 @@ function renderCode() {
         return;
     }
 
+    ensurePythonStarterFile();
+
     const codeSectionDesc = document.getElementById("codeSectionDesc");
     if (codeSectionDesc) {
-        const hasFiles = codeFolders().some(function (folder) {
-            return (folder.files || []).length > 0;
-        });
-        codeSectionDesc.hidden = hasFiles;
+        codeSectionDesc.hidden = false;
     }
 
     /* Drop open files whose folder or file no longer exists, so a deleted
@@ -7180,11 +7828,15 @@ function renderCode() {
             : null;
     }
 
-    renderCodePreviewState();
     codeRenderExplorer();
     codeRenderEditorTabs();
     codeSyncEditor();
     setCodePanel(codePanel);
+
+    /* Ensure proper height after render */
+    if (activeSection === "code" && !codeFullscreen) {
+        updateCodeShellHeight();
+    }
 }
 
 
@@ -7195,13 +7847,15 @@ function renderCode() {
  * its unsaved text into the wrong project. */
 
 function resetCodeState() {
-codeOpenFiles = [];
-codeDrafts = {};
-codeActiveKey = null;
-codeTargetFolderId = null;
-codePreviewBuilt = false;
+    codeOpenFiles = [];
+    codeDrafts = {};
+    codeActiveKey = null;
+    codeTargetFolderId = null;
+    codePreviewBuilt = false;
     codeActiveToken = null;
     codePanel = "editor";
+    codeFullscreen = false;
+    codeFullscreenPrevPanel = null;
     codeClearTerminal();
 
     if (codePreviewFrame) {
@@ -7210,6 +7864,21 @@ codePreviewBuilt = false;
 
     if (codePreviewEntry) {
         codePreviewEntry.textContent = "";
+    }
+
+    /* Exit fullscreen if active */
+    if (codeShell) {
+        codeShell.classList.remove("is-fullscreen");
+        document.body.style.overflow = "";
+        const sidebar = document.getElementById("workspaceSidebar");
+        const tabbar = document.querySelector(".workspace-tabbar");
+        const header = document.querySelector(".workspace-header");
+        const quickCreate = document.querySelector(".quick-create");
+        if (sidebar) sidebar.style.display = "";
+        if (tabbar) tabbar.style.display = "";
+        if (header) header.style.display = "";
+        if (quickCreate) quickCreate.style.display = "";
+        updateFullscreenButton(false);
     }
 }
 
@@ -7248,10 +7917,17 @@ function requestSectionChange(sectionId) {
         }).then(function (ok) {
             if (ok) {
                 codeDrafts = {};
+                if (codeFullscreen) {
+                    toggleCodeFullscreen();
+                }
                 showSection(sectionId);
             }
         });
         return;
+    }
+
+    if (activeSection === "code" && codeFullscreen) {
+        toggleCodeFullscreen();
     }
 
     showSection(sectionId);
@@ -7270,6 +7946,9 @@ function requestWorkspaceChange(workspaceId) {
     }
 
     if (sameId(workspaceId, activeWorkspaceId) || !hasUnsavedCode()) {
+        if (codeFullscreen) {
+            toggleCodeFullscreen();
+        }
         switchTo();
         return;
     }
@@ -7281,6 +7960,9 @@ function requestWorkspaceChange(workspaceId) {
     }).then(function (ok) {
         if (ok) {
             codeDrafts = {};
+            if (codeFullscreen) {
+                toggleCodeFullscreen();
+            }
             switchTo();
         }
     });
@@ -7308,13 +7990,12 @@ onCodeControl("codeSaveButton", "click", saveCodeFile);
 
 onCodeControl("codeRunButton", "click", runCode);
 
-onCodeControl("codePreviewButton", "click", function () {
-    setCodePanel("preview");
-    buildCodePreview(true);
-});
+onCodeControl("codeFullscreenButtonToolbar", "click", toggleCodeFullscreen);
 
-onCodeControl("codePreviewRefreshButton", "click", function () {
-    buildCodePreview(true);
+onCodeControl("codeOutputClearButton", "click", codeClearTerminal);
+
+onCodeControl("codeExplorerAddPy", "click", function () {
+    openCodeFile();
 });
 
 onCodeControl("codeNewFileButton", "click", openCodeFile);
@@ -7351,18 +8032,57 @@ onCodeControl("codeOpenSearch", "keydown", function (event) {
 
 onCodeControl("codeImportButton", "click", codeImportChosenFiles);
 
+onCodeControl("filePreviewZoomIn", "click", function () {
+    setFilePreviewZoom(currentPreviewZoom + 0.2);
+});
+
+onCodeControl("filePreviewZoomOut", "click", function () {
+    setFilePreviewZoom(currentPreviewZoom - 0.2);
+});
+
+onCodeControl("filePreviewZoomReset", "click", function () {
+    setFilePreviewZoom(1.0);
+});
+
+onCodeControl("filePreviewEditInCode", "click", function () {
+    closeModal("codeFilePreviewModal");
+    if (currentPreviewingFolder && currentPreviewingFile) {
+        openCodeFileFromFiles(currentPreviewingFolder.id, currentPreviewingFile.id);
+    }
+});
+
+onCodeControl("filePreviewDownload", "click", function () {
+    if (!currentPreviewingFile) return;
+    const a = document.createElement("a");
+    const isBin = currentPreviewingFile.isBinary || isBinaryExtension(currentPreviewingFile.name);
+    if (isBin && currentPreviewingFile.content.startsWith("data:")) {
+        a.href = currentPreviewingFile.content;
+    } else {
+        a.href = "data:text/plain;charset=utf-8," + encodeURIComponent(currentPreviewingFile.content);
+    }
+    a.download = currentPreviewingFile.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showStatus("Downloading " + currentPreviewingFile.name);
+});
+
 onCodeControl("codeFilePreviewCopy", "click", function () {
 
-    const entry = codePreviewingEntry;
+    const textToCopy = currentPreviewingFile
+        ? currentPreviewingFile.content
+        : (codePreviewingEntry ? codePreviewingEntry.text : "");
 
-    if (!entry || entry.text === undefined) {
+    if (textToCopy === undefined || textToCopy === null) {
         return;
     }
 
     const nameEl = document.getElementById("codeFilePreviewName");
     const copyEl = document.getElementById("codeFilePreviewCopy");
 
-    const label = entry.name;
+    const label = currentPreviewingFile
+        ? currentPreviewingFile.name
+        : (codePreviewingEntry ? codePreviewingEntry.name : "File");
 
     const done = function (ok) {
 
@@ -7375,34 +8095,24 @@ onCodeControl("codeFilePreviewCopy", "click", function () {
                 ? "Copied " + label + " to the clipboard."
                 : "Could not reach the clipboard."
         );
-
-        codeLog(
-            ok ? "info" : "error",
-            ok
-                ? label + " copied to the clipboard."
-                : label + " could not be copied. Select the text and copy it manually."
-        );
     };
 
-    /* The async clipboard needs a secure context, which a page opened straight
-       off disk does not have, so a selection-based copy is kept as the
-       fallback rather than leaving the button broken there. */
     if (
         navigator.clipboard &&
         navigator.clipboard.writeText
     ) {
-        navigator.clipboard.writeText(entry.text).then(
+        navigator.clipboard.writeText(textToCopy).then(
             function () {
                 done(true);
             },
             function () {
-                done(codeCopyTextFallback(entry.text));
+                done(codeCopyTextFallback(textToCopy));
             }
         );
         return;
     }
 
-    done(codeCopyTextFallback(entry.text));
+    done(codeCopyTextFallback(textToCopy));
 });
 
 function codeCopyTextFallback(text) {
@@ -7527,18 +8237,6 @@ onCodeControl("codePickFilesButton", "click", function () {
     );
 
 })();
-
-onCodeControl("codeTerminalToggle", "click", function () {
-
-    const isOpen = Boolean(
-        codeTerminal &&
-        codeTerminal.classList.contains("is-open")
-    );
-
-    setCodeTerminalOpen(!isOpen);
-});
-
-onCodeControl("codeTerminalClearButton", "click", codeClearTerminal);
 
 
 /* RESOURCES */
@@ -7676,14 +8374,14 @@ function validateResource() {
             )
         };
     } else {
-        const url =
+        const rawUrl =
             cleanText(
                 document
                     .getElementById("resourceLink")
                     .value
             );
 
-        if (!url) {
+        if (!rawUrl) {
             setFieldError(
                 "resourceError",
                 "resourceLink",
@@ -7692,11 +8390,13 @@ function validateResource() {
             return null;
         }
 
+        const url = normalizeUrl(rawUrl);
+
         if (!isValidHttpUrl(url)) {
             setFieldError(
                 "resourceError",
                 "resourceLink",
-                "Enter a full link starting with http:// or https://"
+                "Enter a valid web link (e.g. google.com or https://...)"
             );
             return null;
         }
@@ -7796,7 +8496,7 @@ function hostOf(href) {
     }
 
     try {
-        return new URL(href).hostname;
+        return new URL(normalizeUrl(href)).hostname;
     } catch (error) {
         return "";
     }
@@ -7912,8 +8612,8 @@ function renderResources() {
         if (isFile) {
             /* File icon using first letter of filename */
             mark.textContent = resource.fileName ? resource.fileName.charAt(0).toUpperCase() : "F";
-            mark.style.backgroundColor = "var(--clay-soft)";
-            mark.style.color = "var(--clay)";
+            mark.style.backgroundColor = "var(--pastel-resources-bg)";
+            mark.style.color = "var(--pastel-resources-fg)";
         } else {
             mark.style.backgroundColor =
                 hostTintOf(href);
@@ -7934,17 +8634,35 @@ function renderResources() {
             const fileLink = document.createElement("button");
             fileLink.className = "resource-row-title resource-file-link";
             fileLink.type = "button";
-            fileLink.textContent = title;
+            fileLink.style.display = "inline-flex";
+            fileLink.style.alignItems = "center";
+            fileLink.style.gap = "6px";
+            fileLink.style.background = "transparent";
+            fileLink.style.border = "0";
+            fileLink.style.cursor = "pointer";
+            fileLink.style.textAlign = "left";
+            fileLink.style.padding = "0";
 
             const fileIcon = document.createElement("span");
             fileIcon.className = "resource-file-icon";
             fileIcon.setAttribute("aria-hidden", "true");
             fileIcon.appendChild(createIcon("document", { size: 14 }));
-            fileLink.insertBefore(fileIcon, fileLink.firstChild);
+            fileLink.appendChild(fileIcon);
+
+            const fileText = document.createElement("span");
+            fileText.textContent = title;
+            fileLink.appendChild(fileText);
 
             fileLink.addEventListener("click", function () {
                 if (resource.fileData) {
-                    window.open(resource.fileData, "_blank");
+                    const a = document.createElement("a");
+                    a.href = resource.fileData;
+                    a.download = resource.fileName || (title + ".bin");
+                    a.target = "_blank";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    showStatus("Downloading " + (resource.fileName || "file"));
                 }
             });
 
@@ -8000,17 +8718,22 @@ function renderResources() {
         }
 
 
-        if (!isFile) {
-            const url =
-                document.createElement("span");
+        if (!isFile && href) {
+            const urlWrap =
+                document.createElement("div");
 
-            url.className = "resource-row-url";
+            urlWrap.className = "resource-row-url";
 
-            url.textContent =
-                cleanText(resource.url) ||
-                "No link stored";
+            const urlLink = document.createElement("a");
+            urlLink.href = href;
+            urlLink.target = "_blank";
+            urlLink.rel = "noopener noreferrer";
+            urlLink.textContent = href;
+            urlLink.style.color = "var(--text-3)";
+            urlLink.style.textDecoration = "none";
 
-            body.appendChild(url);
+            urlWrap.appendChild(urlLink);
+            body.appendChild(urlWrap);
         }
 
 
@@ -8049,10 +8772,13 @@ function renderResources() {
 
         remove.type = "button";
         remove.className = "resource-remove";
-        remove.textContent = "Remove";
+        remove.appendChild(createIcon("trash", { size: 14 }));
+        const removeText = document.createElement("span");
+        removeText.textContent = "Delete";
+        remove.appendChild(removeText);
         remove.setAttribute(
             "aria-label",
-            "Remove resource: " + title
+            "Delete resource: " + title
         );
 
         remove.addEventListener(
@@ -8060,12 +8786,12 @@ function renderResources() {
             function () {
 
                 confirmAction({
-                    title: "Remove resource?",
+                    title: "Delete resource?",
                     message:
                         isFile
                             ? "This file will be removed from the workspace."
                             : "This link will be removed from the workspace.",
-                    confirmLabel: "Remove"
+                    confirmLabel: "Delete"
                 }).then(function (confirmed) {
 
                     if (!confirmed) {
@@ -8079,11 +8805,12 @@ function renderResources() {
                             }
                         );
 
-                    commitChanges();
+                    commitChanges({
+                        message: "Resource deleted."
+                    });
                 });
             }
         );
-
 
         row.appendChild(body);
         row.appendChild(remove);
